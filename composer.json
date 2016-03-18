@@ -1,0 +1,29 @@
+{
+	"name": "mediawiki-extensions/media-wiki-farm",
+	"description": "Configuration management for MediaWiki farms.",
+	"keywords": ["mediawiki"],
+	"homepage": "https://www.seb35.fr",
+	"authors": [
+		{
+			"name": "Sébastien Beyou",
+			"homepage": "https://www.seb35.fr"
+		}
+	],
+	"license": "GPL-3.0+",
+	"require": {
+		"php": ">=5.5",
+		"symfony/yaml": "~2.7"
+	},
+	"require-dev": {
+		"phpdocumentor/phpdocumentor": "2.*"
+	},
+	"suggest": {
+	},
+	"autoload": {
+	},
+	"autoload-dev": {
+	},
+	"scripts": {
+		"phpdoc": "./vendor/phpdocumentor/phpdocumentor/bin/phpdoc -d ./src -t ./docs/code"
+	}
+}
