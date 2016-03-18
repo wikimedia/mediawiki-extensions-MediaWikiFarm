@@ -1,6 +1,14 @@
 <?php
+/**
+ * MediaWikiFarm extension for MediaWiki.
+ * 
+ * This extension turns a MediaWiki installation into a farm consisting of multiple independant wikis.
+ * 
+ * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
+ * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
+ * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
+ */
 
-use Symfony\Component\Yaml\Yaml;
 
 # Protect against web entry
 if ( !defined( 'MEDIAWIKI' ) ) {
@@ -16,7 +24,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
  */
 $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 
-$wgMediaWikiFarmConfigDir = '/srv/www/mediawiki-farm/config';
+
 
 
 

@@ -1,6 +1,10 @@
 <?php
 /**
  * Class MediaWikiFarm.
+ * 
+ * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
+ * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
+ * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
