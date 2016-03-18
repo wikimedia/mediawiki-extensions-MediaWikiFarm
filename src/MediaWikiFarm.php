@@ -1,4 +1,9 @@
 <?php
+/**
+ * Class MediaWikiFarm.
+ */
+
+require_once __DIR__ . '/../vendor/autoload.php';
 
 /**
  * This class computes the configuration of a specific wiki from a set of configuration files.
@@ -32,16 +37,57 @@ class MediaWikiFarm {
 	/**
 	 * Initialise the unique object of type MediaWikiFarm.
 	 * 
+	 * @param string 
 	 * @return MediaWikiFarm Singleton.
 	 */
-	static function initialise() {
+	static function initialise( $host ) {
 		
 		global $wgMediaWikiFarmConfigDir;
 		
 		if( self::$self == null )
-			self::$self = new self( $GLOBALS['_SERVER']['HTTP_HOST'], $wgMediaWikiFarmConfigDir );
+			self::$self = new self( $host, $wgMediaWikiFarmConfigDir );
+		
+		var_dump( self::$self->config );
 		
 		return self::$self;
+	}
+	
+	/**
+	 * Check the existence of the wiki, given variables values and files listing existing wikis.
+	 * 
+	 * A wiki exists if all variables are defined in the URL and all values are found in the
+	 * corresponding listing file. Files can be in PHP, YAML, or dblist.
+	 * 
+	 * @return bool The wiki exists.
+	 */
+	function checkExistence() {
+		
+		$keys = array();
+		$values = array();
+		
+		foreach( $this->config['variables'] as $variable ) {
+			
+			$key = $variable['variable'];
+			if( !array_key_exists( $key, $this->variables ) )
+				return false;
+			
+			$value = $this->variables[$key];
+			$keys[] = '/\$' . preg_quote( $key, '/' ) . '/';
+			$values[] = $value;
+			
+			$choices = $this->readFile( preg_replace( $keys, $values, $this->configDir.'/'.$variable['file'] ) );
+			if( $choices === false )
+				return false;
+			
+			$isNumeric = array_keys( $choices ) === range( 0, count( $choices ) - 1 );
+			if( $isNumeric && !in_array( $value, $choices ) )
+				return false;
+			
+			if( !$isNumeric && !array_key_exists( $value, $choices ) )
+				return false;
+		}
+		
+		return true;
 	}
 	
 	
@@ -58,29 +104,21 @@ class MediaWikiFarm {
 	 */
 	private function __construct( $host, $configDir = null ) {
 		
-		$this->configDir = isset( $configDir ) && is_string( $configDir ) ? $configDir : '/etc/mediawiki';
-		
-		$config = array();
-		if( is_file( $this->configDir . '/farms.yml' ) ) {
-			
-			try {
-				
-				$config = \Symphony\Component\Yaml\Yaml::parse( file_get_contents( $this->configDir . '/farms.yml' ) );
-			}
-			catch( \Symfony\Component\Yaml\Exception\ParseException $e ) {
-				
-				$this->unusable = true;
-			}
-		}
-		else if( is_file( $this->configDir . '/farms.php' ) )
-			$config = require $this->configDir . '/farms.php';
-		
-		else
+		# Check parameters
+		if( !isset( $host ) || !is_string( $host ) || (isset( $configDir ) && !is_string( $configDir )) )
 			$this->unusable = true;
+		
+		# Get parameters
+		$this->configDir = is_string( $configDir ) ? $configDir : '/etc/mediawiki';
+		
+		# Read the farm configuration
+		if( $configs = $this->readFile( $this->configDir . '/farms.yml' ) );
+		else if( $configs = $this->readFile( $this->configDir . '/farms.php' ) );
+		else $this->unusable = true;
 		
 		# Now select the right configuration amoung all farms
 		if( !$this->unusable )
-			$this->unusable = !$this->selectFarm( $config );
+			$this->unusable = !$this->selectFarm( $configs, $host );
 	}
 	
 	/**
@@ -92,15 +130,71 @@ class MediaWikiFarm {
 	 */
 	private function selectFarm( $configs, $host ) {
 		
+		# Check parameters
+		if( !isset( $configs ) || !is_array( $configs ) )
+			return false;
+		
+		if( !isset( $host ) || !is_string( $host ) )
+			return false;
+		
+		# For each proposed farm, check if the host matches
 		foreach( $configs as $regex => $config ) {
 			
-			if( preg_match( '/' . $regex . '/', $matches ) ) {
+			if( preg_match( '/' . $regex . '/', $host, $matches ) ) {
 				
+				# Get the selected configuration
 				$this->config = $config;
-				$this->variables = $matches;
+				$this->variables = array();
+				
+				# Initialise variables from the host
+				foreach( $this->config['variables'] as $variable ) {
+					
+					if( array_key_exists( $variable['variable'], $matches ) )
+						$this->variables[$variable['variable']] = $matches[$variable['variable']];
+				}
+				
 				return true;
 			}
 		}
+		
+		return false;
+	}
+	
+	/**
+	 * Read a file either in PHP, YAML, or dblist, and returns the interpreted array.
+	 * 
+	 * The choice between the format depends on the extension: php, yml, dblist.
+	 * 
+	 * @param string $filename Name of the requested file.
+	 * @return array|false The interpreted array in case of success, else false.
+	 */
+	function readFile( $filename ) {
+		
+		# Check parameter
+		if( !is_string( $filename ) || !is_file( $filename ) )
+			return false;
+		
+		# Detect the format
+		# Note the regex must be greedy to correctly select double extensions
+		$format = preg_replace( '/^.*\.([a-z]+)$/', '$1', $filename );
+		
+		if( $format == 'php' )
+			return require $filename;
+		
+		if( $format == 'yml' ) {
+			
+			try {
+				
+				return \Symfony\Component\Yaml\Yaml::parse( file_get_contents( $filename ) );
+			}
+			catch( \Symfony\Component\Yaml\Exception\ParseException $e ) {
+				
+				return false;
+			}
+		}
+		
+		if( $format == 'dblist' )
+			return explode( "\n", file_get_contents( $filename ) );
 		
 		return false;
 	}
@@ -422,7 +516,12 @@ class MediaWikiFarm {
 }
 
 
-// Load skins with the require_once mechanism
+/**
+ * Load skins with the require_once mechanism.
+ * 
+ * @param array $skins List of skins to be loaded.
+ * @return void
+ */
 function MediaWikiFarm_loadSkinsConfig( $skins ) {
 	
 	foreach( $skins as $skin => $value ) {
@@ -432,7 +531,12 @@ function MediaWikiFarm_loadSkinsConfig( $skins ) {
 	}
 }
 
-// Load extensions with the require_once mechanism
+/**
+ * Load extensions with the require_once mechanism.
+ * 
+ * @param array $extensions List of extensions to be loaded.
+ * @return void
+ */
 function MediaWikiFarm_loadExtensionsConfig( $extensions ) {
 	
 	foreach( $extensions as $extension => $value ) {

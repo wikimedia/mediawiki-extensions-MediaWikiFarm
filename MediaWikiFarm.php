@@ -29,7 +29,7 @@ $wgMediaWikiFarmConfigDir = '/srv/www/mediawiki-farm/config';
 
 require_once "$IP/extensions/MediaWikiFarm/src/MediaWikiFarm.php";
 
-MediaWikiFarm::initialise();
+$wgMediaWikiFarm = MediaWikiFarm::initialise( $GLOBALS['_SERVER']['HTTP_HOST'] );
 
 
 
@@ -42,35 +42,37 @@ MediaWikiFarm::initialise();
 # Select the configuration and export it
 //$farm->getConfig();
 
-function wvgGetWikiFromURL() {
-	
-	if( !preg_match( '/^([a-zA-Z0-9]+)-([a-zA-Z0-9]+)\.example.com$/', $GLOBALS['_SERVER']['HTTP_HOST'], $matches ) ) {
-		echo 'Error: unknown wiki.';
-		exit;
-	}
-	
-	return array( $matches[2], $matches[1] );
-}
+var_dump( $wgMediaWikiFarm );echo "\n\n<br /><br />";
 
-list( $wvgWiki, $wvgClient ) = wvgGetWikiFromURL();
+# Get client and wiki
 
-// Suffixes (clients): only the current client is saved to avoid any information leak to other clients, e.g. array( 'wikipedia' )
-$wgConf->suffixes = array( $wvgClient );
-if( !in_array( $wvgClient, Yaml::parse( file_get_contents( $wgMediaWikiFarmConfigDir . '/clients.yml' ) ) ) ) {
+$wvgClient = $wgMediaWikiFarm->variables['client'];
+$wvgWiki = $wgMediaWikiFarm->variables['wiki'];
+
+var_dump( $wvgClient );
+var_dump( $wvgWiki );
+echo "\n\n<br /><br />";
+
+
+# Check existence
+
+var_dump( $wgMediaWikiFarm->checkExistence() );
+echo "\n\n<br /><br />";
+
+if( !$wgMediaWikiFarm->checkExistence() ) {
+	
 	echo 'Error: unknown wiki.';
 	exit;
 }
 
+
+$wgConf->suffixes = array( $wvgClient );
+
 // Wikis: a simple list of the wikis for the requested client, e.g. array( 'da', 'cv' )
-$wvgClientWikis = Yaml::parse( file_get_contents( $wgMediaWikiFarmConfigDir.'/'.$wvgClient.'/wikis.yml' ) );
+$wvgClientWikis = $wgMediaWikiFarm->readFile( $wgMediaWikiFarmConfigDir.'/'.$wvgClient.'/wikis.yml' );
 $wvgVersion = false;
 foreach( $wvgClientWikis as $wiki => $value ) {
 	$wgConf->wikis[] = $wiki.'-'.$wvgClient;
-}
-
-if( !in_array( $wvgWiki.'-'.$wvgClient, $wgConf->wikis ) ) {
-	echo 'Error: unknown wiki.';
-	exit;
 }
 
 // Get version
@@ -80,6 +82,8 @@ if( !preg_match( '/^1\.\d{1,2}/', $wvgVersion ) ) {
 	echo 'Error: unknown wiki.';
 	exit;
 }
+
+exit;
 
 // Obtain the global configuration
 $wvgGlobals = MediaWikiFarm::getMediaWikiConfig( $wvgWiki, $wvgClient, $wvgVersion, $wgConf,
