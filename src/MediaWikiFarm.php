@@ -7,6 +7,9 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  */
 
+# Protect against web entry
+if( !defined( 'MEDIAWIKI' ) ) exit;
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 /**
@@ -23,14 +26,20 @@ class MediaWikiFarm {
 	/** @var MediaWikiFarm|null [private] Singleton. */
 	public static $self = null;
 	
-	/** @var string|null [private] Farm configuration directory. */
-	public $configDir = null;
+	/** @var string [private] Farm configuration directory. */
+	public $configDir = '/etc/mediawiki';
+	
+	/** @var string|null [private] MediaWiki code directory, where each subdirectory is a MediaWiki installation. */
+	public $codeDir = null;
+	
+	/** @var bool [private] This object cannot be used because of an emergency error. */
+	public $unusable = false;
 	
 	/** @var array [private] Farm configuration file. */
 	public $config = array();
 	
-	/** @var bool [private] This object cannot be used because of an emergency error. */
-	public $unusable = false;
+	/** @var array [private] Selected MediaWiki version. */
+	public $wiki = array();
 	
 	
 	
@@ -46,12 +55,10 @@ class MediaWikiFarm {
 	 */
 	static function initialise( $host ) {
 		
-		global $wgMediaWikiFarmConfigDir;
+		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir;
 		
 		if( self::$self == null )
-			self::$self = new self( $host, $wgMediaWikiFarmConfigDir );
-		
-		var_dump( self::$self->config );
+			self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir );
 		
 		return self::$self;
 	}
@@ -66,29 +73,104 @@ class MediaWikiFarm {
 	 */
 	function checkExistence() {
 		
+		global $IP;
+		
+		if( $this->unusable )
+			return false;
+		
 		$keys = array();
 		$values = array();
+		$version = null;
 		
+		# For each variable, in the given order, check if the variable exists, check if the
+		# wiki exists in the corresponding listing file, and get the version if available
 		foreach( $this->config['variables'] as $variable ) {
 			
 			$key = $variable['variable'];
+			
+			# The variable must exist
 			if( !array_key_exists( $key, $this->variables ) )
 				return false;
 			
+			# Possibly the variables up to this one can be placeholders in filenames
 			$value = $this->variables[$key];
 			$keys[] = '/\$' . preg_quote( $key, '/' ) . '/';
 			$values[] = $value;
 			
-			$choices = $this->readFile( preg_replace( $keys, $values, $this->configDir.'/'.$variable['file'] ) );
+			# If every value is correct, continue
+			if( !array_key_exists( 'file', $variable ) )
+				continue;
+			
+			# Really check if the variable is in the listing file
+			$choices = $this->readFile( $this->configDir . '/' . preg_replace( $keys, $values, $variable['file'] ) );
 			if( $choices === false )
 				return false;
 			
-			$isNumeric = array_keys( $choices ) === range( 0, count( $choices ) - 1 );
-			if( $isNumeric && !in_array( $value, $choices ) )
-				return false;
+			# Check if the array is a simple list of wiki identifiers without version information…
+			if( array_keys( $choices ) === range( 0, count( $choices ) - 1 ) ) {
+				if( !in_array( $value, $choices ) )
+					return false;
 			
-			if( !$isNumeric && !array_key_exists( $value, $choices ) )
-				return false;
+			# …or a dictionary with wiki identifiers and corresponding version information
+			} else {
+				
+				if( !array_key_exists( $value, $choices ) )
+					return false;
+				
+				if( isset( $this->codeDir ) && is_dir( $this->codeDir . '/' . ((string) $choices[$value]) ) && is_file( $this->codeDir . '/' . ((string) $choices[$value]) . '/includes/DefaultSettings.php' ) )
+					$version = (string) $choices[$value];
+			}
+		}
+		
+		# When the wiki is found, replace all variables in other configuration files
+		$keys[] = '/\$version/';
+		$values[] = $version ? $version : '';
+		
+		$this->wiki = $this->config;
+		$this->wiki['version'] = $version;
+		$this->wiki['globals'] = null;
+		if( isset( $version ) )
+			$this->wiki['code'] = $this->codeDir . (isset( $version ) ? '/' . $version : '');
+		else
+			$this->wiki['code'] = $IP;
+		$this->wiki['data'] = preg_replace( $keys, $values, $this->wiki['data'] );
+		if( array_key_exists( 'cache', $this->wiki ) ) $this->wiki['cache'] = preg_replace( $keys, $values, $this->wiki['cache'] );
+		if( array_key_exists( 'config', $this->wiki ) ) {
+			
+			if( is_string( $this->wiki['config'] ) )
+				$this->wiki['config'] = array( $this->wiki['config'] );
+			
+			foreach( $this->wiki['config'] as &$configFile )
+				$configFile = preg_replace( $keys, $values, $configFile );
+		}
+		if( array_key_exists( 'post-config', $this->wiki ) ) {
+			
+			if( is_string( $this->wiki['post-config'] ) )
+				$this->wiki['post-config'] = array( $this->wiki['post-config'] );
+			
+			foreach( $this->wiki['post-config'] as &$configFile )
+				$configFile = preg_replace( $keys, $values, $configFile );
+		}
+		
+		foreach( $this->wiki['variables'] as &$variable ) {
+			
+			if( array_key_exists( 'file', $variable ) ) $variable['file'] = preg_replace( $keys, $values, $variable['file'] );
+			if( array_key_exists( 'config', $variable ) ) {
+				
+				if( is_string( $variable['config'] ) )
+					$variable['config'] = array( $variable['config'] );
+				
+				foreach( $variable['config'] as &$configFile )
+					$configFile = preg_replace( $keys, $values, $configFile );
+			}
+			if( array_key_exists( 'post-config', $variable ) ) {
+				
+				if( is_string( $variable['post-config'] ) )
+					$variable['post-config'] = array( $variable['post-config'] );
+				
+				foreach( $variable['post-config'] as &$configFile )
+					$configFile = preg_replace( $keys, $values, $configFile );
+			}
 		}
 		
 		return true;
@@ -103,26 +185,38 @@ class MediaWikiFarm {
 	/**
 	 * Construct a MediaWiki farm.
 	 * 
+	 * This constructor sets the directories (configuration and code) and select the right
+	 * farm depending of the host (when there are multiple farms). In case of error (unreadable
+	 * directory or file, or unrecognized host), no exception is thrown but the property
+	 * 'unusable' becomes true.
+	 * 
 	 * @param string $host Requested host.
-	 * @param string|null $configDir Configuration directory; if null or not a string, the default value is used (/etc/mediawiki).
+	 * @param string $configDir Configuration directory.
+	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
 	 */
-	private function __construct( $host, $configDir = null ) {
+	private function __construct( $host, $configDir = '/etc/mediawiki', $codeDir = null ) {
 		
 		# Check parameters
-		if( !isset( $host ) || !is_string( $host ) || (isset( $configDir ) && !is_string( $configDir )) )
+		if( !isset( $host ) || !is_string( $host ) )
+			$this->unusable = true;
+		if( isset( $configDir ) && (!is_string( $configDir ) || !is_dir( $configDir )) )
+			$this->unusable = true;
+		if( isset( $codeDir ) && (!is_string( $codeDir ) || !is_dir( $codeDir )) )
 			$this->unusable = true;
 		
-		# Get parameters
-		$this->configDir = is_string( $configDir ) ? $configDir : '/etc/mediawiki';
+		if( $this->unusable ) return;
 		
-		# Read the farm configuration
+		# Set parameters
+		$this->configDir = $configDir;
+		$this->codeDir = $codeDir;
+		
+		# Read the farm(s) configuration
 		if( $configs = $this->readFile( $this->configDir . '/farms.yml' ) );
 		else if( $configs = $this->readFile( $this->configDir . '/farms.php' ) );
 		else $this->unusable = true;
 		
 		# Now select the right configuration amoung all farms
-		if( !$this->unusable )
-			$this->unusable = !$this->selectFarm( $configs, $host );
+		$this->unusable = !$this->selectFarm( $configs, $host );
 	}
 	
 	/**
@@ -133,6 +227,9 @@ class MediaWikiFarm {
 	 * return bool One of the farm has been selected.
 	 */
 	private function selectFarm( $configs, $host ) {
+		
+		if( $this->unusable )
+			return false;
 		
 		# Check parameters
 		if( !isset( $configs ) || !is_array( $configs ) )
@@ -163,6 +260,12 @@ class MediaWikiFarm {
 		
 		return false;
 	}
+	
+	
+	
+	/*
+	 * Helper Methods (public)
+	 * ----------------------- */
 	
 	/**
 	 * Read a file either in PHP, YAML, or dblist, and returns the interpreted array.
@@ -233,24 +336,27 @@ class MediaWikiFarm {
 	 * 
 	 * @param string $wiki Name of the wiki.
 	 * @param string $suffix Suffix of the wiki (main family type).
-	 * @param string $version Version of the wiki.
 	 * @param SiteConfiguration $wgConf SiteConfigurat object from MediaWiki.
-	 * @param $array params Parameters for this configuration management.
 	 * @return array Global parameter variables and loading mechanisms for skins and extensions.
 	 */
-	static function getMediaWikiConfig( $myWiki, $mySuffix, $myVersion, &$wgConf, $params ) {
+	function getMediaWikiConfig( $myWiki, $mySuffix, &$wgConf ) {
 		
-		$codeDir = $params['codeDir'];
-		$cacheFile = $params['cacheFile'];
-		$generalYamlFilename = $params['generalYamlFilename'];
-		$suffixedYamlFilename = $params['suffixedYamlFilename'];
-		$privateYamlFilename = $params['privateYamlFilename'];
+		if( $this->unusable )
+			return false;
 		
-		$cacheFile = preg_replace( array( '/\$wiki/', '/\$suffix/', '/\$version/' ),
-			                       array( $myWiki, $mySuffix, $myVersion ),
-			                       $cacheFile );
+		$codeDir = $this->wiki['code'];
+		$cacheFile = $this->wiki['cache'];
+		$generalYamlFilename = '/'.$this->wiki['config'][0];
+		$suffixedYamlFilename = '/'.$this->wiki['variables'][0]['config'][0];
+		$privateYamlFilename = '/'.$this->wiki['post-config'][0];
 		
-		$suffixedYamlFilename = preg_replace( '/\$suffix/', $mySuffix, $suffixedYamlFilename );
+		//var_dump($codeDir);
+		//var_dump($myWiki);
+		//var_dump($mySuffix);
+		//var_dump($generalYamlFilename);
+		//var_dump($suffixedYamlFilename);
+		//var_dump($privateYamlFilename);
+		//echo "\n\n<br /><br />";
 		
 		$globals = false;
 		
@@ -270,15 +376,19 @@ class MediaWikiFarm {
 			$globals['skins'] = array();
 			$globals['extensions'] = array();
 			
+			#$configFiles = $this->wiki['config'];
+			#foreach( $this->wiki['variables'] as $variable )
+			#	
+			
 			// Load InitialiseSettings.yml (general)
-			$generalSettings = Yaml::parse( file_get_contents( $this->configDir.$generalYamlFilename ) );
+			$generalSettings = $this->readFile( $this->configDir.$generalYamlFilename );
 			foreach( $generalSettings as $setting => $value ) {
 				
 				$wgConf->settings[$setting]['default'] = $value;
 			}
 			
 			// Load InitialiseSettings.yml (client)
-			$suffixedSettings = Yaml::parse( file_get_contents( $this->configDir.$suffixedYamlFilename ) );
+			$suffixedSettings = $this->readFile( $this->configDir.$suffixedYamlFilename );
 			foreach( $suffixedSettings as $setting => $values ) {
 				
 				foreach( $values as $wiki => $val ) {
@@ -289,7 +399,7 @@ class MediaWikiFarm {
 			}
 			
 			// Load PrivateSettings.yml (general)
-			$privateSettings = Yaml::parse( file_get_contents( $this->configDir.$privateYamlFilename ) );
+			$privateSettings = $this->readFile( $this->configDir.$privateYamlFilename );
 			foreach( $privateSettings as $setting => $value ) {
 				
 				foreach( $value as $suffix => $val ) {
@@ -319,16 +429,17 @@ class MediaWikiFarm {
 				if( preg_match( '/^wgUseSkin(.+)$/', $setting, $matches ) && $value === true ) {
 					
 					$skin = $matches[1];
-					if( is_dir( $codeDir.'/'.$myVersion.'/skins/'.$skin ) ) {
+					if( is_dir( $codeDir.'/skins/'.$skin ) ) {
 						
 						$globals['skins'][$skin] = array();
-						if( is_file( $codeDir.'/'.$myVersion.'/skins/'.$skin.'/skin.json' ) ) {
+						
+						if( is_file( $codeDir.'/skins/'.$skin.'/skin.json' ) ) {
 							$globals['skins'][$skin]['_loading'] = 'wfLoadSkin';
 						}
-						elseif( is_file( $codeDir.'/'.$myVersion.'/skins/'.$skin.'/'.$skin.'.php' ) ) {
+						elseif( is_file( $codeDir.'/skins/'.$skin.'/'.$skin.'.php' ) ) {
 							$globals['skins'][$skin]['_loading'] = 'require_once';
 						}
-						elseif( is_file( $codeDir.'/'.$myVersion.'/skins/'.$skin.'/composer.json' ) ) {
+						elseif( is_file( $codeDir.'/skins/'.$skin.'/composer.json' ) ) {
 							$globals['skins'][$skin]['_loading'] = 'composer';
 						}
 						else {echo ' (unknown)';$unsetPrefixes[] = $skin;}
@@ -340,16 +451,16 @@ class MediaWikiFarm {
 				elseif( preg_match( '/^wgUseExtension(.+)$/', $setting, $matches ) && $value === true ) {
 					
 					$extension = $matches[1];
-					if( is_dir( $codeDir.'/'.$myVersion.'/extensions/'.$extension ) ) {
+					if( is_dir( $codeDir.'/extensions/'.$extension ) ) {
 						
 						$globals['extensions'][$extension] = array();
-						if( is_file( $codeDir.'/'.$myVersion.'/extensions/'.$extension.'/extension.json' ) && $extension !== 'VisualEditor' ) {
+						if( is_file( $codeDir.'/extensions/'.$extension.'/extension.json' ) && $extension !== 'VisualEditor' ) {
 							$globals['extensions'][$extension]['_loading'] = 'wfLoadExtension';
 						}
-						elseif( is_file( $codeDir.'/'.$myVersion.'/extensions/'.$extension.'/'.$extension.'.php' ) ) {
+						elseif( is_file( $codeDir.'/extensions/'.$extension.'/'.$extension.'.php' ) ) {
 							$globals['extensions'][$extension]['_loading'] = 'require_once';
 						}
-						elseif( is_file( $codeDir.'/'.$myVersion.'/extensions/'.$extension.'/composer.json' ) ) {
+						elseif( is_file( $codeDir.'/extensions/'.$extension.'/composer.json' ) ) {
 							$globals['extensions'][$extension]['_loading'] = 'composer';
 						}
 						else $unsetPrefixes[] = $extension;
@@ -408,18 +519,23 @@ class MediaWikiFarm {
 			}
 		}
 		
+		$this->wiki['globals'] = $globals;
+		
 		return $globals;
 	}
 	
 	/**
 	 * This function loads MediaWiki configuration (parameters).
 	 * 
-	 * @param array $extensions Subarray of general parameters (c.f. MediaWikiFarm:getMediaWikiConfig).
+	 * @return void
 	 */
-	static function loadMediaWikiConfig( $settings ) {
+	function loadMediaWikiConfig() {
+		
+		if( $this->unusable )
+			return false;
 		
 		// Set general parameters as global variables
-		foreach( $settings as $setting => $value ) {
+		foreach( $this->wiki['globals']['general'] as $setting => $value ) {
 			
 			$GLOBALS[$setting] = $value;
 		}
@@ -432,12 +548,15 @@ class MediaWikiFarm {
 	 * a function because variables would inherit the non-global scope); such skins must be loaded
 	 * before calling this function.
 	 * 
-	 * @param array $extensions Subarray of skins parameters (c.f. MediaWikiFarm::getMediaWikiConfig).
+	 * @return void
 	 */
-	static function loadSkinsConfig( $skins ) {
+	function loadSkinsConfig() {
+		
+		if( $this->unusable )
+			return false;
 		
 		// Load skins with the wfLoadSkin mechanism
-		foreach( $skins as $skin => $value ) {
+		foreach( $this->wiki['globals']['skins'] as $skin => $value ) {
 			
 			if( $value['_loading'] == 'wfLoadSkin' )
 			
@@ -447,7 +566,7 @@ class MediaWikiFarm {
 		}
 		
 		// Set skin parameters as global variables
-		foreach( $skins as $skin => $settings ) {
+		foreach( $this->wiki['globals']['skins'] as $skin => $settings ) {
 			
 			foreach( $settings as $setting => $value )
 				
@@ -462,12 +581,15 @@ class MediaWikiFarm {
 	 * a function because variables would inherit the non-global scope); such skins must be loaded
 	 * before calling this function.
 	 * 
-	 * @param array $extensions Subarray of extensions parameters (c.f. MediaWikiFarm::getMediaWikiConfig).
+	 * @return void
 	 */
-	static function loadExtensionsConfig( $extensions ) {
+	function loadExtensionsConfig() {
+		
+		if( $this->unusable )
+			return false;
 		
 		// Load extensions with the wfLoadExtension mechanism
-		foreach( $extensions as $extension => $value ) {
+		foreach( $this->wiki['globals']['extensions'] as $extension => $value ) {
 			
 			if( $value['_loading'] == 'wfLoadExtension' )
 				
@@ -477,7 +599,7 @@ class MediaWikiFarm {
 		}
 		
 		// Set extension parameters as global variables
-		foreach( $extensions as $extension => $settings ) {
+		foreach( $this->wiki['globals']['extensions'] as $extension => $settings ) {
 			
 			foreach( $settings as $setting => $value )
 				
@@ -516,37 +638,6 @@ class MediaWikiFarm {
 		}
 		
 		return $out;
-	}
-}
-
-
-/**
- * Load skins with the require_once mechanism.
- * 
- * @param array $skins List of skins to be loaded.
- * @return void
- */
-function MediaWikiFarm_loadSkinsConfig( $skins ) {
-	
-	foreach( $skins as $skin => $value ) {
-		
-		if( $value['_loading'] == 'require_once' )
-			require_once "$IP/skins/$skin/$skin.php";
-	}
-}
-
-/**
- * Load extensions with the require_once mechanism.
- * 
- * @param array $extensions List of extensions to be loaded.
- * @return void
- */
-function MediaWikiFarm_loadExtensionsConfig( $extensions ) {
-	
-	foreach( $extensions as $extension => $value ) {
-		
-		if( $value['_loading'] == 'require_once' )
-			require_once "$IP/extensions/$extension/$extension.php";
 	}
 }
 

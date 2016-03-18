@@ -9,129 +9,45 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  */
 
-
 # Protect against web entry
-if ( !defined( 'MEDIAWIKI' ) ) {
-	exit;
-}
+if( !defined( 'MEDIAWIKI' ) ) exit;
+
+/*
+ * Parameters
+ * ========== */
 
 /**
  * Configuration directory.
  * 
+ * Type: string (path).
+ * 
  * This parameter should be specified in your LocalSettings.php, before the require_once.
- * The value must be a readable directory. It is recommended this directory is not readable
- * from the Web.
+ * The value must be a readable directory. Depending of your openness policy, you could
+ * publish all or parts of the configuration files, but probably you don’t want to publish
+ * private informations like database configuration, upgrade key, etc.
  */
 $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 
 
-
-
-
-
 /**
- * Code.
+ * Code directory.
  * 
- * Please do not remove the following lines.
+ * Type: string|null (path).
+ * 
+ * If your farm can manage multiple MediaWiki versions, set this parameter to a directory
+ * where each subdirectory is a MediaWiki installation in a given version+flavour. Although
+ * it is probably easier to name the subdirectories with the MediaWiki version, the names
+ * are entirely independent from the real version inside the subdirectory.
  */
-
-require_once "$IP/extensions/MediaWikiFarm/src/MediaWikiFarm.php";
-
-$wgMediaWikiFarm = MediaWikiFarm::initialise( $GLOBALS['_SERVER']['HTTP_HOST'] );
+$wgMediaWikiFarmCodeDir = null;
 
 
 
-# Create a MediaWiki farm
-//$farm = new MediaWikiFarm( $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir );
-
-# Select the wiki given the HTTP Host
-//$farm->selectWikiFromHost( $GLOBALS['_SERVER']['HTTP_HOST'] );
-
-# Select the configuration and export it
-//$farm->getConfig();
-
-var_dump( $wgMediaWikiFarm );echo "\n\n<br /><br />";
-
-# Get client and wiki
-
-$wvgClient = $wgMediaWikiFarm->variables['client'];
-$wvgWiki = $wgMediaWikiFarm->variables['wiki'];
-
-var_dump( $wvgClient );
-var_dump( $wvgWiki );
-echo "\n\n<br /><br />";
 
 
-# Check existence
+/*
+ *    Code
+ * ========== */
 
-var_dump( $wgMediaWikiFarm->checkExistence() );
-echo "\n\n<br /><br />";
-
-if( !$wgMediaWikiFarm->checkExistence() ) {
-	
-	echo 'Error: unknown wiki.';
-	exit;
-}
-
-
-$wgConf->suffixes = array( $wvgClient );
-
-// Wikis: a simple list of the wikis for the requested client, e.g. array( 'da', 'cv' )
-$wvgClientWikis = $wgMediaWikiFarm->readFile( $wgMediaWikiFarmConfigDir.'/'.$wvgClient.'/wikis.yml' );
-$wvgVersion = false;
-foreach( $wvgClientWikis as $wiki => $value ) {
-	$wgConf->wikis[] = $wiki.'-'.$wvgClient;
-}
-
-// Get version
-$wvgVersion = $wvgClientWikis[$wvgWiki];
-
-if( !preg_match( '/^1\.\d{1,2}/', $wvgVersion ) ) {
-	echo 'Error: unknown wiki.';
-	exit;
-}
-
-exit;
-
-// Obtain the global configuration
-$wvgGlobals = MediaWikiFarm::getMediaWikiConfig( $wvgWiki, $wvgClient, $wvgVersion, $wgConf,
-                                                 array( 'codeDir' => $wgMediaWikiFarmCodeDir,
-                                                        'cacheFile' => '/tmp/mw-cache/conf-$version-$wiki-$suffix',
-                                                        'generalYamlFilename' => '/InitialiseSettings.yml',
-                                                        'suffixedYamlFilename' => '/$suffix/InitialiseSettings.yml',
-                                                        'privateYamlFilename' => '/PrivateSettings.yml',
-                                                      )
-);
-
-// Load general MediaWiki configuration
-MediaWikiFarm::loadMediaWikiConfig( $wvgGlobals['general'] );
-
-// Set system parameters
-$wgUploadDirectory = $wgMediaWikiFarmConfigDir.'/'.$wvgClient.'/'.$wvgWiki.'/images';
-$wgCacheDirectory = $wgMediaWikiFarmConfigDir.'/'.$wvgClient.'/'.$wvgWiki.'/cache';
-
-// Load skins with the require_once mechanism
-foreach( $wvgGlobals['skins'] as $skin => $value ) {
-	
-	if( $value['_loading'] == 'require_once' )
-		require_once "$IP/skins/$skin/$skin.php";
-}
-
-// Load skin configuration
-MediaWikiFarm::loadSkinsConfig( $wvgGlobals['skins'] );
-
-// Load extensions with the require_once mechanism
-foreach( $wvgGlobals['extensions'] as $extension => $value ) {
-	
-	if( $value['_loading'] == 'require_once' )
-		require_once "$IP/extensions/$extension/$extension.php";
-}
-
-// Load extension configuration
-MediaWikiFarm::loadExtensionsConfig( $wvgGlobals['extensions'] );
-
-// L’éditeur visuel cherchant toujours à se faire remarquer par les sysadmins, la
-// ligne suivante est nécessaire tant qu’il est chargé avec require_once, car
-// l’inclusion écrase cette valeur (même si spécifiée dans les fichiers YAML)
-$wgDefaultUserOptions['visualeditor-enable'] = 1;
+require_once __DIR__ . '/src/main.php';
 
