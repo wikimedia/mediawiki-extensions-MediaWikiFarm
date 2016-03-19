@@ -577,6 +577,9 @@ class MediaWikiFarm {
 				}
 			}
 			
+			// Register this extension MediaWikiFarm to appear in Special:Version
+			$globals['extensions']['MediaWikiFarm']['_loading'] = 'wfLoadExtension';
+			
 			// Save this configuration in a serialised file
 			@mkdir( dirname( $cacheFile ) );
 			$tmpFile = tempnam( dirname( $cacheFile ), basename( $cacheFile ).'.tmp' );

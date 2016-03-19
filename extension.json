@@ -1,0 +1,26 @@
+{
+	"name": "MediaWikiFarm",
+	"version": "0.0.0-dev",
+	"author": [
+		"Seb35"
+	],
+	"descriptionmsg": "mediawikifarm-desc",
+	"license-name": "GPL-3.0+",
+	"type": "other",
+	"requires": {
+		"MediaWiki": ">= 1.1.0"
+	},
+	"config": {
+		"MediaWikiFarmConfigDir": "/etc/mediawiki",
+		"MediaWikiFarmCodeDir": null
+	},
+	"MessagesDirs": {
+		"MediaWikiFarm": [
+			"i18n"
+		]
+	},
+	"AutoloadClasses": {
+		"MediaWikiFarms": "src/MediaWikiFarm.php"
+	},
+	"manifest_version": 1
+}
