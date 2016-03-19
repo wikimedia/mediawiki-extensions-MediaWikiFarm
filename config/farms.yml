@@ -1,5 +1,5 @@
 # Configuration similar to the Wikimedia farm
-'(?<lang>[a-z]+)\.(?<family>[a-z]+)\.org':
+'(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org':
     
     variables:
         
@@ -7,10 +7,10 @@
         
         - variable: 'lang'
           file: 'org/$family.dblist'
-          type: 'language'
     
     suffix: '$family'
     wikiID: '$lang$family'
+    versions: 'wikiversions.yml'
     data: '/srv/data/org/$family/$lang'
     cache: '/tmp/mw-cache/org-$version-$family-$lang'
     config:

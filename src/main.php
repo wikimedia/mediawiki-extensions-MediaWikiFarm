@@ -28,35 +28,17 @@ if( !$wgMediaWikiFarm->checkExistence() ) {
 
 
 /*
- * Set the wiki set
- */
-
-
-$wgMediaWikiFarm->setWikiID();
-
-$wvgClient = $wgMediaWikiFarm->variables['client'];
-$wvgWiki = $wgMediaWikiFarm->variables['wiki'];
-
-$wgConf->suffixes = array( $wvgClient );
-
-// Wikis: a simple list of the wikis for the requested client, e.g. array( 'da', 'cv' )
-$wvgClientWikis = $wgMediaWikiFarm->readFile( $wgMediaWikiFarmConfigDir.'/'.$wvgClient.'/wikis.yml' );
-foreach( $wvgClientWikis as $wiki => $value ) {
-	$wgConf->wikis[] = $wiki.'-'.$wvgClient;
-}
-
-// Get the global configuration
-$wvgGlobals = $wgMediaWikiFarm->getMediaWikiConfig( $wvgWiki, $wvgClient, $wgConf );
-
-
-/*
  * MediaWiki
  */
 
 // Load general MediaWiki configuration
 $wgMediaWikiFarm->loadMediaWikiConfig();
 
+
 // Set system parameters
+$wvgClient = $wgMediaWikiFarm->variables['client'];
+$wvgWiki = $wgMediaWikiFarm->variables['wiki'];
+
 $wgUploadDirectory = '/srv/www/mediawiki-farm/data/'.$wvgClient.'/'.$wvgWiki.'/images';
 $wgCacheDirectory = '/srv/www/mediawiki-farm/data/'.$wvgClient.'/'.$wvgWiki.'/cache';
 
@@ -65,14 +47,14 @@ $wgCacheDirectory = '/srv/www/mediawiki-farm/data/'.$wvgClient.'/'.$wvgWiki.'/ca
  * Skins
  */
 
-// Load skins with the require_once mechanism
-foreach( $wvgGlobals['skins'] as $skin => $value ) {
+# Load skins with the require_once mechanism
+foreach( $wgMediaWikiFarm->wiki['globals']['skins'] as $skin => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/skins/$skin/$skin.php";
 }
 
-// Load skin configuration
+# Load skins with the wfLoadSkin mechanism
 $wgMediaWikiFarm->loadSkinsConfig();
 
 
@@ -80,14 +62,14 @@ $wgMediaWikiFarm->loadSkinsConfig();
  * Extensions
  */
 
-// Load extensions with the require_once mechanism
-foreach( $wvgGlobals['extensions'] as $extension => $value ) {
+# Load extensions with the require_once mechanism
+foreach( $wgMediaWikiFarm->wiki['globals']['extensions'] as $extension => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/extensions/$extension/$extension.php";
 }
 
-// Load extension configuration
+# Load extensions with the wfLoadExtension mechanism
 $wgMediaWikiFarm->loadExtensionsConfig();
 
 // L’éditeur visuel cherchant toujours à se faire remarquer par les sysadmins, la

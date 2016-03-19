@@ -41,7 +41,7 @@ class MediaWikiFarm {
 	/** @var array [private] Variables inside the host. */
 	public $variables = array();
 	
-	/** @var array [private] Selected MediaWiki version. */
+	/** @var array Selected wiki. */
 	public $wiki = array();
 	
 	
@@ -69,99 +69,143 @@ class MediaWikiFarm {
 	/**
 	 * Check the existence of the wiki, given variables values and files listing existing wikis.
 	 * 
-	 * A wiki exists if all variables are defined in the URL and all values are found in the
-	 * corresponding listing file. Files can be in PHP, YAML, or dblist.
+	 * A wiki exists if:
+	 *   - variables with a file attached are defined, and
+	 *   - a wikiID can be computed, and
+	 *   - a version is found and does exist, and
+	 *   - the various properties of the wiki are defined.
 	 * 
-	 * @return bool The wiki exists.
+	 * @return bool The wiki does exist.
 	 */
 	function checkExistence() {
-		
-		global $IP, $wgVersion;
 		
 		if( $this->unusable )
 			return false;
 		
-		$keys = array();
-		$values = array();
-		$version = null;
-		
-		# For each variable, in the given order, check if the variable exists, check if the
-		# wiki exists in the corresponding listing file, and get the version if available
-		foreach( $this->config['variables'] as $variable ) {
-			
-			$key = $variable['variable'];
-			
-			# If the variable doesn’t exist, continue
-			if( !array_key_exists( $key, $this->variables ) )
-				continue;
-			
-			# Possibly the variables up to this one can be placeholders in filenames
-			$value = $this->variables[$key];
-			$keys[] = '/\$' . preg_quote( $key, '/' ) . '/';
-			$values[] = $value;
-			
-			# If every values are correct, continue
-			if( !array_key_exists( 'file', $variable ) )
-				continue;
-			
-			# Really check if the variable is in the listing file
-			$choices = $this->readFile( $this->configDir . '/' . preg_replace( $keys, $values, $variable['file'] ) );
-			if( $choices === false )
-				return false;
-			
-			# Check if the array is a simple list of wiki identifiers without version information…
-			if( array_keys( $choices ) === range( 0, count( $choices ) - 1 ) ) {
-				if( !in_array( $value, $choices ) )
-					return false;
-			
-			# …or a dictionary with wiki identifiers and corresponding version information
-			} else {
-				
-				if( !array_key_exists( $value, $choices ) )
-					return false;
-				
-				if( isset( $this->codeDir ) && is_dir( $this->codeDir . '/' . ((string) $choices[$value]) ) && is_file( $this->codeDir . '/' . ((string) $choices[$value]) . '/includes/DefaultSettings.php' ) )
-					$version = (string) $choices[$value];
-			}
-		}
-		
-		# When the wiki is found, replace all variables in other configuration files
-		$this->wiki = $this->config;
-		if( is_string( $version ) )
-			$this->wiki['code'] = $this->codeDir . '/' . $version;
-		else
-			$this->wiki['code'] = $IP;
-		
-		if( !$version ) $version = $wgVersion;
-		$this->variables['version'] = $version;
-		$this->wiki['version'] = $version;
-		
-		if( !array_key_exists( 'wikiID', $this->wiki ) || !is_string( $this->wiki['wikiID'] ) || !$this->wiki['wikiID'] ) {
-			$this->unusable = true;
+		# Replace variables in the host name and possibly retrieve the version
+		if( ($version = $this->replaceHostVariables()) === false )
 			return false;
-		}
+		
+		# Set wikiID, the unique identifier of the wiki
+		if( !$this->setWikiID() )
+			return false;
+		
+		# Set the version of the wiki
+		if( !$this->setVersion( $version ) )
+			return false;
+		
+		# Set other properties of the wiki
+		if( !$this->setWikiProperties() )
+			return false;
+		
+		$this->setWgConf();
+		
 		return true;
 	}
 	
 	/**
-	 * Computation of the properties, which could depend on the suffix, wikiID, or other variables.
+	 * Computation of the suffix and wikiID.
 	 * 
 	 * This function is the central point to get the unique identifier of the wiki, wikiID.
 	 * 
-	 * @return void
+	 * @return bool The wikiID and suffix were set, and the wiki could exist.
 	 */
 	function setWikiID() {
 		
-		global $wgConf;
-		
 		if( $this->unusable )
-			return;
+			return false;
+		
+		$this->wiki = $this->config;
+		$this->wiki['version'] = null;
+		$this->wiki['globals'] = null;
 		
 		$this->setWikiProperty( 'suffix', false, true, true );
 		$this->variables['suffix'] = $this->wiki['suffix'];
 		
 		$this->setWikiProperty( 'wikiID', false, false, true );
 		$this->variables['wikiID'] = $this->wiki['wikiID'];
+		
+		if( !array_key_exists( 'wikiID', $this->wiki ) ) {
+			$this->unusable = true;
+			return false;
+		}
+		
+		if( !$this->wiki['wikiID'] )
+			return false;
+		
+		return true;
+	}
+	
+	/**
+	 * Setting of the version, either from the input if already got, either from a file.
+	 * 
+	 * @param string|null $version If a string, this is the version already got, just set it.
+	 * @return bool The version was set, and the wiki could exist.
+	 */
+	function setVersion( $version = null ) {
+		
+		global $IP, $wgVersion;
+		
+		if( $this->unusable )
+			return false;
+		
+		$this->setWikiProperty( 'versions' );
+		
+		# In the case multiversion is configured and version is already known
+		if( is_string( $version ) && is_string( $this->codeDir ) && is_file( $this->codeDir . '/' . $version . '/includes/DefaultSettings.php' ) )
+			$this->wiki['code'] = $this->codeDir . '/' . $version;
+		
+		# In the case multiversion is configured, but version is not known as of now
+		else if( is_null( $version ) && is_string( $this->codeDir ) ) {
+			
+			$versions = $this->readFile( $this->config['versions'] );
+			
+			if( !$versions ) {
+				$this->unusable = true;
+				return false;
+			}
+			
+			if( array_key_exists( $this->wiki['wikiID'], $versions ) && is_file( $this->codeDir . '/' . $versions[$this->wiki['wikiID']] . '/includes/DefaultSettings.php' ) )
+				$version = $versions[$this->wiki['wikiID']];
+			
+			else if( $this->wiki['suffix'] && array_key_exists( $this->wiki['suffix'], $versions ) && is_file( $this->codeDir . '/' . $versions[$this->wiki['suffix']] . '/includes/DefaultSettings.php' ) )
+				$version = $versions[$this->wiki['suffix']];
+			
+			else if( array_key_exists( 'default', $versions ) && is_file( $this->codeDir . '/' . $versions['default'] . '/includes/DefaultSettings.php' ) )
+				$version = $versions['default'];
+			
+			else return false;
+			
+			$this->wiki['code'] = $this->codeDir . '/' . $version;
+		}
+		
+		# In the case no multiversion is configured
+		else if( is_null( $this->codeDir ) ) {
+			
+			$version = $wgVersion;
+			$this->wiki['code'] = $IP;
+		}
+		else {
+			$this->unusable = true;
+			return false;
+		}
+		
+		# Set the version in the wiki configuration and as a variable to be used later
+		$this->variables['version'] = $version;
+		$this->wiki['version'] = $version;
+		
+		return true;
+	}
+	
+	/**
+	 * Computation of the properties, which could depend on the suffix, wikiID, or other variables.
+	 * 
+	 * @return bool The wiki properties were set, and the wiki could exist.
+	 */
+	function setWikiProperties() {
+		
+		if( $this->unusable )
+			return false;
 		
 		$this->setWikiProperty( 'data', false );
 		$this->setWikiProperty( 'cache', false );
@@ -176,6 +220,13 @@ class MediaWikiFarm {
 			$this->setWikiPropertyValue( $variable['post-config'], true );
 			$this->setWikiPropertyValue( $variable['exec-config'], true );
 		}
+		
+		return true;
+	}
+	
+	function setWgConf() {
+		
+		global $wgConf;
 		
 		// TODO Still hacky: before setting parameters in stone in farms.yml, various configurations should be reviewed to select accordingly the rights management modelisation
 		$wgConf->suffixes = array( $this->wiki['suffix'] );
@@ -270,6 +321,58 @@ class MediaWikiFarm {
 		return false;
 	}
 	
+	/**
+	 * Replacement of the variables in the host name.
+	 * 
+	 * @return string|null|false If an existing version is found in files, returns a string; if no version is found, returns null; if the host is missing in existence files, returns false; if an existence file is missing or badly formatted, return false and turns this object into a unusable state.
+	 */
+	private function replaceHostVariables() {
+		
+		$version = null;
+		
+		# For each variable, in the given order, check if the variable exists, check if the
+		# wiki exists in the corresponding listing file, and get the version if available
+		foreach( $this->config['variables'] as $variable ) {
+			
+			$key = $variable['variable'];
+			
+			# If the variable doesn’t exist, continue
+			if( !array_key_exists( $key, $this->variables ) )
+				continue;
+			$value = $this->variables[$key];
+			
+			# If every values are correct, continue
+			if( !array_key_exists( 'file', $variable ) )
+				continue;
+			$filename = $variable['file'];
+			
+			# Really check if the variable is in the listing file
+			$this->setWikiPropertyValue( $filename, false, false, true );
+			$choices = $this->readFile( $this->configDir . '/' . $filename );
+			if( $choices === false ) {
+				$this->unusable = true;
+				return false;
+			}
+			
+			# Check if the array is a simple list of wiki identifiers without version information…
+			if( array_keys( $choices ) === range( 0, count( $choices ) - 1 ) ) {
+				if( !in_array( $value, $choices ) )
+					return false;
+			
+			# …or a dictionary with wiki identifiers and corresponding version information
+			} else {
+				
+				if( !array_key_exists( $value, $choices ) )
+					return false;
+				
+				if( isset( $this->codeDir ) && is_dir( $this->codeDir . '/' . ((string) $choices[$value]) ) && is_file( $this->codeDir . '/' . ((string) $choices[$value]) . '/includes/DefaultSettings.php' ) )
+					$version = (string) $choices[$value];
+			}
+		}
+		
+		return $version;
+	}
+	
 	
 	
 	/*
@@ -294,14 +397,25 @@ class MediaWikiFarm {
 		# Note the regex must be greedy to correctly select double extensions
 		$format = preg_replace( '/^.*\.([a-z]+)$/', '$1', $filename );
 		
-		if( $format == 'php' )
-			return require $filename;
+		if( $format == 'php' ) {
+			
+			$array = require $filename;
+			
+			if( !is_array( $array ) )
+				return false;
+			
+			return $array;
+		}
 		
 		if( $format == 'yml' ) {
 			
 			try {
 				
-				return \Symfony\Component\Yaml\Yaml::parse( file_get_contents( $filename ) );
+				$array = \Symfony\Component\Yaml\Yaml::parse( file_get_contents( $filename ) );
+				if( !is_array( $array ) )
+					return false;
+				
+				return $array;
 			}
 			catch( \Symfony\Component\Yaml\Exception\ParseException $e ) {
 				
@@ -309,8 +423,15 @@ class MediaWikiFarm {
 			}
 		}
 		
-		if( $format == 'dblist' )
-			return explode( "\n", file_get_contents( $filename ) );
+		if( $format == 'dblist' ) {
+			
+			$content = file_get_contents( $filename );
+			
+			if( !$content )
+				return array();
+			
+			return explode( "\n", $content );
+		}
 		
 		return false;
 	}
@@ -322,6 +443,7 @@ class MediaWikiFarm {
 	 * @param bool $toArray Change a string to an array with the string.
 	 * @param bool $create Create the property the empty string if non-existent.
 	 * @param bool $reset Empty the variables internal cache after operation.
+	 * @return void
 	 */
 	private function setWikiProperty( $name, $toArray = false, $create = false, $reset = false ) {
 		
@@ -337,10 +459,11 @@ class MediaWikiFarm {
 	/**
 	 * Set a wiki property and replace placeholders (value version).
 	 * 
-	 * @param string $value Value of the property.
+	 * @param string|null $value Value of the property.
 	 * @param bool $toArray Change a string to an array with the string.
 	 * @param bool $create Create the property the empty string if non-existent.
 	 * @param bool $reset Empty the variables internal cache after operation.
+	 * @return void
 	 */
 	private function setWikiPropertyValue( &$value, $toArray = false, $create = false, $reset = false ) {
 		
@@ -356,11 +479,15 @@ class MediaWikiFarm {
 		
 		if( is_null( $value ) )
 			return;
-		
-		if( is_string( $value ) ) {
+		else if( is_string( $value ) ) {
 			
 			if( $toArray ) $value = array( $value );
 			else $value = preg_replace( $rkeys, $rvalues, $value );
+		}
+		else {
+			
+			$this->unusable = true;
+			return;
 		}
 		
 		if( $toArray ) {
@@ -406,10 +533,15 @@ class MediaWikiFarm {
 	 * @param SiteConfiguration $wgConf SiteConfigurat object from MediaWiki.
 	 * @return array Global parameter variables and loading mechanisms for skins and extensions.
 	 */
-	function getMediaWikiConfig( $myWiki, $mySuffix, &$wgConf ) {
+	function getMediaWikiConfig() {
+		
+		global $wgConf;
 		
 		if( $this->unusable )
 			return false;
+		
+		$myWiki = $this->wiki['wikiID'];
+		$mySuffix = $this->wiki['suffix'];
 		
 		$codeDir = $this->wiki['code'];
 		$cacheFile = $this->wiki['cache'];
@@ -417,6 +549,7 @@ class MediaWikiFarm {
 		$suffixedYamlFilename = '/'.$this->wiki['variables'][0]['config'][0];
 		$privateYamlFilename = '/'.$this->wiki['post-config'][0];
 		
+		//var_dump($wgConf);
 		//var_dump($codeDir);
 		//var_dump($myWiki);
 		//var_dump($mySuffix);
@@ -428,8 +561,9 @@ class MediaWikiFarm {
 		$globals = false;
 		
 		if( @filemtime( $cacheFile ) >= max( filemtime( $this->configDir.$generalYamlFilename ),
-			                                 filemtime( $this->configDir.$suffixedYamlFilename ),
-			                                 filemtime( $this->configDir.$privateYamlFilename ) ) )
+		                                     filemtime( $this->configDir.$suffixedYamlFilename ),
+		                                     filemtime( $this->configDir.$privateYamlFilename ) )
+		    && is_string( $cacheFile ) )
 		{	
 			$cache = @file_get_contents( $cacheFile );
 			if ( $cache !== false ) {
@@ -478,16 +612,16 @@ class MediaWikiFarm {
 			// Get specific configuration for this wiki
 			// Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
 			// ineffective and there would be inconsistencies in this process
-			$globals['general'] = $wgConf->getAll( $myWiki.'-'.$mySuffix, $mySuffix );
+			$globals['general'] = $wgConf->getAll( $myWiki, $mySuffix );
 			
 			// For the permissions array, fix a small strangeness: when an existing default permission
 			// is true, it is not possible to make it false in the specific configuration
 			if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) )
 				
-				$globals['general']['wgGroupPermissions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgGroupPermissions', $myWiki.'-'.$mySuffix, $mySuffix ), $globals['general']['wgGroupPermissions'] );
+				$globals['general']['wgGroupPermissions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ), $globals['general']['wgGroupPermissions'] );
 			
 			//if( array_key_exists( '+wgDefaultUserOptions', $wgConf->settings ) )
-				//$globals['general']['wgDefaultUserOptions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgDefaultUserOptions', $myWiki.'-'.$mySuffix, $mySuffix ), $globals['general']['wgDefaultUserOptions'] );
+				//$globals['general']['wgDefaultUserOptions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgDefaultUserOptions', $myWiki, $mySuffix ), $globals['general']['wgDefaultUserOptions'] );
 			
 			// Extract from the general configuration skin and extension configuration
 			// Search for skin and extension activation
@@ -581,11 +715,13 @@ class MediaWikiFarm {
 			$globals['extensions']['MediaWikiFarm']['_loading'] = 'wfLoadExtension';
 			
 			// Save this configuration in a serialised file
-			@mkdir( dirname( $cacheFile ) );
-			$tmpFile = tempnam( dirname( $cacheFile ), basename( $cacheFile ).'.tmp' );
-			chmod( $tmpFile, 0640 );
-			if( $tmpFile && file_put_contents( $tmpFile, serialize( $globals ) ) ) {
-				rename( $tmpFile, $cacheFile );
+			if( is_string( $cacheFile ) ) {
+				@mkdir( dirname( $cacheFile ) );
+				$tmpFile = tempnam( dirname( $cacheFile ), basename( $cacheFile ).'.tmp' );
+				chmod( $tmpFile, 0640 );
+				if( $tmpFile && file_put_contents( $tmpFile, serialize( $globals ) ) ) {
+					rename( $tmpFile, $cacheFile );
+				}
 			}
 		}
 		
@@ -603,6 +739,14 @@ class MediaWikiFarm {
 		
 		if( $this->unusable )
 			return false;
+		
+		if( !is_array( $this->wiki ) && array_key_exists( 'globals', $this->wiki ) ) {
+			$this->unusable = true;
+			return;
+		}
+		
+		if( !is_array( $this->wiki['globals'] ) )
+			$this->getMediaWikiConfig();
 		
 		// Set general parameters as global variables
 		foreach( $this->wiki['globals']['general'] as $setting => $value ) {

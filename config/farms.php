@@ -3,7 +3,7 @@
 return array(
 	
 	# Configuration similar to the Wikimedia farm
-	'(?<lang>[a-z]+)\.(?<family>[a-z]+)\.org' => array(
+	'(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org' => array(
 		
 		'variables' => array(
 		
@@ -11,11 +11,11 @@ return array(
 			),
 			array( 'variable' => 'lang',
 			       'file'     => 'org/$family.dblist',
-			       'type'     => 'language',
 			),
 		),
 		'suffix' => '$family',
 		'wikiID' => '$lang$family',
+		'versions' => 'wikiversions.yml',
 		'data' => '/srv/data/org/$family/$lang',
 		'cache' => '/tmp/mw-cache/org-$version-$family-$lang',
 		'config' => array(
