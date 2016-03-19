@@ -10,7 +10,7 @@
 # Protect against web entry
 if( !defined( 'MEDIAWIKI' ) ) exit;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+@include_once __DIR__ . '/../vendor/autoload.php';
 
 /**
  * This class computes the configuration of a specific wiki from a set of configuration files.
@@ -272,6 +272,7 @@ class MediaWikiFarm {
 		
 		# Read the farm(s) configuration
 		if( $configs = $this->readFile( $this->configDir . '/farms.yml' ) );
+		else if( $configs = $this->readFile( $this->configDir . '/farms.json' ) );
 		else if( $configs = $this->readFile( $this->configDir . '/farms.php' ) );
 		else $this->unusable = true;
 		
@@ -380,9 +381,9 @@ class MediaWikiFarm {
 	 * ----------------------- */
 	
 	/**
-	 * Read a file either in PHP, YAML, or dblist, and returns the interpreted array.
+	 * Read a file either in PHP, YAML (if library available), JSON, or dblist, and returns the interpreted array.
 	 * 
-	 * The choice between the format depends on the extension: php, yml, dblist.
+	 * The choice between the format depends on the extension: php, yml, yaml, json, dblist.
 	 * 
 	 * @param string $filename Name of the requested file.
 	 * @return array|false The interpreted array in case of success, else false.
@@ -399,7 +400,7 @@ class MediaWikiFarm {
 		
 		if( $format == 'php' ) {
 			
-			$array = require $filename;
+			$array = @include $filename;
 			
 			if( !is_array( $array ) )
 				return false;
@@ -407,20 +408,32 @@ class MediaWikiFarm {
 			return $array;
 		}
 		
-		if( $format == 'yml' ) {
+		if( $format == 'yml' || $format == 'yaml' ) {
+			
+			if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) )
+				return false;
 			
 			try {
 				
-				$array = \Symfony\Component\Yaml\Yaml::parse( file_get_contents( $filename ) );
+				$array = Symfony\Component\Yaml\Yaml::parse( file_get_contents( $filename ) );
 				if( !is_array( $array ) )
 					return false;
 				
 				return $array;
 			}
-			catch( \Symfony\Component\Yaml\Exception\ParseException $e ) {
+			catch( Symfony\Component\Yaml\Exception\ParseException $e ) {
 				
 				return false;
 			}
+		}
+		
+		if( $format == 'json' ) {
+			
+			$array = json_decode( file_get_contents( $filename ), true );
+			if( !is_array( $array ) )
+				return false;
+			
+			return $array;
 		}
 		
 		if( $format == 'dblist' ) {
