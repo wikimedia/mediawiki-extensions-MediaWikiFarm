@@ -31,6 +31,9 @@ if( !$wgMediaWikiFarm->checkExistence() ) {
  * Set the wiki set
  */
 
+
+$wgMediaWikiFarm->setWikiID();
+
 $wvgClient = $wgMediaWikiFarm->variables['client'];
 $wvgWiki = $wgMediaWikiFarm->variables['wiki'];
 

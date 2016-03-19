@@ -38,6 +38,9 @@ class MediaWikiFarm {
 	/** @var array [private] Farm configuration file. */
 	public $config = array();
 	
+	/** @var array [private] Variables inside the host. */
+	public $variables = array();
+	
 	/** @var array [private] Selected MediaWiki version. */
 	public $wiki = array();
 	
@@ -73,7 +76,7 @@ class MediaWikiFarm {
 	 */
 	function checkExistence() {
 		
-		global $IP;
+		global $IP, $wgVersion;
 		
 		if( $this->unusable )
 			return false;
@@ -88,16 +91,16 @@ class MediaWikiFarm {
 			
 			$key = $variable['variable'];
 			
-			# The variable must exist
+			# If the variable doesn’t exist, continue
 			if( !array_key_exists( $key, $this->variables ) )
-				return false;
+				continue;
 			
 			# Possibly the variables up to this one can be placeholders in filenames
 			$value = $this->variables[$key];
 			$keys[] = '/\$' . preg_quote( $key, '/' ) . '/';
 			$values[] = $value;
 			
-			# If every value is correct, continue
+			# If every values are correct, continue
 			if( !array_key_exists( 'file', $variable ) )
 				continue;
 			
@@ -123,57 +126,63 @@ class MediaWikiFarm {
 		}
 		
 		# When the wiki is found, replace all variables in other configuration files
-		$keys[] = '/\$version/';
-		$values[] = $version ? $version : '';
-		
 		$this->wiki = $this->config;
-		$this->wiki['version'] = $version;
-		$this->wiki['globals'] = null;
-		if( isset( $version ) )
-			$this->wiki['code'] = $this->codeDir . (isset( $version ) ? '/' . $version : '');
+		if( is_string( $version ) )
+			$this->wiki['code'] = $this->codeDir . '/' . $version;
 		else
 			$this->wiki['code'] = $IP;
-		$this->wiki['data'] = preg_replace( $keys, $values, $this->wiki['data'] );
-		if( array_key_exists( 'cache', $this->wiki ) ) $this->wiki['cache'] = preg_replace( $keys, $values, $this->wiki['cache'] );
-		if( array_key_exists( 'config', $this->wiki ) ) {
-			
-			if( is_string( $this->wiki['config'] ) )
-				$this->wiki['config'] = array( $this->wiki['config'] );
-			
-			foreach( $this->wiki['config'] as &$configFile )
-				$configFile = preg_replace( $keys, $values, $configFile );
+		
+		if( !$version ) $version = $wgVersion;
+		$this->variables['version'] = $version;
+		$this->wiki['version'] = $version;
+		
+		if( !array_key_exists( 'wikiID', $this->wiki ) || !is_string( $this->wiki['wikiID'] ) || !$this->wiki['wikiID'] ) {
+			$this->unusable = true;
+			return false;
 		}
-		if( array_key_exists( 'post-config', $this->wiki ) ) {
-			
-			if( is_string( $this->wiki['post-config'] ) )
-				$this->wiki['post-config'] = array( $this->wiki['post-config'] );
-			
-			foreach( $this->wiki['post-config'] as &$configFile )
-				$configFile = preg_replace( $keys, $values, $configFile );
-		}
+		return true;
+	}
+	
+	/**
+	 * Computation of the properties, which could depend on the suffix, wikiID, or other variables.
+	 * 
+	 * This function is the central point to get the unique identifier of the wiki, wikiID.
+	 * 
+	 * @return void
+	 */
+	function setWikiID() {
+		
+		global $wgConf;
+		
+		if( $this->unusable )
+			return;
+		
+		$this->setWikiProperty( 'suffix', false, true, true );
+		$this->variables['suffix'] = $this->wiki['suffix'];
+		
+		$this->setWikiProperty( 'wikiID', false, false, true );
+		$this->variables['wikiID'] = $this->wiki['wikiID'];
+		
+		$this->setWikiProperty( 'data', false );
+		$this->setWikiProperty( 'cache', false );
+		$this->setWikiProperty( 'config', true );
+		$this->setWikiProperty( 'post-config', true );
+		$this->setWikiProperty( 'exec-config', true );
 		
 		foreach( $this->wiki['variables'] as &$variable ) {
 			
-			if( array_key_exists( 'file', $variable ) ) $variable['file'] = preg_replace( $keys, $values, $variable['file'] );
-			if( array_key_exists( 'config', $variable ) ) {
-				
-				if( is_string( $variable['config'] ) )
-					$variable['config'] = array( $variable['config'] );
-				
-				foreach( $variable['config'] as &$configFile )
-					$configFile = preg_replace( $keys, $values, $configFile );
-			}
-			if( array_key_exists( 'post-config', $variable ) ) {
-				
-				if( is_string( $variable['post-config'] ) )
-					$variable['post-config'] = array( $variable['post-config'] );
-				
-				foreach( $variable['post-config'] as &$configFile )
-					$configFile = preg_replace( $keys, $values, $configFile );
-			}
+			$this->setWikiPropertyValue( $variable['file'], false );
+			$this->setWikiPropertyValue( $variable['config'], true );
+			$this->setWikiPropertyValue( $variable['post-config'], true );
+			$this->setWikiPropertyValue( $variable['exec-config'], true );
 		}
 		
-		return true;
+		// TODO Still hacky: before setting parameters in stone in farms.yml, various configurations should be reviewed to select accordingly the rights management modelisation
+		$wgConf->suffixes = array( $this->wiki['suffix'] );
+		$wikiIDs = $this->readFile( $this->configDir . '/' . $this->wiki['suffix'] . '/wikis.yml' );
+		foreach( $wikiIDs as $wiki => $value ) {
+			$wgConf->wikis[] = $wiki . '-' . $this->wiki['suffix'];
+		}
 	}
 	
 	
@@ -304,6 +313,64 @@ class MediaWikiFarm {
 			return explode( "\n", file_get_contents( $filename ) );
 		
 		return false;
+	}
+	
+	/**
+	 * Set a wiki property and replace placeholders (property name version).
+	 * 
+	 * @param string $name Name of the property.
+	 * @param bool $toArray Change a string to an array with the string.
+	 * @param bool $create Create the property the empty string if non-existent.
+	 * @param bool $reset Empty the variables internal cache after operation.
+	 */
+	private function setWikiProperty( $name, $toArray = false, $create = false, $reset = false ) {
+		
+		if( !array_key_exists( $name, $this->wiki ) ) {
+			
+			if( $create ) $this->wiki[$name] = '';
+			else return;
+		}
+		
+		$this->setWikiPropertyValue( $this->wiki[$name], $toArray, $create, $reset );
+	}
+	
+	/**
+	 * Set a wiki property and replace placeholders (value version).
+	 * 
+	 * @param string $value Value of the property.
+	 * @param bool $toArray Change a string to an array with the string.
+	 * @param bool $create Create the property the empty string if non-existent.
+	 * @param bool $reset Empty the variables internal cache after operation.
+	 */
+	private function setWikiPropertyValue( &$value, $toArray = false, $create = false, $reset = false ) {
+		
+		static $rkeys = array(), $rvalues = array();
+		if( count( $rkeys ) == 0 ) {
+			
+			$rvalues = array();
+			foreach( $this->variables as $key => $val ) {
+				$rkeys[] = '/\$' . preg_quote( $key, '/' ) . '/';
+				$rvalues[] = $val;
+			}
+		}
+		
+		if( is_null( $value ) )
+			return;
+		
+		if( is_string( $value ) ) {
+			
+			if( $toArray ) $value = array( $value );
+			else $value = preg_replace( $rkeys, $rvalues, $value );
+		}
+		
+		if( $toArray ) {
+			
+			foreach( $value as &$subvalue )
+				$subvalue = preg_replace( $rkeys, $rvalues, $subvalue );
+		}
+		
+		if( $reset )
+			$rkeys = array();
 	}
 	
 	/**
