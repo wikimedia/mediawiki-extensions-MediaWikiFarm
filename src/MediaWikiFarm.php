@@ -210,15 +210,11 @@ class MediaWikiFarm {
 		$this->setWikiProperty( 'data', false );
 		$this->setWikiProperty( 'cache', false );
 		$this->setWikiProperty( 'config', true );
-		$this->setWikiProperty( 'post-config', true );
 		$this->setWikiProperty( 'exec-config', true );
 		
 		foreach( $this->wiki['variables'] as &$variable ) {
 			
 			$this->setWikiPropertyValue( $variable['file'], false );
-			$this->setWikiPropertyValue( $variable['config'], true );
-			$this->setWikiPropertyValue( $variable['post-config'], true );
-			$this->setWikiPropertyValue( $variable['exec-config'], true );
 		}
 		
 		return true;
@@ -497,7 +493,7 @@ class MediaWikiFarm {
 			if( $toArray ) $value = array( $value );
 			else $value = preg_replace( $rkeys, $rvalues, $value );
 		}
-		else {
+		else if( !is_array( $value ) ) {
 			
 			$this->unusable = true;
 			return;
@@ -559,8 +555,8 @@ class MediaWikiFarm {
 		$codeDir = $this->wiki['code'];
 		$cacheFile = $this->wiki['cache'];
 		$generalYamlFilename = '/'.$this->wiki['config'][0];
-		$suffixedYamlFilename = '/'.$this->wiki['variables'][0]['config'][0];
-		$privateYamlFilename = '/'.$this->wiki['post-config'][0];
+		$suffixedYamlFilename = '/'.$this->wiki['config'][1];
+		$privateYamlFilename = '/'.$this->wiki['config'][2];
 		
 		//var_dump($wgConf);
 		//var_dump($codeDir);
