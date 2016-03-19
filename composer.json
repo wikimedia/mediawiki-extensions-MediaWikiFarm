@@ -24,6 +24,6 @@
 	"autoload-dev": {
 	},
 	"scripts": {
-		"phpdoc": "./vendor/phpdocumentor/phpdocumentor/bin/phpdoc -d ./src -t ./docs/code"
+		"phpdoc": "./vendor/bin/phpdoc -d ./src -t ./docs/code"
 	}
 }

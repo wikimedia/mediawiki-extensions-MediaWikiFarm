@@ -26,7 +26,7 @@ if( !defined( 'MEDIAWIKI' ) ) exit;
  * publish all or parts of the configuration files, but probably you don’t want to publish
  * private informations like database configuration, upgrade key, etc.
  */
-$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
+#$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 
 
 /**
@@ -39,7 +39,7 @@ $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
  * it is probably easier to name the subdirectories with the MediaWiki version, the names
  * are entirely independent from the real version inside the subdirectory.
  */
-$wgMediaWikiFarmCodeDir = null;
+#$wgMediaWikiFarmCodeDir = null;
 
 
 
