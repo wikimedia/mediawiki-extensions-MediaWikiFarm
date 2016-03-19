@@ -4,16 +4,19 @@
     variables:
         
         - variable: 'family'
-          file: '$family.dblist'
         
         - variable: 'lang'
+          file: 'org/$family.dblist'
           type: 'language'
     
+    suffix: '$family'
+    wikiID: '$lang$family'
     data: '/srv/data/org/$family/$lang'
     cache: '/tmp/mw-cache/org-$version-$family-$lang'
     config:
       - 'org/InitialiseSettings.php'
       - 'org/PrivateSettings.php'
+    exec-config: 'org/ExecSettings.php'
 
 # Configuration for a small wiki farm
 '(?<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com':
@@ -21,15 +24,18 @@
     variables:
         
         - variable: 'client'
-          file: 'clients.yml'
+          file: 'com/example/clients.yml'
           config: 'com/example/$client/InitialiseSettings.yml'
         
         - variable: 'wiki'
-          file: '$client/wikis.yml'
+          file: 'com/example/$client/wikis.yml'
     
+    suffix: '$client'
+    wikiID: '$wiki-$client'
     data: '/srv/data/com/example/$client/$wiki'
     cache: '/tmp/mw-cache/com-example-$version-$client-$wiki'
     config: 'com/example/InitialiseSettings.yml'
     post-config:
       - 'com/example/PrivateSettings.yml'
-      - 'com/example/GlobalSettings.php'
+      - 'com/example/GlobalSettings.yml'
+    exec-config: 'com/example/ExecSettings.php'
