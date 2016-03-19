@@ -10,7 +10,7 @@
     
     suffix: '$family'
     wikiID: '$lang$family'
-    versions: 'wikiversions.yml'
+    versions: 'wikiversions.json'
     data: '/srv/data/org/$family/$lang'
     cache: '/tmp/mw-cache/org-$version-$family-$lang'
     config:
@@ -25,7 +25,6 @@
         
         - variable: 'client'
           file: 'com/example/clients.yml'
-          config: 'com/example/$client/InitialiseSettings.yml'
         
         - variable: 'wiki'
           file: 'com/example/$client/wikis.yml'
@@ -34,8 +33,8 @@
     wikiID: '$wiki-$client'
     data: '/srv/data/com/example/$client/$wiki'
     cache: '/tmp/mw-cache/com-example-$version-$client-$wiki'
-    config: 'com/example/InitialiseSettings.yml'
-    post-config:
+    config:
+      - 'com/example/InitialiseSettings.yml'
       - 'com/example/PrivateSettings.yml'
       - 'com/example/GlobalSettings.yml'
     exec-config: 'com/example/ExecSettings.php'

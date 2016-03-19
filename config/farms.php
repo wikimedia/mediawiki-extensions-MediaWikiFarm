@@ -15,7 +15,7 @@ return array(
 		),
 		'suffix' => '$family',
 		'wikiID' => '$lang$family',
-		'versions' => 'wikiversions.yml',
+		'versions' => 'wikiversions.json',
 		'data' => '/srv/data/org/$family/$lang',
 		'cache' => '/tmp/mw-cache/org-$version-$family-$lang',
 		'config' => array(
@@ -32,7 +32,6 @@ return array(
 			
 			array( 'variable' => 'client',
 			       'file'     => 'com/example/clients.yml',
-			       'config'   => 'com/example/$client/InitialiseSettings.yml',
 			),
 			array( 'variable' => 'wiki',
 			       'file'     => 'com/example/$client/wikis.yml',
@@ -42,8 +41,8 @@ return array(
 		'wikiID' => '$wiki-$client',
 		'data' => '/srv/data/com/example/$client/$wiki',
 		'cache' => '/tmp/mw-cache/com-example-$version-$client-$wiki',
-		'config' => 'com/example/InitialiseSettings.yml',
-		'post-config' => array(
+		'config' => array(
+			'com/example/InitialiseSettings.yml',
 			'com/example/PrivateSettings.yml',
 			'com/example/GlobalSettings.yml',
 		),
