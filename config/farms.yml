@@ -14,8 +14,10 @@
     data: '/srv/data/org/$family/$lang'
     cache: '/tmp/mw-cache/org-$version-$family-$lang'
     config:
-      - 'org/InitialiseSettings.php'
-      - 'org/PrivateSettings.php'
+      - file: 'org/InitialiseSettings.php'
+        key: '*'
+      - file: 'org/PrivateSettings.php'
+        key: '*'
     exec-config: 'org/ExecSettings.php'
 
 # Configuration for a small wiki farm
@@ -34,7 +36,10 @@
     data: '/srv/data/com/example/$client/$wiki'
     cache: '/tmp/mw-cache/com-example-$version-$client-$wiki'
     config:
-      - 'com/example/InitialiseSettings.yml'
-      - 'com/example/PrivateSettings.yml'
-      - 'com/example/GlobalSettings.yml'
+      - file: 'com/example/DefaultSettings.yml'
+        key: 'default'
+      - file: 'com/example/InitialiseSettings.yml'
+        key: '*'
+      - file: 'com/example/PrivateSettings.yml'
+        key: '*'
     exec-config: 'com/example/ExecSettings.php'

@@ -411,7 +411,7 @@ class MediaWikiFarm {
 			
 			try {
 				
-				$array = Symfony\Component\Yaml\Yaml::parse( file_get_contents( $filename ) );
+				$array = Symfony\Component\Yaml\Yaml::parse( @file_get_contents( $filename ) );
 				if( !is_array( $array ) )
 					return false;
 				
@@ -425,7 +425,7 @@ class MediaWikiFarm {
 		
 		if( $format == 'json' ) {
 			
-			$array = json_decode( file_get_contents( $filename ), true );
+			$array = json_decode( @file_get_contents( $filename ), true );
 			if( !is_array( $array ) )
 				return false;
 			
@@ -434,7 +434,7 @@ class MediaWikiFarm {
 		
 		if( $format == 'dblist' ) {
 			
-			$content = file_get_contents( $filename );
+			$content = @file_get_contents( $filename );
 			
 			if( !$content )
 				return array();
@@ -512,20 +512,8 @@ class MediaWikiFarm {
 	/**
 	 * Get or compute the configuration (MediaWiki, skins, extensions) for a wiki.
 	 * 
-	 * You have to specify the wiki, the suffix, and the version and, as parameters, the configuration
-	 * and code directories and the caching file. This function uses a caching mechanism to avoid
-	 * recompute each time the configuration; it is rebuilt when origin configuration files are changed.
-	 * 
-	 * The params argument should have the following keys:
-	 * - 'configDir' (string) Configuration directory where are the various configuration files
-	 * - 'codeDir' (string) Code directory where MediaWiki code is
-	 * - 'cacheFile' (string) Template filename of the caching file
-	 * - 'generalYamlFilename' (string) Path for the general YAML file, relative to configDir
-	 * - 'suffixedYamlFilename' (string) Path for the suffixed YAML file, relative to configDir
-	 * - 'privateYamlFilename' (string) Path for the privale YAML file, relative to configDir
-	 * In cacheFile and suffixedYamlFilename, the string '$suffix' will be replaced by the actual
-	 * suffix, and in cacheFile, the strings '$wiki' and '$version' will be replaced by the actual
-	 * wiki identifier and the version.
+	 * This function uses a caching mechanism in order to avoid recomputing each time the
+	 * configuration; it is rebuilt when origin configuration files are changed.
 	 * 
 	 * The returned array has the following format:
 	 * array( 'general' => array( 'wgSitename' => 'Foo', ... ),
@@ -537,9 +525,6 @@ class MediaWikiFarm {
 	 *                             )
 	 *      )
 	 * 
-	 * @param string $wiki Name of the wiki.
-	 * @param string $suffix Suffix of the wiki (main family type).
-	 * @param SiteConfiguration $wgConf SiteConfigurat object from MediaWiki.
 	 * @return array Global parameter variables and loading mechanisms for skins and extensions.
 	 */
 	function getMediaWikiConfig() {
@@ -554,26 +539,22 @@ class MediaWikiFarm {
 		
 		$codeDir = $this->wiki['code'];
 		$cacheFile = $this->wiki['cache'];
-		$generalYamlFilename = '/'.$this->wiki['config'][0];
-		$suffixedYamlFilename = '/'.$this->wiki['config'][1];
-		$privateYamlFilename = '/'.$this->wiki['config'][2];
 		
 		//var_dump($wgConf);
 		//var_dump($codeDir);
+		//var_dump($cacheFile);
 		//var_dump($myWiki);
 		//var_dump($mySuffix);
-		//var_dump($generalYamlFilename);
-		//var_dump($suffixedYamlFilename);
-		//var_dump($privateYamlFilename);
 		//echo "\n\n<br /><br />";
+		
+		$oldness = 0;
+		foreach( $this->wiki['config'] as $configFile )
+			$oldness = max( $oldness, @filemtime( $this->configDir . '/' . $configFile['file'] ) );
+		
 		
 		$globals = false;
 		
-		if( @filemtime( $cacheFile ) >= max( filemtime( $this->configDir.$generalYamlFilename ),
-		                                     filemtime( $this->configDir.$suffixedYamlFilename ),
-		                                     filemtime( $this->configDir.$privateYamlFilename ) )
-		    && is_string( $cacheFile ) )
-		{	
+		if( @filemtime( $cacheFile ) >= $oldness && is_string( $cacheFile ) ) {	
 			$cache = @file_get_contents( $cacheFile );
 			if ( $cache !== false ) {
 				$globals = unserialize( $cache );
@@ -586,37 +567,59 @@ class MediaWikiFarm {
 			$globals['skins'] = array();
 			$globals['extensions'] = array();
 			
-			#$configFiles = $this->wiki['config'];
-			#foreach( $this->wiki['variables'] as $variable )
-			#	
-			
-			// Load InitialiseSettings.yml (general)
-			$generalSettings = $this->readFile( $this->configDir.$generalYamlFilename );
-			foreach( $generalSettings as $setting => $value ) {
+			foreach( $this->wiki['config'] as $configFile ) {
 				
-				$wgConf->settings[$setting]['default'] = $value;
-			}
-			
-			// Load InitialiseSettings.yml (client)
-			$suffixedSettings = $this->readFile( $this->configDir.$suffixedYamlFilename );
-			foreach( $suffixedSettings as $setting => $values ) {
+				$theseSettings = $this->readFile( $this->configDir . '/' . $configFile['file'] );
+				if( $theseSettings === false ) {
+					$this->unusable = true;
+					return false;
+				}
 				
-				foreach( $values as $wiki => $val ) {
+				# Key 'default' => no choice of the wiki
+				if( $configFile['key'] == 'default' ) {
 					
-					if( $wiki == 'default' ) $wgConf->settings[$setting][$mySuffix] = $val;
-					else $wgConf->settings[$setting][$wiki.'-'.$mySuffix] = $val;
+					foreach( $theseSettings as $setting => $value ) {
+						
+						$wgConf->settings[$setting]['default'] = $value;
+					}
+				}
+				
+				# Key '*' => choice of any wiki
+				else if( $configFile['key'] == '*' ) {
+					
+					foreach( $theseSettings as $setting => $value ) {
+						
+						foreach( $value as $suffix => $val ) {
+							
+							$wgConf->settings[$setting][$suffix] = $val;
+						}
+					}
+				}
+				
+				# Other key
+				else {
+					
+					$defaultKey = null;
+					$classicKey = null;
+					if( array_key_exists( 'default', $configFile ) ) {
+						
+						$defaultKey = $configFile['default'];
+						$this->setWikiPropertyValue( $defaultKey );
+					}
+					$classicKey = $configFile['key'];
+					$this->setWikiPropertyValue( $classicKey );
+					
+					foreach( $theseSettings as $setting => $values ) {
+						
+						foreach( $values as $wiki => $val ) {
+							
+							if( $wiki == 'default' && $defaultKey ) $wgConf->settings[$setting][$defaultKey] = $val;
+							else $wgConf->settings[$setting][preg_replace( '/\*/', $wiki, $classicKey )] = $val;
+						}
+					}
 				}
 			}
 			
-			// Load PrivateSettings.yml (general)
-			$privateSettings = $this->readFile( $this->configDir.$privateYamlFilename );
-			foreach( $privateSettings as $setting => $value ) {
-				
-				foreach( $value as $suffix => $val ) {
-					
-					$wgConf->settings[$setting][$suffix] = $val;
-				}
-			}
 			
 			// Get specific configuration for this wiki
 			// Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become

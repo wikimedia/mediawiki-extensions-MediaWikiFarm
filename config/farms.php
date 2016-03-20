@@ -19,8 +19,12 @@ return array(
 		'data' => '/srv/data/org/$family/$lang',
 		'cache' => '/tmp/mw-cache/org-$version-$family-$lang',
 		'config' => array(
-			'org/InitialiseSettings.php',
-			'org/PrivateSettings.php',
+			array( 'file' => 'org/InitialiseSettings.php',
+			       'key' => '*'
+			),
+			array( 'file' => 'org/PrivateSettings.php',
+			       'key' => '*'
+			),
 		),
 		'exec-config' => 'org/ExecSettings.php',
 	),
@@ -42,9 +46,15 @@ return array(
 		'data' => '/srv/data/com/example/$client/$wiki',
 		'cache' => '/tmp/mw-cache/com-example-$version-$client-$wiki',
 		'config' => array(
-			'com/example/InitialiseSettings.yml',
-			'com/example/PrivateSettings.yml',
-			'com/example/GlobalSettings.yml',
+			array( 'file' => 'com/example/DefaultSettings.yml',
+			       'key' => 'default'
+			),
+			array( 'file' => 'com/example/InitialiseSettings.yml',
+			       'key' => '*'
+			),
+			array( 'file' => 'com/example/PrivateSettings.yml',
+			       'key' => '*'
+			),
 		),
 		'exec-config' => 'com/example/ExecSettings.php',
 	),
