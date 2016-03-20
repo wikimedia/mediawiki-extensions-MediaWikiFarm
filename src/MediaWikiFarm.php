@@ -98,6 +98,7 @@ class MediaWikiFarm {
 		if( !$this->setWikiProperties() )
 			return false;
 		
+		# Set available suffixes and wikis
 		$this->setWgConf();
 		
 		return true;
@@ -220,11 +221,16 @@ class MediaWikiFarm {
 		return true;
 	}
 	
+	/**
+	 * Set available suffixes and wikis.
+	 * 
+	 * @todo Still hacky: before setting parameters in stone in farms.yml, various configurations should be reviewed to select accordingly the rights management modelisation
+	 * @return void
+	 */
 	function setWgConf() {
 		
 		global $wgConf;
 		
-		// TODO Still hacky: before setting parameters in stone in farms.yml, various configurations should be reviewed to select accordingly the rights management modelisation
 		$wgConf->suffixes = array( $this->wiki['suffix'] );
 		$wikiIDs = $this->readFile( $this->configDir . '/' . $this->wiki['suffix'] . '/wikis.yml' );
 		foreach( $wikiIDs as $wiki => $value ) {
