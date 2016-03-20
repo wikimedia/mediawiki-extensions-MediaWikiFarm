@@ -12,18 +12,15 @@
 	"license": "GPL-3.0+",
 	"require": {
 		"php": ">=5.5",
-		"symfony/yaml": "~2.7"
+		"symfony/yaml": "^2.0 || ^3.0"
 	},
 	"require-dev": {
-		"phpdocumentor/phpdocumentor": "2.*"
+		"phpdocumentor/phpdocumentor": "*",
+		"jakub-onderka/php-parallel-lint": "*"
 	},
-	"suggest": {
-	},
-	"autoload": {
-	},
-	"autoload-dev": {
-	},
+	"prefer-lowest": true,
 	"scripts": {
-		"phpdoc": "./vendor/bin/phpdoc -d ./src -t ./docs/code"
+		"phpdoc": "./vendor/bin/phpdoc -d ./src -t ./docs/code",
+		"parallel-lint": "./vendor/bin/parallel-lint --exclude vendor ."
 	}
 }
