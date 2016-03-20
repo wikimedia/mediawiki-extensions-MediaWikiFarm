@@ -58,4 +58,11 @@ return array(
 		),
 		'exec-config' => 'com/example/ExecSettings.php',
 	),
+	
+	# Aliases
+	
+	'(?<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com' => array(
+		
+		'redirect' => '$client-$wiki.example.com',
+	),
 );

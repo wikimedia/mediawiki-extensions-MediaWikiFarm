@@ -288,6 +288,12 @@ class MediaWikiFarm {
 		if( $this->unusable )
 			return false;
 		
+		static $redirects = 0;
+		if( $redirects >= 5 ) {
+			$this->unusable = true;
+			return false;
+		}
+		
 		# Check parameters
 		if( !isset( $configs ) || !is_array( $configs ) )
 			return false;
@@ -299,6 +305,22 @@ class MediaWikiFarm {
 		foreach( $configs as $regex => $config ) {
 			
 			if( preg_match( '/' . $regex . '/', $host, $matches ) ) {
+				
+				# Redirect
+				if( array_key_exists( 'redirect', $config ) ) {
+					
+					$keys = array();
+					$values = array();
+					foreach( $matches as $key => $value ) {
+						if( is_string( $key ) ) {
+							$keys[] = '/\$' . preg_quote( $key, '/' ) . '/';
+							$values[] = $value;
+						}
+					}
+					
+					$redirects++;
+					return $this->selectFarm( $configs, preg_replace( $keys, $values, $config['redirect'] ) );
+				}
 				
 				# Get the selected configuration
 				$this->config = $config;

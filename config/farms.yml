@@ -43,3 +43,9 @@
       - file: 'com/example/PrivateSettings.yml'
         key: '*'
     exec-config: 'com/example/ExecSettings.php'
+
+# Aliases
+
+'(?<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com':
+    
+    redirect: '$client-$wiki.example.com'
