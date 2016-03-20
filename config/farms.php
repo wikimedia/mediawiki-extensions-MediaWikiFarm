@@ -41,7 +41,7 @@ return array(
 			       'file'     => 'com/example/$client/wikis.yml',
 			),
 		),
-		'suffix' => '$family',
+		'suffix' => '$client',
 		'wikiID' => '$wiki-$client',
 		'data' => '/srv/data/com/example/$client/$wiki',
 		'cache' => '/tmp/mw-cache/com-example-$version-$client-$wiki',

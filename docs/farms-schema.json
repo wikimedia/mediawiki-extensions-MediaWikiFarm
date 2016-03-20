@@ -1,0 +1,154 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"name": "Configuration of MediaWikiFarm extension to manage MediaWiki farms.",
+	"type": "object",
+	"additionalProperties": true,
+	"patternProperties": {
+		"^[a-zA-Z0-9\\[\\]\\(\\)\\<>.*?+_-]+$": {
+			"type": "object",
+			"properties": {
+				"variables": {
+					"type": "array",
+					"description": "List of variables in the host.",
+					"additionalItems": false,
+					"items": [
+						{
+							"type": "object",
+							"description": "An host variable.",
+							"properties": {
+									"variable": {
+									"type": "string",
+									"description": "Name of the host variable."
+								},
+								"file": {
+									"type": "string",
+									"description": "Path of the existing values for this variable."
+								}
+							}
+						},
+						{
+							"type": "object",
+							"description": "An host variable.",
+							"properties": {
+								"variable": {
+									"type": "string",
+									"description": "Name of the host variable."
+								},
+								"file": {
+									"type": "string",
+									"description": "Path of the existing values for this variable."
+								}
+							}
+						},
+						{
+							"type": "object",
+							"description": "An host variable.",
+							"properties": {
+								"variable": {
+									"type": "string",
+									"description": "Name of the host variable."
+								},
+								"file": {
+									"type": "string",
+									"description": "Path of the existing values for this variable."
+								}
+							}
+						}
+					]
+				},
+				"suffix": {
+					"type": "string",
+					"description": "Suffix of the wiki.",
+					"pattern": "^[a-z$*-]+$"
+				},
+				"wikiID": {
+					"type": "string",
+					"description": "Unique identifier of the wiki.",
+					"pattern": "^[a-z$*-]+$"
+				},
+				"data": {
+					"type": "string",
+					"description": "Data directory where files of the wiki are stored."
+				},
+				"cache": {
+					"type": ["string","null"],
+					"description": "Configuration cache file."
+				},
+				"config": {
+					"type": "array",
+					"description": "List of configuration files.",
+					"additionalItems": false,
+					"items": [
+						{
+							"type": "object",
+							"description": "A configuration file.",
+							"properties": {
+								"file": {
+									"type": "string",
+									"description": "Path of the configuration file."
+								},
+								"key": {
+									"type": "string",
+									"description": "Pattern of the of the key.",
+									"pattern": "^(default|\\*|[a-z$*-]+)$"
+								},
+								"default": {
+									"type": "string",
+									"description": "Default key.",
+									"pattern": "^[a-z$*-]+$"
+								}
+							}
+						},
+						{
+							"type": "object",
+							"description": "A configuration file.",
+							"properties": {
+								"file": {
+									"type": "string",
+									"description": "Path of the configuration file."
+								},
+								"key": {
+									"type": "string",
+									"description": "Pattern of the of the key.",
+									"pattern": "^(default|\\*|[a-z$*-]+)$"
+								},
+								"default": {
+									"type": "string",
+									"description": "Default key.",
+									"pattern": "^[a-z$*-]+$"
+								}
+							}
+						},{
+							"type": "object",
+							"description": "A configuration file.",
+							"properties": {
+								"file": {
+									"type": "string",
+									"description": "Path of the configuration file."
+								},
+								"key": {
+									"type": "string",
+									"description": "Pattern of the of the key.",
+									"pattern": "^(default|\\*|[a-z$*-]+)$"
+								},
+								"default": {
+									"type": "string",
+									"description": "Default key.",
+									"pattern": "^[a-z$*-]+$"
+								}
+							}
+						}
+					]
+				},
+				"exec-config": {
+					"type": ["array","string"],
+					"description": "Path of the configuration-execution files."
+				},
+				"redirect": {
+					"type": "string",
+					"description": "Internal redirect to another farm."
+				}
+			}
+		}
+	}
+}

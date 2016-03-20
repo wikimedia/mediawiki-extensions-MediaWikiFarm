@@ -276,8 +276,8 @@ class MediaWikiFarm {
 		
 		# Read the farm(s) configuration
 		if( $configs = $this->readFile( $this->configDir . '/farms.yml' ) );
-		else if( $configs = $this->readFile( $this->configDir . '/farms.json' ) );
 		else if( $configs = $this->readFile( $this->configDir . '/farms.php' ) );
+		else if( $configs = $this->readFile( $this->configDir . '/farms.json' ) );
 		else $this->unusable = true;
 		
 		# Now select the right configuration amoung all farms
