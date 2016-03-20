@@ -99,7 +99,9 @@ class MediaWikiFarm {
 			return false;
 		
 		# Set available suffixes and wikis
-		$this->setWgConf();
+		// This is not useful since nobody else use available suffixes and wikis
+		// For now, remove loading of one config file to improve a bit performance
+		//$this->setWgConf();
 		
 		return true;
 	}
