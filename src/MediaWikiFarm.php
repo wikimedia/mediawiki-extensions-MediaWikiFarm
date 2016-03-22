@@ -235,7 +235,7 @@ class MediaWikiFarm {
 		
 		$wgConf->suffixes = array( $this->wiki['suffix'] );
 		$wikiIDs = $this->readFile( $this->configDir . '/' . $this->wiki['suffix'] . '/wikis.yml' );
-		foreach( $wikiIDs as $wiki => $value ) {
+		foreach( array_keys( $wikiIDs ) as $wiki ) {
 			$wgConf->wikis[] = $wiki . '-' . $this->wiki['suffix'];
 		}
 	}
@@ -374,7 +374,7 @@ class MediaWikiFarm {
 			$filename = $variable['file'];
 			
 			# Really check if the variable is in the listing file
-			$this->setWikiPropertyValue( $filename, false, false, true );
+			$this->setWikiPropertyValue( $filename, false, true );
 			$choices = $this->readFile( $this->configDir . '/' . $filename );
 			if( $choices === false ) {
 				$this->unusable = true;
@@ -492,7 +492,7 @@ class MediaWikiFarm {
 			else return;
 		}
 		
-		$this->setWikiPropertyValue( $this->wiki[$name], $toArray, $create, $reset );
+		$this->setWikiPropertyValue( $this->wiki[$name], $toArray, $reset );
 	}
 	
 	/**
@@ -500,11 +500,10 @@ class MediaWikiFarm {
 	 * 
 	 * @param string|null $value Value of the property.
 	 * @param bool $toArray Change a string to an array with the string.
-	 * @param bool $create Create the property the empty string if non-existent.
 	 * @param bool $reset Empty the variables internal cache after operation.
 	 * @return void
 	 */
-	private function setWikiPropertyValue( &$value, $toArray = false, $create = false, $reset = false ) {
+	private function setWikiPropertyValue( &$value, $toArray = false, $reset = false ) {
 		
 		static $rkeys = array(), $rvalues = array();
 		if( count( $rkeys ) == 0 ) {
@@ -818,7 +817,7 @@ class MediaWikiFarm {
 			
 				wfLoadSkin( $skin );
 			
-			unset( $skins[$skin]['_loading'] );
+			unset( $this->wiki['globals']['skins'][$skin]['_loading'] );
 		}
 		
 		// Set skin parameters as global variables
@@ -851,7 +850,7 @@ class MediaWikiFarm {
 				
 				wfLoadExtension( $extension );
 			
-			unset( $extensions[$extension]['_loading'] );
+			unset( $this->wiki['globals']['extensions'][$extension]['_loading'] );
 		}
 		
 		// Set extension parameters as global variables
