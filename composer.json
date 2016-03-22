@@ -17,7 +17,8 @@
 	"require-dev": {
 		"justinrainbow/json-schema": "*",
 		"phpdocumentor/phpdocumentor": "*",
-		"jakub-onderka/php-parallel-lint": "*"
+		"jakub-onderka/php-parallel-lint": "*",
+		"phpmd/phpmd" : "*"
 	},
 	"scripts": {
 		"validate-schema": "php ./scripts/validate-schema.php",
