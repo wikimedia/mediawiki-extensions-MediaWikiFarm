@@ -424,17 +424,13 @@ class MediaWikiFarm {
 		# Note the regex must be greedy to correctly select double extensions
 		$format = preg_replace( '/^.*\.([a-z]+)$/', '$1', $filename );
 		
-		if( $format == 'php' ) {
+		# Format PHP
+		if( $format == 'php' )
 			
 			$array = @include $filename;
-			
-			if( !is_array( $array ) )
-				return false;
-			
-			return $array;
-		}
 		
-		if( $format == 'yml' || $format == 'yaml' ) {
+		# Format YAML
+		elseif( $format == 'yml' || $format == 'yaml' ) {
 			
 			if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) )
 				return false;
@@ -442,10 +438,6 @@ class MediaWikiFarm {
 			try {
 				
 				$array = Symfony\Component\Yaml\Yaml::parse( @file_get_contents( $filename ) );
-				if( !is_array( $array ) )
-					return false;
-				
-				return $array;
 			}
 			catch( Symfony\Component\Yaml\Exception\ParseException $e ) {
 				
@@ -453,16 +445,13 @@ class MediaWikiFarm {
 			}
 		}
 		
-		if( $format == 'json' ) {
+		# Format JSON
+		elseif( $format == 'json' )
 			
 			$array = json_decode( @file_get_contents( $filename ), true );
-			if( !is_array( $array ) )
-				return false;
-			
-			return $array;
-		}
 		
-		if( $format == 'dblist' ) {
+		# Format dblist (simple list of strings separated by newlines)
+		elseif( $format == 'dblist' ) {
 			
 			$content = @file_get_contents( $filename );
 			
@@ -471,6 +460,13 @@ class MediaWikiFarm {
 			
 			return explode( "\n", $content );
 		}
+		else return false;
+		
+		if( is_null( $array ) )
+			return array();
+		
+		elseif( is_array( $array ) )
+			return $array;
 		
 		return false;
 	}
