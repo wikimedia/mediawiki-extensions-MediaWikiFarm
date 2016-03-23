@@ -122,18 +122,18 @@ class MediaWikiFarm {
 		$this->wiki['version'] = null;
 		$this->wiki['globals'] = null;
 		
-		$this->setWikiProperty( 'suffix', false, true, true );
+		$this->setWikiProperty( 'suffix', false, true );
 		$this->variables['suffix'] = $this->wiki['suffix'];
 		
-		$this->setWikiProperty( 'wikiID', false, false, true );
+		$this->setWikiProperty( 'wikiID', false, true );
 		$this->variables['wikiID'] = $this->wiki['wikiID'];
 		
-		if( !array_key_exists( 'wikiID', $this->wiki ) ) {
+		if( !array_key_exists( 'wikiID', $this->wiki ) || !array_key_exists( 'suffix', $this->wiki ) ) {
 			$this->unusable = true;
 			return false;
 		}
 		
-		if( !$this->wiki['wikiID'] )
+		if( !$this->wiki['wikiID'] || !$this->wiki['suffix'] )
 			return false;
 		
 		return true;
@@ -436,7 +436,6 @@ class MediaWikiFarm {
 				return false;
 			
 			try {
-				
 				$array = Symfony\Component\Yaml\Yaml::parse( @file_get_contents( $filename ) );
 			}
 			catch( Symfony\Component\Yaml\Exception\ParseException $e ) {
@@ -460,14 +459,19 @@ class MediaWikiFarm {
 			
 			return explode( "\n", $content );
 		}
+		
+		# Error for any other format
 		else return false;
 		
+		# Return an empty array if null (empty file or value 'null)
 		if( is_null( $array ) )
 			return array();
 		
+		# Regular return for arrays
 		elseif( is_array( $array ) )
 			return $array;
 		
+		# Error for any other type
 		return false;
 	}
 	
@@ -476,17 +480,13 @@ class MediaWikiFarm {
 	 * 
 	 * @param string $name Name of the property.
 	 * @param bool $toArray Change a string to an array with the string.
-	 * @param bool $create Create the property the empty string if non-existent.
 	 * @param bool $reset Empty the variables internal cache after operation.
 	 * @return void
 	 */
-	private function setWikiProperty( $name, $toArray = false, $create = false, $reset = false ) {
+	private function setWikiProperty( $name, $toArray = false, $reset = false ) {
 		
-		if( !array_key_exists( $name, $this->wiki ) ) {
-			
-			if( $create ) $this->wiki[$name] = '';
-			else return;
-		}
+		if( !array_key_exists( $name, $this->wiki ) )
+			return;
 		
 		$this->setWikiPropertyValue( $this->wiki[$name], $toArray, $reset );
 	}
@@ -667,44 +667,29 @@ class MediaWikiFarm {
 				if( preg_match( '/^wgUseSkin(.+)$/', $setting, $matches ) && $value === true ) {
 					
 					$skin = $matches[1];
-					if( is_dir( $codeDir.'/skins/'.$skin ) ) {
-						
-						$globals['skins'][$skin] = array();
-						
-						if( is_file( $codeDir.'/skins/'.$skin.'/skin.json' ) ) {
-							$globals['skins'][$skin]['_loading'] = 'wfLoadSkin';
-						}
-						elseif( is_file( $codeDir.'/skins/'.$skin.'/'.$skin.'.php' ) ) {
-							$globals['skins'][$skin]['_loading'] = 'require_once';
-						}
-						elseif( is_file( $codeDir.'/skins/'.$skin.'/composer.json' ) ) {
-							$globals['skins'][$skin]['_loading'] = 'composer';
-						}
-						else {echo ' (unknown)';$unsetPrefixes[] = $skin;}
-					}
-					else $unsetPrefixes[] = $skin;
+					$loadingMechanism = $this->detectLoadingMechanism( 'skin', $skin );
 					
+					if( is_null( $loadingMechanism ) )
+						$unsetPrefixes[] = $skin;
+					
+					else {
+						$globals['skins'][$skin] = array();
+						$globals['skins'][$skin]['_loading'] = $loadingMechanism;
+					}
 					unset( $globals['general'][$setting] );
 				}
 				elseif( preg_match( '/^wgUseExtension(.+)$/', $setting, $matches ) && $value === true ) {
 					
 					$extension = $matches[1];
-					if( is_dir( $codeDir.'/extensions/'.$extension ) ) {
-						
-						$globals['extensions'][$extension] = array();
-						if( is_file( $codeDir.'/extensions/'.$extension.'/extension.json' ) && $extension !== 'VisualEditor' ) {
-							$globals['extensions'][$extension]['_loading'] = 'wfLoadExtension';
-						}
-						elseif( is_file( $codeDir.'/extensions/'.$extension.'/'.$extension.'.php' ) ) {
-							$globals['extensions'][$extension]['_loading'] = 'require_once';
-						}
-						elseif( is_file( $codeDir.'/extensions/'.$extension.'/composer.json' ) ) {
-							$globals['extensions'][$extension]['_loading'] = 'composer';
-						}
-						else $unsetPrefixes[] = $extension;
-					}
-					else $unsetPrefixes[] = $extension;
+					$loadingMechanism = $this->detectLoadingMechanism( 'extension', $extension );
 					
+					if( is_null( $loadingMechanism ) )
+						$unsetPrefixes[] = $extension;
+					
+					else {
+						$globals['extensions'][$extension] = array();
+						$globals['extensions'][$extension]['_loading'] = $loadingMechanism;
+					}
 					unset( $globals['general'][$setting] );
 				}
 				elseif( preg_match( '/^wgUse(?:Skin|Extension|LocalExtension)(.+)$/', $setting, $matches ) && $value !== true ) {
@@ -765,6 +750,33 @@ class MediaWikiFarm {
 		$this->wiki['globals'] = $globals;
 		
 		return $globals;
+	}
+	
+	/**
+	 * Detection of the loading mechanism of extensions and skins.
+	 * 
+	 * @param string $type Type, in ['extension', 'skin'].
+	 * @param string $name Name of the extension/skin.
+	 * @return string|null Loading mechnism in ['wfLoadExtension', 'wfLoadSkin', 'require_once', 'composer'] or null if all mechanisms failed.
+	 */
+	function detectLoadingMechanism( $type, $name ) {
+		
+		if( !is_dir( $this->wiki['code'].'/'.$type.'s/'.$name ) )
+			return null;
+		
+		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
+		if( is_file( $this->wiki['code'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) )
+			return 'wfLoad'.ucfirst($type);
+		
+		# A MyExtension.php file is in the directory -> assume it is the loading mechanism
+		elseif( is_file( $this->wiki['code'].'/'.$type.'s/'.$name.'/'.$name.'.php' ) )
+			return 'require_once';
+		
+		# A composer.json file is in the directory -> assume it is the loading mechanism if previous mechanisms didn’t succeed
+		elseif( is_file( $this->wiki['code'].'/'.$type.'s/'.$name.'/composer.json' ) )
+			return 'composer';
+		
+		return null;
 	}
 	
 	/**
