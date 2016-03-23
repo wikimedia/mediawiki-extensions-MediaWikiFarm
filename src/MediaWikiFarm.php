@@ -567,11 +567,9 @@ class MediaWikiFarm {
 		$myWiki = $this->wiki['wikiID'];
 		$mySuffix = $this->wiki['suffix'];
 		
-		$codeDir = $this->wiki['code'];
 		$cacheFile = $this->wiki['cache'];
 		
 		//var_dump($wgConf);
-		//var_dump($codeDir);
 		//var_dump($cacheFile);
 		//var_dump($myWiki);
 		//var_dump($mySuffix);
@@ -598,6 +596,9 @@ class MediaWikiFarm {
 			$globals['extensions'] = array();
 			
 			foreach( $this->wiki['config'] as $configFile ) {
+				
+				# Executable config files
+				if( array_key_exists( 'exec', $configFile ) ) continue;
 				
 				$theseSettings = $this->readFile( $this->configDir . '/' . $configFile['file'] );
 				if( $theseSettings === false ) {
