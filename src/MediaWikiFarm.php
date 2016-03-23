@@ -531,57 +531,9 @@ class MediaWikiFarm {
 			$globals['skins'] = array();
 			$globals['extensions'] = array();
 			
-			foreach( $this->params['config'] as $configFile ) {
-				
-				# Executable config files
-				if( array_key_exists( 'exec', $configFile ) ) continue;
-				
-				$theseSettings = $this->readFile( $this->paramsDir . '/' . $configFile['file'] );
-				if( $theseSettings === false ) {
-					$this->unusable = true;
-					return false;
-				}
-				
-				# Key 'default' => no choice of the wiki
-				if( $configFile['key'] == 'default' ) {
-					
-					foreach( $theseSettings as $setting => $value ) {
-						
-						$wgConf->settings[$setting]['default'] = $value;
-					}
-				}
-				
-				# Key '*' => choice of any wiki
-				elseif( $configFile['key'] == '*' ) {
-					
-					foreach( $theseSettings as $setting => $value ) {
-						
-						foreach( $value as $suffix => $val ) {
-							
-							$wgConf->settings[$setting][$suffix] = $val;
-						}
-					}
-				}
-				
-				# Other key
-				else {
-					
-					$defaultKey = null;
-					if( array_key_exists( 'default', $configFile ) )
-						$defaultKey = $this->replaceVariables( $configFile['default'] );
-					$classicKey = $this->replaceVariables( $configFile['key'] );
-					
-					foreach( $theseSettings as $setting => $values ) {
-						
-						foreach( $values as $wiki => $val ) {
-							
-							if( $wiki == 'default' && $defaultKey ) $wgConf->settings[$setting][$defaultKey] = $val;
-							else $wgConf->settings[$setting][str_replace( '*', $wiki, $classicKey )] = $val;
-						}
-					}
-				}
-			}
-			
+			# Populate wgConf
+			if( !$this->populatewgConf() )
+			return false;
 			
 			// Get specific configuration for this wiki
 			// Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
@@ -718,6 +670,73 @@ class MediaWikiFarm {
 		
 		return null;
 	}
+	
+	/**
+	 * Popuplate wgConf from config files.
+	 * 
+	 * @return bool Success.
+	 */
+	private function populatewgConf() {
+		
+		global $wgConf;
+		
+		if( $this->unusable )
+			return false;
+		
+		foreach( $this->params['config'] as $configFile ) {
+			
+			# Executable config files
+			if( array_key_exists( 'exec', $configFile ) ) continue;
+			
+			$theseSettings = $this->readFile( $this->paramsDir . '/' . $configFile['file'] );
+			if( $theseSettings === false ) {
+				$this->unusable = true;
+				return false;
+			}
+			
+			# Key 'default' => no choice of the wiki
+			if( $configFile['key'] == 'default' ) {
+				
+				foreach( $theseSettings as $setting => $value ) {
+					
+					$wgConf->settings[$setting]['default'] = $value;
+				}
+			}
+			
+			# Key '*' => choice of any wiki
+			elseif( $configFile['key'] == '*' ) {
+				
+				foreach( $theseSettings as $setting => $value ) {
+					
+					foreach( $value as $suffix => $val ) {
+						
+						$wgConf->settings[$setting][$suffix] = $val;
+					}
+				}
+			}
+			
+			# Other key
+			else {
+				
+				$defaultKey = null;
+				if( array_key_exists( 'default', $configFile ) )
+					$defaultKey = $this->replaceVariables( $configFile['default'] );
+				$classicKey = $this->replaceVariables( $configFile['key'] );
+				
+				foreach( $theseSettings as $setting => $values ) {
+					
+					foreach( $values as $wiki => $val ) {
+						
+						if( $wiki == 'default' && $defaultKey ) $wgConf->settings[$setting][$defaultKey] = $val;
+						else $wgConf->settings[$setting][str_replace( '*', $wiki, $classicKey )] = $val;
+					}
+				}
+			}
+		}
+		
+		return true;
+	}
+	
 	
 	
 	
