@@ -48,7 +48,7 @@ $wgCacheDirectory = '/srv/www/mediawiki-farm/data/'.$wvgClient.'/'.$wvgWiki.'/ca
  */
 
 # Load skins with the require_once mechanism
-foreach( $wgMediaWikiFarm->wiki['globals']['skins'] as $skin => $value ) {
+foreach( $wgMediaWikiFarm->params['globals']['skins'] as $skin => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/skins/$skin/$skin.php";
@@ -63,7 +63,7 @@ $wgMediaWikiFarm->loadSkinsConfig();
  */
 
 # Load extensions with the require_once mechanism
-foreach( $wgMediaWikiFarm->wiki['globals']['extensions'] as $extension => $value ) {
+foreach( $wgMediaWikiFarm->params['globals']['extensions'] as $extension => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/extensions/$extension/$extension.php";
