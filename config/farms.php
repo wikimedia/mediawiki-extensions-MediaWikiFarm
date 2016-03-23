@@ -25,8 +25,10 @@ return array(
 			array( 'file' => 'org/PrivateSettings.php',
 			       'key' => '*'
 			),
+			array( 'file' => 'org/ExecSettings.php',
+			       'exec' => true
+			),
 		),
-		'exec-config' => 'org/ExecSettings.php',
 	),
 	
 	# Configuration for a small wiki farm
@@ -55,8 +57,10 @@ return array(
 			array( 'file' => 'com/example/PrivateSettings.yml',
 			       'key' => '*'
 			),
+			array( 'file' => 'com/example/ExecSettings.php',
+			       'exec' => true
+			),
 		),
-		'exec-config' => 'com/example/ExecSettings.php',
 	),
 	
 	# Aliases

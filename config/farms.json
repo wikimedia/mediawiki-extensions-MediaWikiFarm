@@ -22,9 +22,12 @@
 			{
 				"file": "org/PrivateSettings.php",
 				"key": "*"
+			},
+			{
+				"file": "org/ExecSettings.php",
+				"exec": true
 			}
-		],
-		"exec-config": "org/ExecSettings.php"
+		]
 	},
 	"(?<client>[a-z]+)-(?<wiki>[a-z]+)\\.example\\.com": {
 		"variables": [
@@ -53,9 +56,12 @@
 			{
 				"file": "com/example/PrivateSettings.yml",
 				"key": "*"
+			},
+			{
+				"file": "com/example/ExecSettings.php",
+				"exec": true
 			}
-		],
-		"exec-config": "com/example/ExecSettings.php"
+		]
 	},
 	"(?<client>[a-z]+)_(?<wiki>[a-z]+)\\.example\\.com": {
 		"redirect": "$client-$wiki.example.com"

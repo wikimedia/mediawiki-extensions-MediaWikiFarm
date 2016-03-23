@@ -18,7 +18,8 @@
         key: '*'
       - file: 'org/PrivateSettings.php'
         key: '*'
-    exec-config: 'org/ExecSettings.php'
+      - file: 'org/ExecSettings.php'
+        exec: true
 
 # Configuration for a small wiki farm
 '(?<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com':
@@ -42,7 +43,8 @@
         key: '*'
       - file: 'com/example/PrivateSettings.yml'
         key: '*'
-    exec-config: 'com/example/ExecSettings.php'
+      - file: 'com/example/ExecSettings.php'
+        exec: true
 
 # Aliases
 

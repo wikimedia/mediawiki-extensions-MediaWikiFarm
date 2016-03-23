@@ -2,153 +2,213 @@
 	"$schema": "http://json-schema.org/draft-04/schema#",
 	"name": "Configuration of MediaWikiFarm extension to manage MediaWiki farms.",
 	"type": "object",
-	"additionalProperties": true,
+	"additionalProperties": false,
 	"patternProperties": {
-		"^[a-zA-Z0-9\\[\\]\\(\\)\\<>.*?+_-]+$": {
-			"type": "object",
-			"properties": {
-				"variables": {
-					"type": "array",
-					"description": "List of variables in the host.",
-					"additionalItems": false,
-					"items": [
-						{
-							"type": "object",
-							"description": "An host variable.",
-							"properties": {
-									"variable": {
-									"type": "string",
-									"description": "Name of the host variable."
+		"^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_-]+$": {
+			"oneOf": [
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"variables": {
+							"type": "array",
+							"description": "List of variables in the host.",
+							"additionalItems": false,
+							"items": [
+								{
+									"type": "object",
+									"description": "An host variable.",
+									"additionalProperties": false,
+									"properties": {
+											"variable": {
+											"type": "string",
+											"description": "Name of the host variable."
+										},
+										"file": {
+											"type": "string",
+											"description": "Path of the existing values for this variable."
+										}
+									}
 								},
-								"file": {
-									"type": "string",
-									"description": "Path of the existing values for this variable."
+								{
+									"type": "object",
+									"description": "An host variable.",
+									"additionalProperties": false,
+									"properties": {
+											"variable": {
+											"type": "string",
+											"description": "Name of the host variable."
+										},
+										"file": {
+											"type": "string",
+											"description": "Path of the existing values for this variable."
+										}
+									}
+								},
+								{
+									"type": "object",
+									"description": "An host variable.",
+									"additionalProperties": false,
+									"properties": {
+											"variable": {
+											"type": "string",
+											"description": "Name of the host variable."
+										},
+										"file": {
+											"type": "string",
+											"description": "Path of the existing values for this variable."
+										}
+									}
 								}
-							}
+							]
 						},
-						{
-							"type": "object",
-							"description": "An host variable.",
-							"properties": {
-								"variable": {
-									"type": "string",
-									"description": "Name of the host variable."
-								},
-								"file": {
-									"type": "string",
-									"description": "Path of the existing values for this variable."
-								}
-							}
+						"suffix": {
+							"type": "string",
+							"description": "Suffix of the wiki.",
+							"pattern": "^[a-z$-]+$"
 						},
-						{
-							"type": "object",
-							"description": "An host variable.",
-							"properties": {
-								"variable": {
-									"type": "string",
-									"description": "Name of the host variable."
+						"wikiID": {
+							"type": "string",
+							"description": "Unique identifier of the wiki.",
+							"pattern": "^[a-z$-]+$"
+						},
+						"versions": {
+							"type": "string",
+							"description": "File containing an array where each key is a wikiID and each value is the corresponding MediaWiki version."
+						},
+						"data": {
+							"type": "string",
+							"description": "Data directory where files of the wiki are stored."
+						},
+						"cache": {
+							"type": ["string","null"],
+							"description": "Configuration cache file."
+						},
+						"config": {
+							"type": "array",
+							"description": "List of configuration files.",
+							"additionalItems": false,
+							"items": [
+								{
+									"type": "object",
+									"description": "A configuration file.",
+									"additionalProperties": false,
+									"properties": {
+										"file": {
+											"type": "string",
+											"description": "Path of the configuration file."
+										},
+										"key": {
+											"type": "string",
+											"description": "Pattern of the of the key.",
+											"pattern": "^(default|\\*|[a-z$*-]+)$"
+										},
+										"default": {
+											"type": "string",
+											"description": "Default key.",
+											"pattern": "^[a-z$*-]+$"
+										},
+										"exec": {
+											"type": "boolean",
+											"description": "This file must be directly.",
+											"enum": [true]
+										}
+									}
 								},
-								"file": {
-									"type": "string",
-									"description": "Path of the existing values for this variable."
+								{
+									"type": "object",
+									"description": "A configuration file.",
+									"additionalProperties": false,
+									"properties": {
+										"file": {
+											"type": "string",
+											"description": "Path of the configuration file."
+										},
+										"key": {
+											"type": "string",
+											"description": "Pattern of the of the key.",
+											"pattern": "^(default|\\*|[a-z$*-]+)$"
+										},
+										"default": {
+											"type": "string",
+											"description": "Default key.",
+											"pattern": "^[a-z$*-]+$"
+										},
+										"exec": {
+											"type": "boolean",
+											"description": "This file must be directly.",
+											"enum": [true]
+										}
+									}
+								},
+								{
+									"type": "object",
+									"description": "A configuration file.",
+									"additionalProperties": false,
+									"properties": {
+										"file": {
+											"type": "string",
+											"description": "Path of the configuration file."
+										},
+										"key": {
+											"type": "string",
+											"description": "Pattern of the of the key.",
+											"pattern": "^(default|\\*|[a-z$*-]+)$"
+										},
+										"default": {
+											"type": "string",
+											"description": "Default key.",
+											"pattern": "^[a-z$*-]+$"
+										},
+										"exec": {
+											"type": "boolean",
+											"description": "This file must be directly.",
+											"enum": [true]
+										}
+									}
+								},
+								{
+									"type": "object",
+									"description": "A configuration file.",
+									"additionalProperties": false,
+									"properties": {
+										"file": {
+											"type": "string",
+											"description": "Path of the configuration file."
+										},
+										"key": {
+											"type": "string",
+											"description": "Pattern of the of the key.",
+											"pattern": "^(default|\\*|[a-z$*-]+)$"
+										},
+										"default": {
+											"type": "string",
+											"description": "Default key.",
+											"pattern": "^[a-z$*-]+$"
+										},
+										"exec": {
+											"type": "boolean",
+											"description": "This file must be directly.",
+											"enum": [true]
+										}
+									}
 								}
-							}
+							]
 						}
-					]
+					}
 				},
-				"suffix": {
-					"type": "string",
-					"description": "Suffix of the wiki.",
-					"pattern": "^[a-z$*-]+$"
-				},
-				"wikiID": {
-					"type": "string",
-					"description": "Unique identifier of the wiki.",
-					"pattern": "^[a-z$*-]+$"
-				},
-				"data": {
-					"type": "string",
-					"description": "Data directory where files of the wiki are stored."
-				},
-				"cache": {
-					"type": ["string","null"],
-					"description": "Configuration cache file."
-				},
-				"config": {
-					"type": "array",
-					"description": "List of configuration files.",
-					"additionalItems": false,
-					"items": [
-						{
-							"type": "object",
-							"description": "A configuration file.",
-							"properties": {
-								"file": {
-									"type": "string",
-									"description": "Path of the configuration file."
-								},
-								"key": {
-									"type": "string",
-									"description": "Pattern of the of the key.",
-									"pattern": "^(default|\\*|[a-z$*-]+)$"
-								},
-								"default": {
-									"type": "string",
-									"description": "Default key.",
-									"pattern": "^[a-z$*-]+$"
-								}
-							}
-						},
-						{
-							"type": "object",
-							"description": "A configuration file.",
-							"properties": {
-								"file": {
-									"type": "string",
-									"description": "Path of the configuration file."
-								},
-								"key": {
-									"type": "string",
-									"description": "Pattern of the of the key.",
-									"pattern": "^(default|\\*|[a-z$*-]+)$"
-								},
-								"default": {
-									"type": "string",
-									"description": "Default key.",
-									"pattern": "^[a-z$*-]+$"
-								}
-							}
-						},{
-							"type": "object",
-							"description": "A configuration file.",
-							"properties": {
-								"file": {
-									"type": "string",
-									"description": "Path of the configuration file."
-								},
-								"key": {
-									"type": "string",
-									"description": "Pattern of the of the key.",
-									"pattern": "^(default|\\*|[a-z$*-]+)$"
-								},
-								"default": {
-									"type": "string",
-									"description": "Default key.",
-									"pattern": "^[a-z$*-]+$"
-								}
-							}
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"redirect": {
+							"type": "string",
+							"description": "Internal redirect to another farm.",
+							"pattern": "^[a-zA-Z0-9.$_-]+$"
 						}
-					]
-				},
-				"exec-config": {
-					"type": ["array","string"],
-					"description": "Path of the configuration-execution files."
-				},
-				"redirect": {
-					"type": "string",
-					"description": "Internal redirect to another farm."
+					}
 				}
-			}
+			]
 		}
 	}
 }
