@@ -122,10 +122,10 @@ class MediaWikiFarm {
 		$this->wiki['version'] = null;
 		$this->wiki['globals'] = null;
 		
-		$this->setWikiProperty( 'suffix', false, true );
+		$this->setWikiProperty( 'suffix', true );
 		$this->variables['suffix'] = $this->wiki['suffix'];
 		
-		$this->setWikiProperty( 'wikiID', false, true );
+		$this->setWikiProperty( 'wikiID', true );
 		$this->variables['wikiID'] = $this->wiki['wikiID'];
 		
 		if( !array_key_exists( 'wikiID', $this->wiki ) || !array_key_exists( 'suffix', $this->wiki ) ) {
@@ -159,7 +159,7 @@ class MediaWikiFarm {
 			$this->wiki['code'] = $this->codeDir . '/' . $version;
 		
 		# In the case multiversion is configured, but version is not known as of now
-		else if( is_null( $version ) && is_string( $this->codeDir ) ) {
+		elseif( is_null( $version ) && is_string( $this->codeDir ) ) {
 			
 			$versions = $this->readFile( $this->config['versions'] );
 			
@@ -171,10 +171,10 @@ class MediaWikiFarm {
 			if( array_key_exists( $this->wiki['wikiID'], $versions ) && is_file( $this->codeDir . '/' . $versions[$this->wiki['wikiID']] . '/includes/DefaultSettings.php' ) )
 				$version = $versions[$this->wiki['wikiID']];
 			
-			else if( $this->wiki['suffix'] && array_key_exists( $this->wiki['suffix'], $versions ) && is_file( $this->codeDir . '/' . $versions[$this->wiki['suffix']] . '/includes/DefaultSettings.php' ) )
+			elseif( array_key_exists( $this->wiki['suffix'], $versions ) && is_file( $this->codeDir . '/' . $versions[$this->wiki['suffix']] . '/includes/DefaultSettings.php' ) )
 				$version = $versions[$this->wiki['suffix']];
 			
-			else if( array_key_exists( 'default', $versions ) && is_file( $this->codeDir . '/' . $versions['default'] . '/includes/DefaultSettings.php' ) )
+			elseif( array_key_exists( 'default', $versions ) && is_file( $this->codeDir . '/' . $versions['default'] . '/includes/DefaultSettings.php' ) )
 				$version = $versions['default'];
 			
 			else return false;
@@ -183,7 +183,7 @@ class MediaWikiFarm {
 		}
 		
 		# In the case no multiversion is configured
-		else if( is_null( $this->codeDir ) ) {
+		elseif( is_null( $this->codeDir ) ) {
 			
 			$version = $wgVersion;
 			$this->wiki['code'] = $IP;
@@ -210,14 +210,24 @@ class MediaWikiFarm {
 		if( $this->unusable )
 			return false;
 		
-		$this->setWikiProperty( 'data', false );
-		$this->setWikiProperty( 'cache', false );
-		$this->setWikiProperty( 'config', true );
-		$this->setWikiProperty( 'exec-config', true );
+		if( !array_key_exists( 'config', $this->wiki ) )
+			$this->wiki['config'] = array();
+		elseif( is_string( $this->wiki['config'] ) )
+			$this->wiki['config'] = array( $this->wiki['config'] );
+		
+		if( !array_key_exists( 'exec-config', $this->wiki ) )
+			$this->wiki['exec-config'] = array();
+		elseif( is_string( $this->wiki['exec-config'] ) )
+			$this->wiki['exec-config'] = array( $this->wiki['exec-config'] );
+		
+		$this->setWikiProperty( 'data');
+		$this->setWikiProperty( 'cache' );
+		$this->setWikiProperty( 'config' );
+		$this->setWikiProperty( 'exec-config' );
 		
 		foreach( $this->wiki['variables'] as &$variable ) {
 			
-			$this->setWikiPropertyValue( $variable['file'], false );
+			$this->setWikiPropertyValue( $variable['file'] );
 		}
 		
 		return true;
@@ -276,8 +286,8 @@ class MediaWikiFarm {
 		
 		# Read the farm(s) configuration
 		if( $configs = $this->readFile( $this->configDir . '/farms.yml' ) );
-		else if( $configs = $this->readFile( $this->configDir . '/farms.php' ) );
-		else if( $configs = $this->readFile( $this->configDir . '/farms.json' ) );
+		elseif( $configs = $this->readFile( $this->configDir . '/farms.php' ) );
+		elseif( $configs = $this->readFile( $this->configDir . '/farms.json' ) );
 		else $this->unusable = true;
 		
 		# Now select the right configuration amoung all farms
@@ -374,7 +384,7 @@ class MediaWikiFarm {
 			$filename = $variable['file'];
 			
 			# Really check if the variable is in the listing file
-			$this->setWikiPropertyValue( $filename, false, true );
+			$this->setWikiPropertyValue( $filename, true );
 			$choices = $this->readFile( $this->configDir . '/' . $filename );
 			if( $choices === false ) {
 				$this->unusable = true;
@@ -463,13 +473,13 @@ class MediaWikiFarm {
 		# Error for any other format
 		else return false;
 		
-		# Return an empty array if null (empty file or value 'null)
-		if( is_null( $array ) )
-			return array();
-		
 		# Regular return for arrays
-		elseif( is_array( $array ) )
+		if( is_array( $array ) )
 			return $array;
+		
+		# Return an empty array if null (empty file or value 'null)
+		elseif( is_null( $array ) )
+			return array();
 		
 		# Error for any other type
 		return false;
@@ -479,27 +489,25 @@ class MediaWikiFarm {
 	 * Set a wiki property and replace placeholders (property name version).
 	 * 
 	 * @param string $name Name of the property.
-	 * @param bool $toArray Change a string to an array with the string.
 	 * @param bool $reset Empty the variables internal cache after operation.
 	 * @return void
 	 */
-	private function setWikiProperty( $name, $toArray = false, $reset = false ) {
+	private function setWikiProperty( $name, $reset = false ) {
 		
 		if( !array_key_exists( $name, $this->wiki ) )
 			return;
 		
-		$this->setWikiPropertyValue( $this->wiki[$name], $toArray, $reset );
+		$this->setWikiPropertyValue( $this->wiki[$name], $reset );
 	}
 	
 	/**
 	 * Set a wiki property and replace placeholders (value version).
 	 * 
 	 * @param string|null $value Value of the property.
-	 * @param bool $toArray Change a string to an array with the string.
 	 * @param bool $reset Empty the variables internal cache after operation.
 	 * @return void
 	 */
-	private function setWikiPropertyValue( &$value, $toArray = false, $reset = false ) {
+	private function setWikiPropertyValue( &$value, $reset = false ) {
 		
 		static $rkeys = array(), $rvalues = array();
 		if( count( $rkeys ) == 0 ) {
@@ -513,25 +521,22 @@ class MediaWikiFarm {
 		
 		if( is_null( $value ) )
 			return;
-		else if( is_string( $value ) ) {
-			
-			if( $toArray ) $value = array( $value );
-			else $value = preg_replace( $rkeys, $rvalues, $value );
-		}
-		else if( !is_array( $value ) ) {
+		
+		elseif( is_string( $value ) )
+			$value = preg_replace( $rkeys, $rvalues, $value );
+		
+		elseif( !is_array( $value ) ) {
 			
 			$this->unusable = true;
 			return;
 		}
-		
-		if( $toArray ) {
+		elseif( is_array( $value ) ) {
 			
 			foreach( $value as &$subvalue )
 				$subvalue = preg_replace( $rkeys, $rvalues, $subvalue );
 		}
 		
-		if( $reset )
-			$rkeys = array();
+		if( $reset ) $rkeys = array();
 	}
 	
 	/**
@@ -610,7 +615,7 @@ class MediaWikiFarm {
 				}
 				
 				# Key '*' => choice of any wiki
-				else if( $configFile['key'] == '*' ) {
+				elseif( $configFile['key'] == '*' ) {
 					
 					foreach( $theseSettings as $setting => $value ) {
 						
