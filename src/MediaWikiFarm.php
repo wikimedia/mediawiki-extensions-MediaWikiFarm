@@ -576,7 +576,7 @@ class MediaWikiFarm {
 						foreach( $values as $wiki => $val ) {
 							
 							if( $wiki == 'default' && $defaultKey ) $wgConf->settings[$setting][$defaultKey] = $val;
-							else $wgConf->settings[$setting][preg_replace( '/\*/', $wiki, $classicKey )] = $val;
+							else $wgConf->settings[$setting][str_replace( '*', $wiki, $classicKey )] = $val;
 						}
 					}
 				}
@@ -823,7 +823,7 @@ class MediaWikiFarm {
 			$rvalues = array();
 			
 			foreach( $this->variables as $key => $val ) {
-				$rkeys[] = '/\$' . preg_quote( $key, '/' ) . '/';
+				$rkeys[] = '$' . $key;
 				$rvalues[] = $val;
 			}
 		}
@@ -832,7 +832,7 @@ class MediaWikiFarm {
 			return '';
 		
 		elseif( is_string( $value ) )
-			$value = preg_replace( $rkeys, $rvalues, $value );
+			$value = str_replace( $rkeys, $rvalues, $value );
 		
 		elseif( !is_array( $value ) ) {
 			
@@ -843,7 +843,7 @@ class MediaWikiFarm {
 			
 			foreach( $value as &$subvalue ) {
 				foreach( $subvalue as &$subsubvalue )
-					$subsubvalue = preg_replace( $rkeys, $rvalues, $subsubvalue );
+					$subsubvalue = str_replace( $rkeys, $rvalues, $subsubvalue );
 			}
 		}
 		
