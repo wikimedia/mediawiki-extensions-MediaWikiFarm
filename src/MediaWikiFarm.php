@@ -512,15 +512,20 @@ class MediaWikiFarm {
 		$this->params['globals'] = false;
 		
 		if( @filemtime( $cacheFile ) >= $oldness && is_string( $cacheFile ) ) {	
-			$cache = @file_get_contents( $cacheFile );
-			if ( $cache !== false ) {
-				$this->params['globals'] = unserialize( $cache );
+			if( preg_match( '/\.php$/', $cacheFile ) ) {
+				 $this->params['globals'] = @include $cacheFile;
+			}
+			else {
+				$cache = @file_get_contents( $cacheFile );
+				if ( $cache !== false ) {
+					$this->params['globals'] = unserialize( $cache );
+				}
 			}
 		}
 		else {
 			
 			$this->params['globals'] = array();
-			$globals &= $this->params['globals'];
+			$globals =& $this->params['globals'];
 			
 			$globals['general'] = array();
 			$globals['skins'] = array();
@@ -672,9 +677,16 @@ class MediaWikiFarm {
 			if( is_string( $cacheFile ) ) {
 				@mkdir( dirname( $cacheFile ) );
 				$tmpFile = tempnam( dirname( $cacheFile ), basename( $cacheFile ).'.tmp' );
-				chmod( $tmpFile, 0640 );
-				if( $tmpFile && file_put_contents( $tmpFile, serialize( $globals ) ) ) {
-					rename( $tmpFile, $cacheFile );
+				chmod( $tmpFile, 0744 );
+				if( preg_match( '/\.php$/', $cacheFile ) ) {
+					if( $tmpFile && file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $globals, true ).';' ) ) {
+						rename( $tmpFile, $cacheFile );
+					}
+				}
+				else {
+					if( $tmpFile && file_put_contents( $tmpFile, serialize( $globals ) ) ) {
+						rename( $tmpFile, $cacheFile );
+					}
 				}
 			}
 		}
