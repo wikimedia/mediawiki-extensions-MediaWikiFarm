@@ -292,6 +292,7 @@ class MediaWikiFarm {
 	 * Replacement of the variables in the host name.
 	 * 
 	 * @return string|null|false If an existing version is found in files, returns a string; if no version is found, returns null; if the host is missing in existence files, returns false; if an existence file is missing or badly formatted, return false and turns this object into a unusable state.
+	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 */
 	private function replaceHostVariables() {
 		
@@ -376,6 +377,7 @@ class MediaWikiFarm {
 	 * 
 	 * @param string|null $version If a string, this is the version already got, just set it.
 	 * @return bool The version was set, and the wiki could exist.
+	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 */
 	private function setVersion( $version = null ) {
 		
@@ -486,6 +488,8 @@ class MediaWikiFarm {
 	 *      )
 	 * 
 	 * @return array Global parameter variables and loading mechanisms for skins and extensions.
+	 * @SuppressWarnings(PHPMD.StaticAccess)
+	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 */
 	private function getMediaWikiConfig() {
 		
@@ -512,14 +516,13 @@ class MediaWikiFarm {
 		$this->params['globals'] = false;
 		
 		if( @filemtime( $cacheFile ) >= $oldness && is_string( $cacheFile ) ) {	
-			if( preg_match( '/\.php$/', $cacheFile ) ) {
+			if( preg_match( '/\.php$/', $cacheFile ) )
 				 $this->params['globals'] = @include $cacheFile;
-			}
+			
 			else {
 				$cache = @file_get_contents( $cacheFile );
-				if ( $cache !== false ) {
+				if( $cache !== false )
 					$this->params['globals'] = unserialize( $cache );
-				}
 			}
 		}
 		else {
@@ -675,6 +678,7 @@ class MediaWikiFarm {
 	 * Popuplate wgConf from config files.
 	 * 
 	 * @return bool Success.
+	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 */
 	private function populatewgConf() {
 		
@@ -751,6 +755,8 @@ class MediaWikiFarm {
 	 * 
 	 * @param string $filename Name of the requested file.
 	 * @return array|false The interpreted array in case of success, else false.
+	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+	 * @SuppressWarnings(PHPMD.StaticAccess)
 	 */
 	function readFile( $filename ) {
 		
@@ -879,21 +885,21 @@ class MediaWikiFarm {
 	 * in order to override permissions array with removed rights.
 	 *
 	 * @param array $array1.
-	 *
 	 * @return array
+	 * @SuppressWarning(PHPMD.StaticAccess)
 	 */
 	static private function arrayMerge( $array1/* ... */ ) {
 		$out = $array1;
 		$argsCount = func_num_args();
 		for ( $i = 1; $i < $argsCount; $i++ ) {
 			foreach ( func_get_arg( $i ) as $key => $value ) {
-				if ( isset( $out[$key] ) && is_array( $out[$key] ) && is_array( $value ) ) {
+				if( isset( $out[$key] ) && is_array( $out[$key] ) && is_array( $value ) ) {
 					$out[$key] = self::arrayMerge( $out[$key], $value );
-				} elseif ( !isset( $out[$key] ) && !is_numeric( $key ) ) {
+				} elseif( !isset( $out[$key] ) && !is_numeric( $key ) ) {
 					// Values that evaluate to true given precedence, for the
 					// primary purpose of merging permissions arrays.
 					$out[$key] = $value;
-				} elseif ( is_numeric( $key ) ) {
+				} elseif( is_numeric( $key ) ) {
 					$out[] = $value;
 				}
 			}
