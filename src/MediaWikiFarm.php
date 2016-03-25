@@ -543,16 +543,9 @@ class MediaWikiFarm {
 		
 		$this->params['globals'] = false;
 		
-		if( $cacheFile && @filemtime( $cacheFile ) >= $oldness && is_string( $cacheFile ) ) {	
-			if( preg_match( '/\.php$/', $cacheFile ) )
-				 $this->params['globals'] = @include $cacheFile;
-			
-			else {
-				$cache = @file_get_contents( $cacheFile );
-				if( $cache !== false )
-					$this->params['globals'] = unserialize( $cache );
-			}
-		}
+		if( $cacheFile && is_string( $cacheFile ) && is_file( $cacheFile) && @filemtime( $cacheFile ) >= $oldness )
+			$this->params['globals'] = $this->readFile( $cacheFile );
+		
 		else {
 			
 			$this->params['globals'] = array(
@@ -587,21 +580,8 @@ class MediaWikiFarm {
 			$globals['extensions']['MediaWikiFarm'] = array( '_loading' => 'wfLoadExtension' );
 			
 			# Save this configuration in a serialised file
-			if( $cacheFile ) {
-				@mkdir( dirname( $cacheFile ) );
-				$tmpFile = tempnam( dirname( $cacheFile ), basename( $cacheFile ).'.tmp' );
-				chmod( $tmpFile, 0744 );
-				if( preg_match( '/\.php$/', $cacheFile ) ) {
-					if( $tmpFile && file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $globals, true ).';' ) ) {
-						rename( $tmpFile, $cacheFile );
-					}
-				}
-				else {
-					if( $tmpFile && file_put_contents( $tmpFile, serialize( $globals ) ) ) {
-						rename( $tmpFile, $cacheFile );
-					}
-				}
-			}
+			if( $cacheFile )
+				$this->cacheFile( $globals, $cacheFile );
 		}
 	}
 	
@@ -780,29 +760,46 @@ class MediaWikiFarm {
 	 * -------------- */
 	
 	/**
-	 * Read a file either in PHP, YAML (if library available), JSON, or dblist, and returns the interpreted array.
+	 * Read a file either in PHP, YAML (if library available), JSON, dblist, or serialised, and returns the interpreted array.
 	 * 
-	 * The choice between the format depends on the extension: php, yml, yaml, json, dblist.
+	 * The choice between the format depends on the extension: php, yml, yaml, json, dblist, serialised.
 	 * 
 	 * @param string $filename Name of the requested file.
+	 * @param string $directory Parent directory.
 	 * @return array|false The interpreted array in case of success, else false.
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 * @SuppressWarnings(PHPMD.StaticAccess)
 	 */
-	function readFile( $filename ) {
+	private function readFile( $filename, $directory = '' ) {
 		
 		# Check parameter
-		if( !is_string( $filename ) || !is_file( $filename ) )
+		if( !is_string( $filename ) )
 			return false;
 		
 		# Detect the format
 		# Note the regex must be greedy to correctly select double extensions
 		$format = preg_replace( '/^.*\.([a-z]+)$/', '$1', $filename );
 		
+		# Check the file exists
+		$filename = $directory ? $directory . '/' . $filename : $filename;
+		if( !is_file( $filename ) )
+			return false;
+		
 		# Format PHP
 		if( $format == 'php' )
 			
 			$array = @include $filename;
+		
+		# Format 'serialisation'
+		elseif( $format == 'ser' ) {
+			
+			$content = @file_get_contents( $filename );
+			
+			if( !$content )
+				return array();
+			
+			$array = @unserialize( $content );
+		}
 		
 		# Format YAML
 		elseif( $format == 'yml' || $format == 'yaml' ) {
@@ -824,7 +821,7 @@ class MediaWikiFarm {
 			
 			$array = json_decode( @file_get_contents( $filename ), true );
 		
-		# Format dblist (simple list of strings separated by newlines)
+		# Format 'dblist' (simple list of strings separated by newlines)
 		elseif( $format == 'dblist' ) {
 			
 			$content = @file_get_contents( $filename );
@@ -848,6 +845,38 @@ class MediaWikiFarm {
 		
 		# Error for any other type
 		return false;
+	}
+	
+	/**
+	 * Create a cache file.
+	 * 
+	 * @param array $array Array of the data to be cached.
+	 * @param string $filename Name of the cache file.
+	 * @param string $format Format of the cache file, in ['ser', 'php'].
+	 * @return void
+	 */
+	private function cacheFile( $array, $filename, $format = 'ser' ) {
+		
+		if( !array_key_exists( 'cache', $this->params ) )
+			return;
+		
+		# Create temporary file
+		@mkdir( dirname( $filename ) );
+		$tmpFile = tempnam( dirname( $filename ), $filename.'.tmp' );
+		chmod( $tmpFile, 0644 );
+		
+		if( !$tmpFile )
+			return;
+		
+		if( $format == 'php' ) {
+			if( file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $array, true ).';' ) )
+				rename( $tmpFile, $filename );
+		}
+		elseif( $format == 'ser' ) {
+			if( file_put_contents( $tmpFile, serialize( $array ) ) ) {
+				rename( $tmpFile, $filename );
+			}
+		}
 	}
 	
 	/**
