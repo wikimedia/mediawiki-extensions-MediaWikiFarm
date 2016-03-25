@@ -113,11 +113,6 @@ class MediaWikiFarm {
 		if( $this->unusable )
 			return false;
 		
-		if( !is_array( $this->params ) && array_key_exists( 'globals', $this->params ) ) {
-			$this->unusable = true;
-			return;
-		}
-		
 		if( !is_array( $this->params['globals'] ) )
 			$this->getMediaWikiConfig();
 		
@@ -215,23 +210,23 @@ class MediaWikiFarm {
 	private function __construct( $host, $configDir = '/etc/mediawiki', $codeDir = null ) {
 		
 		# Check parameters
-		if( !isset( $host ) || !is_string( $host ) )
+		if( !is_string( $host ) ||
+		    !(is_string( $configDir ) && is_dir( $configDir )) ||
+		    !(is_null( $codeDir ) xor (is_string( $codeDir ) && is_dir( $codeDir )))
+		  ) {
+		  	
 			$this->unusable = true;
-		if( isset( $configDir ) && (!is_string( $configDir ) || !is_dir( $configDir )) )
-			$this->unusable = true;
-		if( isset( $codeDir ) && (!is_string( $codeDir ) || !is_dir( $codeDir )) )
-			$this->unusable = true;
-		
-		if( $this->unusable ) return;
+			return;
+		}
 		
 		# Set parameters
-		$this->paramsDir = $configDir;
+		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
 		
 		# Read the farm(s) configuration
-		if( $configs = $this->readFile( $this->paramsDir . '/farms.yml' ) );
-		elseif( $configs = $this->readFile( $this->paramsDir . '/farms.php' ) );
-		elseif( $configs = $this->readFile( $this->paramsDir . '/farms.json' ) );
+		if( $configs = $this->readFile( $this->configDir . '/farms.yml' ) );
+		elseif( $configs = $this->readFile( $this->configDir . '/farms.php' ) );
+		elseif( $configs = $this->readFile( $this->configDir . '/farms.json' ) );
 		else $this->unusable = true;
 		
 		# Now select the right configuration amoung all farms
@@ -262,7 +257,7 @@ class MediaWikiFarm {
 		# For each proposed farm, check if the host matches
 		foreach( $configs as $regex => $config ) {
 			
-			if( !preg_match( '/' . $regex . '/', $host, $matches ) )
+			if( !preg_match( '/' . $regex . '/i', $host, $matches ) )
 				continue;
 			
 			# Initialise variables from the host
@@ -293,6 +288,7 @@ class MediaWikiFarm {
 	 * 
 	 * @return string|null|false If an existing version is found in files, returns a string; if no version is found, returns null; if the host is missing in existence files, returns false; if an existence file is missing or badly formatted, return false and turns this object into a unusable state.
 	 * @SuppressWarnings(PHPMD.ElseExpression)
+	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 */
 	private function replaceHostVariables() {
 		
@@ -315,7 +311,7 @@ class MediaWikiFarm {
 				continue;
 			
 			# Really check if the variable is in the listing file
-			$choices = $this->readFile( $this->paramsDir . '/' . $this->replaceVariables( $variable['file'] ) );
+			$choices = $this->readFile( $this->configDir . '/' . $this->replaceVariables( $variable['file'] ) );
 			if( $choices === false ) {
 				$this->unusable = true;
 				return false;
@@ -349,9 +345,6 @@ class MediaWikiFarm {
 	 */
 	private function setWikiID() {
 		
-		if( $this->unusable )
-			return false;
-		
 		$this->params['version'] = null;
 		$this->params['globals'] = null;
 		
@@ -378,22 +371,20 @@ class MediaWikiFarm {
 	 * @param string|null $version If a string, this is the version already got, just set it.
 	 * @return bool The version was set, and the wiki could exist.
 	 * @SuppressWarnings(PHPMD.ElseExpression)
+	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 */
 	private function setVersion( $version = null ) {
 		
 		global $IP, $wgVersion;
 		
-		if( $this->unusable )
-			return false;
-		
 		$this->setWikiProperty( 'versions' );
 		
 		# In the case multiversion is configured and version is already known
-		if( is_string( $version ) && is_string( $this->codeDir ) && is_file( $this->codeDir . '/' . $version . '/includes/DefaultSettings.php' ) )
+		if( is_string( $this->codeDir ) && is_string( $version ) )
 			$this->params['code'] = $this->codeDir . '/' . $version;
 		
 		# In the case multiversion is configured, but version is not known as of now
-		elseif( is_null( $version ) && is_string( $this->codeDir ) ) {
+		elseif( is_string( $this->codeDir ) && is_null( $version ) ) {
 			
 			$versions = $this->readFile( $this->params['versions'] );
 			
@@ -441,9 +432,6 @@ class MediaWikiFarm {
 	 */
 	private function setWikiProperties() {
 		
-		if( $this->unusable )
-			return false;
-		
 		if( !array_key_exists( 'config', $this->params ) )
 			$this->params['config'] = array();
 		
@@ -465,7 +453,7 @@ class MediaWikiFarm {
 		global $wgConf;
 		
 		$wgConf->suffixes = array( $this->params['suffix'] );
-		$wikiIDs = $this->readFile( $this->paramsDir . '/' . $this->params['suffix'] . '/wikis.yml' );
+		$wikiIDs = $this->readFile( $this->configDir . '/' . $this->params['suffix'] . '/wikis.yml' );
 		foreach( array_keys( $wikiIDs ) as $wiki ) {
 			$wgConf->wikis[] = $wiki . '-' . $this->params['suffix'];
 		}
@@ -511,11 +499,11 @@ class MediaWikiFarm {
 		
 		$oldness = 0;
 		foreach( $this->params['config'] as $configFile )
-			$oldness = max( $oldness, @filemtime( $this->paramsDir . '/' . $configFile['file'] ) );
+			$oldness = max( $oldness, @filemtime( $this->configDir . '/' . $configFile['file'] ) );
 		
 		$this->params['globals'] = false;
 		
-		if( @filemtime( $cacheFile ) >= $oldness && is_string( $cacheFile ) ) {	
+		if( $cacheFile && @filemtime( $cacheFile ) >= $oldness && is_string( $cacheFile ) ) {	
 			if( preg_match( '/\.php$/', $cacheFile ) )
 				 $this->params['globals'] = @include $cacheFile;
 			
@@ -527,24 +515,24 @@ class MediaWikiFarm {
 		}
 		else {
 			
-			$this->params['globals'] = array();
+			$this->params['globals'] = array(
+				'general' => array(),
+				'skins' => array(),
+				'extensions' => array()
+			);
 			$globals =& $this->params['globals'];
-			
-			$globals['general'] = array();
-			$globals['skins'] = array();
-			$globals['extensions'] = array();
 			
 			# Populate wgConf
 			if( !$this->populatewgConf() )
 			return false;
 			
-			// Get specific configuration for this wiki
-			// Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
-			// ineffective and there would be inconsistencies in this process
+			# Get specific configuration for this wiki
+			# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
+			# ineffective and there would be inconsistencies in this process
 			$globals['general'] = $wgConf->getAll( $myWiki, $mySuffix );
 			
-			// For the permissions array, fix a small strangeness: when an existing default permission
-			// is true, it is not possible to make it false in the specific configuration
+			# For the permissions array, fix a small strangeness: when an existing default permission
+			# is true, it is not possible to make it false in the specific configuration
 			if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) )
 				
 				$globals['general']['wgGroupPermissions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ), $globals['general']['wgGroupPermissions'] );
@@ -552,8 +540,8 @@ class MediaWikiFarm {
 			//if( array_key_exists( '+wgDefaultUserOptions', $wgConf->settings ) )
 				//$globals['general']['wgDefaultUserOptions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgDefaultUserOptions', $myWiki, $mySuffix ), $globals['general']['wgDefaultUserOptions'] );
 			
-			// Extract from the general configuration skin and extension configuration
-			// Search for skin and extension activation
+			# Extract from the general configuration skin and extension configuration
+			# Search for skin and extension activation
 			$unsetPrefixes = array();
 			foreach( $globals['general'] as $setting => $value ) {
 				if( preg_match( '/^wgUseSkin(.+)$/', $setting, $matches ) && $value === true ) {
@@ -561,13 +549,9 @@ class MediaWikiFarm {
 					$skin = $matches[1];
 					$loadingMechanism = $this->detectLoadingMechanism( 'skin', $skin );
 					
-					if( is_null( $loadingMechanism ) )
-						$unsetPrefixes[] = $skin;
+					if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $skin;
+					else $globals['skins'][$skin] = array( '_loading' => $loadingMechanism );
 					
-					else {
-						$globals['skins'][$skin] = array();
-						$globals['skins'][$skin]['_loading'] = $loadingMechanism;
-					}
 					unset( $globals['general'][$setting] );
 				}
 				elseif( preg_match( '/^wgUseExtension(.+)$/', $setting, $matches ) && $value === true ) {
@@ -575,13 +559,9 @@ class MediaWikiFarm {
 					$extension = $matches[1];
 					$loadingMechanism = $this->detectLoadingMechanism( 'extension', $extension );
 					
-					if( is_null( $loadingMechanism ) )
-						$unsetPrefixes[] = $extension;
+					if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $extension;
+					else $globals['extensions'][$extension] = array( '_loading' => $loadingMechanism );
 					
-					else {
-						$globals['extensions'][$extension] = array();
-						$globals['extensions'][$extension]['_loading'] = $loadingMechanism;
-					}
 					unset( $globals['general'][$setting] );
 				}
 				elseif( preg_match( '/^wgUse(?:Skin|Extension|LocalExtension)(.+)$/', $setting, $matches ) && $value !== true ) {
@@ -591,45 +571,44 @@ class MediaWikiFarm {
 				}
 			}
 			
-			// Extract from the general configuration skin and extension configuration
-			$skins = array_keys( $globals['skins'] );
-			$extensions = array_keys( $globals['extensions'] );
+			# Extract skin and extension configuration from the general configuration
+			$regexSkins = '/^wg(' . implode( '|',
+				array_map(
+					function( $a ) { return preg_quote( $a, '/' ); },
+					array_keys( $globals['skins'] )
+				)
+			) . ')/';
+			$regexExtensions = '/^wg(' . implode( '|',
+				array_map(
+					function( $a ) { return preg_quote( $a, '/' ); },
+					array_keys( $globals['extensions'] )
+				)
+			) . ')/';
+			$regexUnsetPrefixes = '/^wg(' . implode( '|',
+				array_map(
+					function( $a ) { return preg_quote( $a, '/' ); },
+					$unsetPrefixes
+				)
+			) . ')/';
 			foreach( $globals['general'] as $setting => $value ) {
 				
-				$found = false;
-				foreach( $extensions as $extension ) {
-					if( preg_match( '/^wg'.preg_quote($extension,'/').'/', $setting ) ) {
-						$globals['extensions'][$extension][$setting] = $value;
-						unset( $setting );
-						$found = true;
-						break;
-					}
+				if( preg_match( $regexExtensions, $setting, $matches ) ) {
+					$globals['extensions'][$matches[1]][$setting] = $value;
+					unset( $setting );
 				}
-				if( !$found ) {
-					foreach( $skins as $skin ) {
-						if( preg_match( '/^wg'.preg_quote($skin,'/').'/', $setting ) ) {
-							$globals['skins'][$skin][$setting] = $value;
-							unset( $setting );
-							$found = true;
-							break;
-						}
-					}
+				elseif( preg_match( $regexSkins, $setting, $matches ) ) {
+					$globals['skins'][$matches[1]][$setting] = $value;
+					unset( $setting );
 				}
-				if( !$found ) {
-					foreach( $unsetPrefixes as $prefix ) {
-						if( preg_match( '/^wg'.preg_quote($prefix,'/').'/', $setting ) ) {
-							unset( $setting );
-							break;
-						}
-					}
-				}
+				elseif( preg_match( $regexUnsetPrefixes, $setting, $matches ) )
+					unset( $matches[1] );
 			}
 			
 			// Register this extension MediaWikiFarm to appear in Special:Version
 			$globals['extensions']['MediaWikiFarm']['_loading'] = 'wfLoadExtension';
 			
 			// Save this configuration in a serialised file
-			if( is_string( $cacheFile ) ) {
+			if( $cacheFile ) {
 				@mkdir( dirname( $cacheFile ) );
 				$tmpFile = tempnam( dirname( $cacheFile ), basename( $cacheFile ).'.tmp' );
 				chmod( $tmpFile, 0744 );
@@ -679,6 +658,7 @@ class MediaWikiFarm {
 	 * 
 	 * @return bool Success.
 	 * @SuppressWarnings(PHPMD.ElseExpression)
+	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 */
 	private function populatewgConf() {
 		
@@ -692,7 +672,7 @@ class MediaWikiFarm {
 			# Executable config files
 			if( array_key_exists( 'exec', $configFile ) ) continue;
 			
-			$theseSettings = $this->readFile( $this->paramsDir . '/' . $configFile['file'] );
+			$theseSettings = $this->readFile( $this->configDir . '/' . $configFile['file'] );
 			if( $theseSettings === false ) {
 				$this->unusable = true;
 				return false;
