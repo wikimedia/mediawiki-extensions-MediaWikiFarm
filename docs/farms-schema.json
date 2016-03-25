@@ -9,58 +9,28 @@
 				{
 					"type": "object",
 					"additionalProperties": false,
+					"required": ["suffix", "wikiID"],
 					"properties": {
 						"variables": {
 							"type": "array",
 							"description": "List of variables in the host.",
 							"additionalItems": false,
-							"items": [
-								{
-									"type": "object",
-									"description": "An host variable.",
-									"additionalProperties": false,
-									"properties": {
-											"variable": {
-											"type": "string",
-											"description": "Name of the host variable."
-										},
-										"file": {
-											"type": "string",
-											"description": "Path of the existing values for this variable."
-										}
-									}
-								},
-								{
-									"type": "object",
-									"description": "An host variable.",
-									"additionalProperties": false,
-									"properties": {
-											"variable": {
-											"type": "string",
-											"description": "Name of the host variable."
-										},
-										"file": {
-											"type": "string",
-											"description": "Path of the existing values for this variable."
-										}
-									}
-								},
-								{
-									"type": "object",
-									"description": "An host variable.",
-									"additionalProperties": false,
-									"properties": {
-											"variable": {
-											"type": "string",
-											"description": "Name of the host variable."
-										},
-										"file": {
-											"type": "string",
-											"description": "Path of the existing values for this variable."
-										}
+							"items": {
+								"type": "object",
+								"description": "An host variable.",
+								"additionalProperties": false,
+								"required": ["variable"],
+								"properties": {
+										"variable": {
+										"type": "string",
+										"description": "Name of the host variable."
+									},
+									"file": {
+										"type": "string",
+										"description": "Path of the existing values for this variable."
 									}
 								}
-							]
+							}
 						},
 						"suffix": {
 							"type": "string",
@@ -88,118 +58,40 @@
 							"type": "array",
 							"description": "List of configuration files.",
 							"additionalItems": false,
-							"items": [
-								{
-									"type": "object",
-									"description": "A configuration file.",
-									"additionalProperties": false,
-									"properties": {
-										"file": {
-											"type": "string",
-											"description": "Path of the configuration file."
-										},
-										"key": {
-											"type": "string",
-											"description": "Pattern of the of the key.",
-											"pattern": "^(default|\\*|[a-z$*-]+)$"
-										},
-										"default": {
-											"type": "string",
-											"description": "Default key.",
-											"pattern": "^[a-z$*-]+$"
-										},
-										"exec": {
-											"type": "boolean",
-											"description": "This file must be directly.",
-											"enum": [true]
-										}
-									}
-								},
-								{
-									"type": "object",
-									"description": "A configuration file.",
-									"additionalProperties": false,
-									"properties": {
-										"file": {
-											"type": "string",
-											"description": "Path of the configuration file."
-										},
-										"key": {
-											"type": "string",
-											"description": "Pattern of the of the key.",
-											"pattern": "^(default|\\*|[a-z$*-]+)$"
-										},
-										"default": {
-											"type": "string",
-											"description": "Default key.",
-											"pattern": "^[a-z$*-]+$"
-										},
-										"exec": {
-											"type": "boolean",
-											"description": "This file must be directly.",
-											"enum": [true]
-										}
-									}
-								},
-								{
-									"type": "object",
-									"description": "A configuration file.",
-									"additionalProperties": false,
-									"properties": {
-										"file": {
-											"type": "string",
-											"description": "Path of the configuration file."
-										},
-										"key": {
-											"type": "string",
-											"description": "Pattern of the of the key.",
-											"pattern": "^(default|\\*|[a-z$*-]+)$"
-										},
-										"default": {
-											"type": "string",
-											"description": "Default key.",
-											"pattern": "^[a-z$*-]+$"
-										},
-										"exec": {
-											"type": "boolean",
-											"description": "This file must be directly.",
-											"enum": [true]
-										}
-									}
-								},
-								{
-									"type": "object",
-									"description": "A configuration file.",
-									"additionalProperties": false,
-									"properties": {
-										"file": {
-											"type": "string",
-											"description": "Path of the configuration file."
-										},
-										"key": {
-											"type": "string",
-											"description": "Pattern of the of the key.",
-											"pattern": "^(default|\\*|[a-z$*-]+)$"
-										},
-										"default": {
-											"type": "string",
-											"description": "Default key.",
-											"pattern": "^[a-z$*-]+$"
-										},
-										"exec": {
-											"type": "boolean",
-											"description": "This file must be directly.",
-											"enum": [true]
-										}
+							"items": {
+								"type": "object",
+								"description": "A configuration file.",
+								"additionalProperties": false,
+								"required": ["file"],
+								"properties": {
+									"file": {
+										"type": "string",
+										"description": "Path of the configuration file."
+									},
+									"key": {
+										"type": "string",
+										"description": "Pattern of the of the key.",
+										"pattern": "^(default|\\*|[a-z$*-]+)$"
+									},
+									"default": {
+										"type": "string",
+										"description": "Default key.",
+										"pattern": "^[a-z$-]+$"
+									},
+									"exec": {
+										"type": "boolean",
+										"description": "This file must be directly.",
+										"enum": [true]
 									}
 								}
-							]
+							}
 						}
 					}
 				},
 				{
 					"type": "object",
 					"additionalProperties": false,
+					"required": ["redirect"],
 					"properties": {
 						"redirect": {
 							"type": "string",
