@@ -541,73 +541,12 @@ class MediaWikiFarm {
 				//$globals['general']['wgDefaultUserOptions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgDefaultUserOptions', $myWiki, $mySuffix ), $globals['general']['wgDefaultUserOptions'] );
 			
 			# Extract from the general configuration skin and extension configuration
-			# Search for skin and extension activation
-			$unsetPrefixes = array();
-			foreach( $globals['general'] as $setting => $value ) {
-				if( preg_match( '/^wgUseSkin(.+)$/', $setting, $matches ) && $value === true ) {
-					
-					$skin = $matches[1];
-					$loadingMechanism = $this->detectLoadingMechanism( 'skin', $skin );
-					
-					if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $skin;
-					else $globals['skins'][$skin] = array( '_loading' => $loadingMechanism );
-					
-					unset( $globals['general'][$setting] );
-				}
-				elseif( preg_match( '/^wgUseExtension(.+)$/', $setting, $matches ) && $value === true ) {
-					
-					$extension = $matches[1];
-					$loadingMechanism = $this->detectLoadingMechanism( 'extension', $extension );
-					
-					if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $extension;
-					else $globals['extensions'][$extension] = array( '_loading' => $loadingMechanism );
-					
-					unset( $globals['general'][$setting] );
-				}
-				elseif( preg_match( '/^wgUse(?:Skin|Extension|LocalExtension)(.+)$/', $setting, $matches ) && $value !== true ) {
-					
-					$unsetPrefixes[] = $matches[1];
-					unset( $globals['general'][$setting] );
-				}
-			}
+			$this->extractSkinsAndExtensions();
 			
-			# Extract skin and extension configuration from the general configuration
-			$regexSkins = '/^wg(' . implode( '|',
-				array_map(
-					function( $a ) { return preg_quote( $a, '/' ); },
-					array_keys( $globals['skins'] )
-				)
-			) . ')/';
-			$regexExtensions = '/^wg(' . implode( '|',
-				array_map(
-					function( $a ) { return preg_quote( $a, '/' ); },
-					array_keys( $globals['extensions'] )
-				)
-			) . ')/';
-			$regexUnsetPrefixes = '/^wg(' . implode( '|',
-				array_map(
-					function( $a ) { return preg_quote( $a, '/' ); },
-					$unsetPrefixes
-				)
-			) . ')/';
-			foreach( $globals['general'] as $setting => $value ) {
-				
-				if( preg_match( $regexExtensions, $setting, $matches ) ) {
-					$globals['extensions'][$matches[1]][$setting] = $value;
-					unset( $setting );
-				}
-				elseif( preg_match( $regexSkins, $setting, $matches ) ) {
-					$globals['skins'][$matches[1]][$setting] = $value;
-					unset( $setting );
-				}
-				elseif( preg_match( $regexUnsetPrefixes, $setting, $matches ) )
-					unset( $matches[1] );
-			}
+			# Register this extension MediaWikiFarm to appear in Special:Version
+			$globals['extensions']['MediaWikiFarm'] = array( '_loading' => 'wfLoadExtension' );
 			
-			// Register this extension MediaWikiFarm to appear in Special:Version
-			$globals['extensions']['MediaWikiFarm']['_loading'] = 'wfLoadExtension';
-			
-			// Save this configuration in a serialised file
+			# Save this configuration in a serialised file
 			if( $cacheFile ) {
 				@mkdir( dirname( $cacheFile ) );
 				$tmpFile = tempnam( dirname( $cacheFile ), basename( $cacheFile ).'.tmp' );
@@ -624,33 +563,6 @@ class MediaWikiFarm {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Detection of the loading mechanism of extensions and skins.
-	 * 
-	 * @param string $type Type, in ['extension', 'skin'].
-	 * @param string $name Name of the extension/skin.
-	 * @return string|null Loading mechnism in ['wfLoadExtension', 'wfLoadSkin', 'require_once', 'composer'] or null if all mechanisms failed.
-	 */
-	private function detectLoadingMechanism( $type, $name ) {
-		
-		if( !is_dir( $this->params['code'].'/'.$type.'s/'.$name ) )
-			return null;
-		
-		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
-		if( is_file( $this->params['code'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) )
-			return 'wfLoad'.ucfirst($type);
-		
-		# A MyExtension.php file is in the directory -> assume it is the loading mechanism
-		elseif( is_file( $this->params['code'].'/'.$type.'s/'.$name.'/'.$name.'.php' ) )
-			return 'require_once';
-		
-		# A composer.json file is in the directory -> assume it is the loading mechanism if previous mechanisms didn’t succeed
-		elseif( is_file( $this->params['code'].'/'.$type.'s/'.$name.'/composer.json' ) )
-			return 'composer';
-		
-		return null;
 	}
 	
 	/**
@@ -721,6 +633,105 @@ class MediaWikiFarm {
 		return true;
 	}
 	
+	/**
+	 * Extract from the general configuration skin and extension configuration
+	 * 
+	 * @return void
+	 */
+	private function extractSkinsAndExtensions() {
+		
+		$globals =& $this->params['globals'];
+		
+		# Search for skin and extension activation
+		$unsetPrefixes = array();
+		foreach( $globals['general'] as $setting => $value ) {
+			if( preg_match( '/^wgUseSkin(.+)$/', $setting, $matches ) && $value === true ) {
+				
+				$skin = $matches[1];
+				$loadingMechanism = $this->detectLoadingMechanism( 'skin', $skin );
+				
+				if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $skin;
+				else $globals['skins'][$skin] = array( '_loading' => $loadingMechanism );
+				
+				unset( $globals['general'][$setting] );
+			}
+			elseif( preg_match( '/^wgUseExtension(.+)$/', $setting, $matches ) && $value === true ) {
+				
+				$extension = $matches[1];
+				$loadingMechanism = $this->detectLoadingMechanism( 'extension', $extension );
+				
+				if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $extension;
+				else $globals['extensions'][$extension] = array( '_loading' => $loadingMechanism );
+				
+				unset( $globals['general'][$setting] );
+			}
+			elseif( preg_match( '/^wgUse(?:Skin|Extension|LocalExtension)(.+)$/', $setting, $matches ) && $value !== true ) {
+				
+				$unsetPrefixes[] = $matches[1];
+				unset( $globals['general'][$setting] );
+			}
+		}
+		
+		# Extract skin and extension configuration from the general configuration
+		$regexSkins = '/^wg(' . implode( '|',
+			array_map(
+				function( $a ) { return preg_quote( $a, '/' ); },
+				array_keys( $globals['skins'] )
+			)
+		) . ')/';
+		$regexExtensions = '/^wg(' . implode( '|',
+			array_map(
+				function( $a ) { return preg_quote( $a, '/' ); },
+				array_keys( $globals['extensions'] )
+			)
+		) . ')/';
+		$regexUnsetPrefixes = '/^wg(' . implode( '|',
+			array_map(
+				function( $a ) { return preg_quote( $a, '/' ); },
+				$unsetPrefixes
+			)
+		) . ')/';
+		foreach( $globals['general'] as $setting => $value ) {
+			
+			if( preg_match( $regexSkins, $setting, $matches ) ) {
+				$globals['skins'][$matches[1]][$setting] = $value;
+				unset( $setting );
+			}
+			elseif( preg_match( $regexExtensions, $setting, $matches ) ) {
+				$globals['extensions'][$matches[1]][$setting] = $value;
+				unset( $setting );
+			}
+			elseif( preg_match( $regexUnsetPrefixes, $setting, $matches ) )
+				unset( $matches[1] );
+		}
+	}
+	
+	/**
+	 * Detection of the loading mechanism of extensions and skins.
+	 * 
+	 * @param string $type Type, in ['extension', 'skin'].
+	 * @param string $name Name of the extension/skin.
+	 * @return string|null Loading mechnism in ['wfLoadExtension', 'wfLoadSkin', 'require_once', 'composer'] or null if all mechanisms failed.
+	 */
+	private function detectLoadingMechanism( $type, $name ) {
+		
+		if( !is_dir( $this->params['code'].'/'.$type.'s/'.$name ) )
+			return null;
+		
+		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
+		if( is_file( $this->params['code'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) )
+			return 'wfLoad'.ucfirst($type);
+		
+		# A MyExtension.php file is in the directory -> assume it is the loading mechanism
+		elseif( is_file( $this->params['code'].'/'.$type.'s/'.$name.'/'.$name.'.php' ) )
+			return 'require_once';
+		
+		# A composer.json file is in the directory -> assume it is the loading mechanism if previous mechanisms didn’t succeed
+		elseif( is_file( $this->params['code'].'/'.$type.'s/'.$name.'/composer.json' ) )
+			return 'composer';
+		
+		return null;
+	}
 	
 	
 	
