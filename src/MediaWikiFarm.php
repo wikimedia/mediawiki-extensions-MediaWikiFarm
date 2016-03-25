@@ -8,8 +8,10 @@
  */
 
 # Protect against web entry
-if( !defined( 'MEDIAWIKI' ) ) exit;
+if( !defined( 'MEDIAWIKI' ) && !defined( 'MEDIAWIKI_FARM' ) ) exit;
 
+# Load Composer libraries
+# There is no warning if not present because the only library loaded (YAML) could not be useful in some installations.
 @include_once __DIR__ . '/../vendor/autoload.php';
 
 /**
@@ -48,18 +50,52 @@ class MediaWikiFarm {
 	 * -------------- */
 	
 	/**
+	 * In the case of multiversion installations, this select the version directory.
+	 * 
+	 * This function is called very early during the loading, even before MediaWiki
+	 * is loaded (first function called by multiversion-dedicated entry points like
+	 * `www/index.php`).
+	 * 
+	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
+	 * @param string|null $host Requested host.
+	 * @return string $entryPoint Identical entry point as passed in input.
+	 */
+	static function getEntryPoint( $entryPoint, $host = null ) {
+		
+		global $wgMediaWikiFarm;
+		
+		# Initialise object
+		$wgMediaWikiFarm = self::initialise( $host );
+		
+		# Check existence
+		if( !$wgMediaWikiFarm->checkExistence() ) {
+			
+			echo 'Error: unknown wiki.';
+			exit;
+		}
+		
+		# Go to version directory
+		chdir( $wgMediaWikiFarm->params['code'] );
+		
+		return $entryPoint;
+	}
+	
+	/**
 	 * Initialise the unique object of type MediaWikiFarm.
 	 * 
-	 * @param string 
+	 * @param string|null $host Requested host.
 	 * @return MediaWikiFarm Singleton.
 	 */
-	static function initialise( $host ) {
+	static function initialise( $host = null ) {
 		
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir;
 		
-		if( self::$self == null )
+		if( self::$self == null ) {
+			
+			# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
+			if( is_null( $host ) ) $host = $_SERVER['HTTP_HOST'];
 			self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir );
-		
+		}
 		return self::$self;
 	}
 	
@@ -78,6 +114,10 @@ class MediaWikiFarm {
 		
 		if( $this->unusable )
 			return false;
+		
+		# In the multiversion case, informations are already loaded and nonexistent wikis are already verified
+		if( array_key_exists( 'version', $this->params ) )
+			return true;
 		
 		# Replace variables in the host name and possibly retrieve the version
 		if( ($version = $this->replaceHostVariables()) === false )

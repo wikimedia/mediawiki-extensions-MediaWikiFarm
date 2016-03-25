@@ -7,9 +7,11 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  */
 
-
 # Protect against web entry
 if( !defined( 'MEDIAWIKI' ) ) exit;
+
+# Definition of a constant to protect dedicated entry points
+define( 'MEDIAWIKI_FARM', true );
 
 require_once __DIR__ . '/MediaWikiFarm.php';
 
