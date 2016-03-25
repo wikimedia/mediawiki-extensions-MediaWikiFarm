@@ -10,10 +10,6 @@
 # Protect against web entry
 if( !defined( 'MEDIAWIKI' ) && !defined( 'MEDIAWIKI_FARM' ) ) exit;
 
-# Load Composer libraries
-# There is no warning if not present because the only library loaded (YAML) could not be useful in some installations.
-@include_once __DIR__ . '/../vendor/autoload.php';
-
 /**
  * This class computes the configuration of a specific wiki from a set of configuration files.
  * The configuration is composed of the list of authorised wikis and different configuration
@@ -264,9 +260,9 @@ class MediaWikiFarm {
 		$this->codeDir = $codeDir;
 		
 		# Read the farm(s) configuration
-		if( $configs = $this->readFile( $this->configDir . '/farms.yml' ) );
-		elseif( $configs = $this->readFile( $this->configDir . '/farms.php' ) );
-		elseif( $configs = $this->readFile( $this->configDir . '/farms.json' ) );
+		if( $configs = $this->readFile( 'farms.yml', $this->configDir ) );
+		elseif( $configs = $this->readFile( '/farms.json', $this->configDir ) );
+		elseif( $configs = $this->readFile( '/farms.php', $this->configDir ) );
 		else $this->unusable = true;
 		
 		# Now select the right configuration amoung all farms
@@ -351,7 +347,7 @@ class MediaWikiFarm {
 				continue;
 			
 			# Really check if the variable is in the listing file
-			$choices = $this->readFile( $this->configDir . '/' . $this->replaceVariables( $variable['file'] ) );
+			$choices = $this->readFile( $this->replaceVariables( $variable['file'] ), $this->configDir );
 			if( $choices === false ) {
 				$this->unusable = true;
 				return false;
@@ -390,11 +386,11 @@ class MediaWikiFarm {
 		
 		# Set suffix
 		$this->setWikiProperty( 'suffix' );
-		$this->variables['suffix'] = $this->params['suffix'];
+		$this->variables['SUFFIX'] = $this->params['suffix'];
 		
 		# Set wikiID
 		$this->setWikiProperty( 'wikiID' );
-		$this->variables['wikiID'] = $this->params['wikiID'];
+		$this->variables['WIKI'] = $this->params['wikiID'];
 		
 		# Check consistency
 		if( !$this->params['suffix'] || !$this->params['wikiID'] ) {
@@ -426,7 +422,7 @@ class MediaWikiFarm {
 		# In the case multiversion is configured, but version is not known as of now
 		elseif( is_string( $this->codeDir ) && is_null( $version ) ) {
 			
-			$versions = $this->readFile( $this->params['versions'] );
+			$versions = $this->readFile( $this->params['versions'], $this->configDir );
 			
 			if( !$versions ) {
 				$this->unusable = true;
@@ -459,7 +455,7 @@ class MediaWikiFarm {
 		}
 		
 		# Set the version in the wiki configuration and as a variable to be used later
-		$this->variables['version'] = $version;
+		$this->variables['VERSION'] = $version;
 		$this->params['version'] = $version;
 		
 		return true;
@@ -476,7 +472,6 @@ class MediaWikiFarm {
 			$this->params['config'] = array();
 		
 		$this->setWikiProperty( 'data' );
-		$this->setWikiProperty( 'cache' );
 		$this->setWikiProperty( 'config' );
 		
 		return true;
@@ -488,16 +483,16 @@ class MediaWikiFarm {
 	 * @todo Still hacky: before setting parameters in stone in farms.yml, various configurations should be reviewed to select accordingly the rights management modelisation
 	 * @return void
 	 */
-	private function setWgConf() {
+	/*private function setWgConf() {
 		
 		global $wgConf;
 		
 		$wgConf->suffixes = array( $this->params['suffix'] );
-		$wikiIDs = $this->readFile( $this->configDir . '/' . $this->params['suffix'] . '/wikis.yml' );
+		$wikiIDs = $this->readFile( $this->params['suffix'] . '/wikis.yml', $this->configDir );
 		foreach( array_keys( $wikiIDs ) as $wiki ) {
 			$wgConf->wikis[] = $wiki . '-' . $this->params['suffix'];
 		}
-	}
+	}*/
 	
 	/**
 	 * Get or compute the configuration (MediaWiki, skins, extensions) for a wiki.
@@ -529,7 +524,7 @@ class MediaWikiFarm {
 		$myWiki = $this->params['wikiID'];
 		$mySuffix = $this->params['suffix'];
 		
-		$cacheFile = $this->params['cache'];
+		$cacheFile = $this->replaceVariables( '$VERSION-$SUFFIX-$WIKI.ser' );
 		
 		//var_dump($wgConf);
 		//var_dump($cacheFile);
@@ -543,8 +538,8 @@ class MediaWikiFarm {
 		
 		$this->params['globals'] = false;
 		
-		if( $cacheFile && is_string( $cacheFile ) && is_file( $cacheFile) && @filemtime( $cacheFile ) >= $oldness )
-			$this->params['globals'] = $this->readFile( $cacheFile );
+		if( array_key_exists( 'cache', $this->params ) && is_file( $this->configDir . '/.cache/' . $cacheFile ) && @filemtime( $this->configDir . '/.cache/' . $cacheFile ) >= $oldness )
+			$this->params['globals'] = $this->readFile( $cacheFile, $this->configDir . '/.cache' );
 		
 		else {
 			
@@ -580,8 +575,7 @@ class MediaWikiFarm {
 			$globals['extensions']['MediaWikiFarm'] = array( '_loading' => 'wfLoadExtension' );
 			
 			# Save this configuration in a serialised file
-			if( $cacheFile )
-				$this->cacheFile( $globals, $cacheFile );
+			$this->cacheFile( $globals, $cacheFile );
 		}
 	}
 	
@@ -604,7 +598,7 @@ class MediaWikiFarm {
 			# Executable config files
 			if( array_key_exists( 'exec', $configFile ) ) continue;
 			
-			$theseSettings = $this->readFile( $this->configDir . '/' . $configFile['file'] );
+			$theseSettings = $this->readFile( $configFile['file'], $this->configDir );
 			if( $theseSettings === false ) {
 				$this->unusable = true;
 				return false;
@@ -781,19 +775,19 @@ class MediaWikiFarm {
 		$format = preg_replace( '/^.*\.([a-z]+)$/', '$1', $filename );
 		
 		# Check the file exists
-		$filename = $directory ? $directory . '/' . $filename : $filename;
-		if( !is_file( $filename ) )
+		$prefixedFile = $directory ? $directory . '/' . $filename : $filename;
+		if( !is_file( $prefixedFile ) )
 			return false;
 		
 		# Format PHP
 		if( $format == 'php' )
 			
-			$array = @include $filename;
+			$array = @include $prefixedFile;
 		
 		# Format 'serialisation'
 		elseif( $format == 'ser' ) {
 			
-			$content = @file_get_contents( $filename );
+			$content = @file_get_contents( $prefixedFile );
 			
 			if( !$content )
 				return array();
@@ -801,14 +795,24 @@ class MediaWikiFarm {
 			$array = @unserialize( $content );
 		}
 		
+		# Cached version
+		elseif( is_file( $this->configDir . '/.cache/' . $filename . '.ser' ) && @filemtime( $this->configDir . '/.cache/' . $filename . '.ser' ) >= @filemtime( $prefixedFile ) )
+			
+			return $this->readFile( $filename . '.ser', $this->configDir . '/.cache' );
+		
 		# Format YAML
 		elseif( $format == 'yml' || $format == 'yaml' ) {
 			
-			if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) )
+			# Load Composer libraries
+			# There is no warning if not present because to properly handle the error by returning false
+			# This is only included here to avoid delays (~3ms) during the loading using cached files or other formats
+			@include_once __DIR__ . '/../vendor/autoload.php';
+			
+			if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) || !class_exists( 'Symfony\Component\Yaml\Exception\ParseException' ) )
 				return false;
 			
 			try {
-				$array = Symfony\Component\Yaml\Yaml::parse( @file_get_contents( $filename ) );
+				$array = Symfony\Component\Yaml\Yaml::parse( @file_get_contents( $prefixedFile ) );
 			}
 			catch( Symfony\Component\Yaml\Exception\ParseException $e ) {
 				
@@ -819,12 +823,12 @@ class MediaWikiFarm {
 		# Format JSON
 		elseif( $format == 'json' )
 			
-			$array = json_decode( @file_get_contents( $filename ), true );
+			$array = json_decode( @file_get_contents( $prefixedFile ), true );
 		
 		# Format 'dblist' (simple list of strings separated by newlines)
 		elseif( $format == 'dblist' ) {
 			
-			$content = @file_get_contents( $filename );
+			$content = @file_get_contents( $prefixedFile );
 			
 			if( !$content )
 				return array();
@@ -835,13 +839,18 @@ class MediaWikiFarm {
 		# Error for any other format
 		else return false;
 		
-		# Regular return for arrays
-		if( is_array( $array ) )
-			return $array;
+		# A null value is an empty file or value 'null'
+		if( is_null( $array ) )
+			$array = array();
 		
-		# Return an empty array if null (empty file or value 'null)
-		elseif( is_null( $array ) )
-			return array();
+		# Regular return for arrays
+		if( is_array( $array ) ) {
+			
+			if( $format !== 'php' && $format !== 'ser' )
+				$this->cacheFile( $array, $filename.'.ser' );
+			
+			return $array;
+		}
 		
 		# Error for any other type
 		return false;
@@ -851,31 +860,25 @@ class MediaWikiFarm {
 	 * Create a cache file.
 	 * 
 	 * @param array $array Array of the data to be cached.
-	 * @param string $filename Name of the cache file.
-	 * @param string $format Format of the cache file, in ['ser', 'php'].
+	 * @param string $filename Name of the cache file; this filename must have an extension '.ser' or '.php' else no cache file is saved.
 	 * @return void
 	 */
-	private function cacheFile( $array, $filename, $format = 'ser' ) {
+	private function cacheFile( $array, $filename ) {
 		
-		if( !array_key_exists( 'cache', $this->params ) )
-			return;
+		$prefixedFile = $this->configDir . '/.cache/' . $filename;
 		
 		# Create temporary file
-		@mkdir( dirname( $filename ) );
-		$tmpFile = tempnam( dirname( $filename ), $filename.'.tmp' );
-		chmod( $tmpFile, 0644 );
+		@mkdir( dirname( $prefixedFile ) );
+		$tmpFile = $prefixedFile . '.tmp';
 		
-		if( !$tmpFile )
-			return;
-		
-		if( $format == 'php' ) {
-			if( file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $array, true ).';' ) )
-				rename( $tmpFile, $filename );
-		}
-		elseif( $format == 'ser' ) {
+		if( preg_match( '/\.ser$/', $filename ) ) {
 			if( file_put_contents( $tmpFile, serialize( $array ) ) ) {
-				rename( $tmpFile, $filename );
+				rename( $tmpFile, $prefixedFile );
 			}
+		}
+		elseif( preg_match( '/\.php$/', $filename ) ) {
+			if( file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $array, true ).';' ) )
+				rename( $tmpFile, $prefixedFile );
 		}
 	}
 	
