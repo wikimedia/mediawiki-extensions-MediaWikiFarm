@@ -256,7 +256,7 @@ class MediaWikiFarm {
 	private function __construct( $host, $configDir, $codeDir = null, $cacheDir = null ) {
 		
 		# Check parameters
-		if( !is_string( $host ) ||
+		if( !is_string( $host ) || $host == '' ||
 		    !(is_string( $configDir ) && is_dir( $configDir )) ||
 		    !(is_null( $codeDir ) xor (is_string( $codeDir ) && is_dir( $codeDir ))) ||
 		    !(is_null( $cacheDir ) xor is_string( $cacheDir ))
@@ -308,7 +308,7 @@ class MediaWikiFarm {
 		# For each proposed farm, check if the host matches
 		foreach( $configs as $regex => $config ) {
 			
-			if( !preg_match( '/' . $regex . '/i', $host, $matches ) )
+			if( !preg_match( '/^' . $regex . '$/i', $host, $matches ) )
 				continue;
 			
 			# Initialise variables from the host
