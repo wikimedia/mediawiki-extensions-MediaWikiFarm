@@ -13,7 +13,6 @@
 		"wikiID": "$lang$family",
 		"versions": "wikiversions.json",
 		"data": "/srv/data/org/$family/$lang",
-		"cache": "/tmp/mw-cache/org-$version-$family-$lang",
 		"config": [
 			{
 				"file": "org/InitialiseSettings.php",
@@ -43,7 +42,6 @@
 		"suffix": "$client",
 		"wikiID": "$wiki-$client",
 		"data": "/srv/data/com/example/$client/$wiki",
-		"cache": "/tmp/mw-cache/com-example-$version-$client-$wiki",
 		"config": [
 			{
 				"file": "com/example/DefaultSettings.yml",

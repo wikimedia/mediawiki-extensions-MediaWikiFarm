@@ -2,14 +2,16 @@
 
 /**
  * Configuration managed by MediaWikiFarm -- MonoVersion case.
- * 
- * Just change the configuration directory, preferably in a directory not exposed on the Web.
- * Then add the sample file farms.yml inside and start customising it.
  */
 
-# Configuration directory.
-# There must be a file 'farms.yml' or 'farms.php' or 'farms.json' inside.
+// Configuration directory.
+// There must be a file 'farms.yml' or 'farms.php' or 'farms.json' inside.
 $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
+
+// Cache directory.
+// This can speed up the time spend by this extension from 9ms to 2ms. Set to
+// null if you want to disable the cache.
+$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
 
 # Include the code.
 require_once "$IP/extensions/MediaWikiFarm/MediaWikiFarm.php";

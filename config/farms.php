@@ -17,7 +17,6 @@ return array(
 		'wikiID' => '$lang$family',
 		'versions' => 'wikiversions.json',
 		'data' => '/srv/data/org/$family/$lang',
-		'cache' => '/tmp/mw-cache/org-$version-$family-$lang',
 		'config' => array(
 			array( 'file' => 'org/InitialiseSettings.php',
 			       'key' => '*'
@@ -46,7 +45,6 @@ return array(
 		'suffix' => '$client',
 		'wikiID' => '$wiki-$client',
 		'data' => '/srv/data/com/example/$client/$wiki',
-		'cache' => '/tmp/mw-cache/com-example-$version-$client-$wiki',
 		'config' => array(
 			array( 'file' => 'com/example/DefaultSettings.yml',
 			       'key' => 'default'

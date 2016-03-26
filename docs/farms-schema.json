@@ -50,10 +50,6 @@
 							"type": "string",
 							"description": "Data directory where files of the wiki are stored."
 						},
-						"cache": {
-							"type": ["string","null"],
-							"description": "Configuration cache file."
-						},
 						"config": {
 							"type": "array",
 							"description": "List of configuration files.",

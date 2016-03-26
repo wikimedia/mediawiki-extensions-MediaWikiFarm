@@ -17,7 +17,7 @@ if( defined( 'MEDIAWIKI_FARM' ) ) return;
 /**
  * This class computes the configuration of a specific wiki from a set of configuration files.
  * The configuration is composed of the list of authorised wikis and different configuration
- * files, possibly with different permissions. All files are written in YAML syntax.
+ * files, possibly with different permissions. Files can be written in YAML, JSON, or PHP.
  */
 class MediaWikiFarm {
 	
@@ -29,10 +29,13 @@ class MediaWikiFarm {
 	private static $self = null;
 	
 	/** @var string [private] Farm configuration directory. */
-	private $configDir = '/etc/mediawiki';
+	private $configDir = '';
 	
 	/** @var string|null [private] MediaWiki code directory, where each subdirectory is a MediaWiki installation. */
 	private $codeDir = null;
+	
+	/** @var string|null [private] MediaWiki cache directory. */
+	private $cacheDir = null;
 	
 	/** @var bool [private] This object cannot be used because of an emergency error. */
 	public $unusable = false;
@@ -88,13 +91,13 @@ class MediaWikiFarm {
 	 */
 	static function initialise( $host = null ) {
 		
-		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir;
+		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 		
 		if( self::$self == null ) {
 			
 			# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
 			if( is_null( $host ) ) $host = $_SERVER['HTTP_HOST'];
-			self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir );
+			self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir );
 		}
 		return self::$self;
 	}
@@ -246,13 +249,15 @@ class MediaWikiFarm {
 	 * @param string $host Requested host.
 	 * @param string $configDir Configuration directory.
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
+	 * @param string|null $cacheDir Cache directory; if null, the cache is disabled.
 	 */
-	private function __construct( $host, $configDir = '/etc/mediawiki', $codeDir = null ) {
+	private function __construct( $host, $configDir, $codeDir = null, $cacheDir = null ) {
 		
 		# Check parameters
 		if( !is_string( $host ) ||
 		    !(is_string( $configDir ) && is_dir( $configDir )) ||
-		    !(is_null( $codeDir ) xor (is_string( $codeDir ) && is_dir( $codeDir )))
+		    !(is_null( $codeDir ) xor (is_string( $codeDir ) && is_dir( $codeDir ))) ||
+		    !(is_null( $cacheDir ) xor is_string( $cacheDir ))
 		  ) {
 		  	
 			$this->unusable = true;
@@ -262,6 +267,10 @@ class MediaWikiFarm {
 		# Set parameters
 		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
+		$this->cacheDir = $cacheDir;
+		
+		if( !is_dir( $this->cacheDir ) )
+			@mkdir( $this->cacheDir );
 		
 		# Read the farm(s) configuration
 		if( $configs = $this->readFile( 'farms.yml', $this->configDir ) );
@@ -394,7 +403,7 @@ class MediaWikiFarm {
 		
 		# Set wikiID
 		$this->setWikiProperty( 'wikiID' );
-		$this->variables['WIKI'] = $this->params['wikiID'];
+		$this->variables['WIKIID'] = $this->params['wikiID'];
 		
 		# Check consistency
 		if( !$this->params['suffix'] || !$this->params['wikiID'] ) {
@@ -527,23 +536,17 @@ class MediaWikiFarm {
 		
 		$myWiki = $this->params['wikiID'];
 		$mySuffix = $this->params['suffix'];
+		$cacheFile = $this->replaceVariables( '$VERSION-$SUFFIX-$WIKIID.ser' );
+		$this->params['globals'] = false;
 		
-		$cacheFile = $this->replaceVariables( '$VERSION-$SUFFIX-$WIKI.ser' );
-		
-		//var_dump($wgConf);
-		//var_dump($cacheFile);
-		//var_dump($myWiki);
-		//var_dump($mySuffix);
-		//echo "\n\n<br /><br />";
-		
+		# Check modification time of original config files
 		$oldness = 0;
 		foreach( $this->params['config'] as $configFile )
 			$oldness = max( $oldness, @filemtime( $this->configDir . '/' . $configFile['file'] ) );
 		
-		$this->params['globals'] = false;
-		
-		if( array_key_exists( 'cache', $this->params ) && is_file( $this->configDir . '/.cache/' . $cacheFile ) && @filemtime( $this->configDir . '/.cache/' . $cacheFile ) >= $oldness )
-			$this->params['globals'] = $this->readFile( $cacheFile, $this->configDir . '/.cache' );
+		# Use cache file or recompile the config
+		if( is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $cacheFile ) && @filemtime( $this->cacheDir . '/' . $cacheFile ) >= $oldness )
+			$this->params['globals'] = $this->readFile( $cacheFile, $this->cacheDir );
 		
 		else {
 			
@@ -800,9 +803,9 @@ class MediaWikiFarm {
 		}
 		
 		# Cached version
-		elseif( is_file( $this->configDir . '/.cache/' . $filename . '.ser' ) && @filemtime( $this->configDir . '/.cache/' . $filename . '.ser' ) >= @filemtime( $prefixedFile ) )
+		elseif( is_file( $this->cacheDir . '/' . $filename . '.ser' ) && @filemtime( $this->cacheDir . '/' . $filename . '.ser' ) >= @filemtime( $prefixedFile ) )
 			
-			return $this->readFile( $filename . '.ser', $this->configDir . '/.cache' );
+			return $this->readFile( $filename . '.ser', $this->cacheDir );
 		
 		# Format YAML
 		elseif( $format == 'yml' || $format == 'yaml' ) {
@@ -869,10 +872,14 @@ class MediaWikiFarm {
 	 */
 	private function cacheFile( $array, $filename ) {
 		
-		$prefixedFile = $this->configDir . '/.cache/' . $filename;
+		if( !is_string( $this->cacheDir ) || !is_dir( $this->cacheDir ) )
+			return;
+		
+		$prefixedFile = $this->cacheDir . '/' . $filename;
 		
 		# Create temporary file
-		@mkdir( dirname( $prefixedFile ) );
+		if( !is_dir( dirname( $prefixedFile ) ) )
+			mkdir( dirname( $prefixedFile ) );
 		$tmpFile = $prefixedFile . '.tmp';
 		
 		if( preg_match( '/\.ser$/', $filename ) ) {
