@@ -73,6 +73,8 @@ class MediaWikiFarm {
 		# Check existence
 		if( !$wgMediaWikiFarm->checkExistence() ) {
 			
+			$version = $_SERVER['SERVER_PROTOCOL'] && $_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.0' ? '1.0' : '1.1';
+			header( "HTTP/$version 404 Not Found" );
 			echo 'Error: unknown wiki.';
 			exit;
 		}
@@ -96,7 +98,7 @@ class MediaWikiFarm {
 		if( self::$self == null ) {
 			
 			# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
-			if( is_null( $host ) ) $host = $_SERVER['HTTP_HOST'];
+			if( is_null( $host ) ) $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
 			self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir );
 		}
 		return self::$self;
