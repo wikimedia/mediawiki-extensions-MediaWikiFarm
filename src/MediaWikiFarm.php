@@ -10,6 +10,10 @@
 # Protect against web entry
 if( !defined( 'MEDIAWIKI' ) && !defined( 'MEDIAWIKI_FARM' ) ) exit;
 
+# Protect against double inclusion
+# This could happen even with require_once in the case of multiversion installation
+if( defined( 'MEDIAWIKI_FARM' ) ) return;
+
 /**
  * This class computes the configuration of a specific wiki from a set of configuration files.
  * The configuration is composed of the list of authorised wikis and different configuration

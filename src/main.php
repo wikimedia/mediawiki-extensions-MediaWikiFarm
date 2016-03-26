@@ -10,9 +10,6 @@
 # Protect against web entry
 if( !defined( 'MEDIAWIKI' ) ) exit;
 
-# Definition of a constant to protect dedicated entry points
-define( 'MEDIAWIKI_FARM', true );
-
 require_once __DIR__ . '/MediaWikiFarm.php';
 
 $wgMediaWikiFarm = MediaWikiFarm::initialise( $GLOBALS['_SERVER']['HTTP_HOST'] );

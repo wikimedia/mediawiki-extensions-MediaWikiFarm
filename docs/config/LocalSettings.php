@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Configuration managed by MediaWikiFarm.
+ * Configuration managed by MediaWikiFarm -- MonoVersion case.
  * 
  * Just change the configuration directory, preferably in a directory not exposed on the Web.
  * Then add the sample file farms.yml inside and start customising it.
