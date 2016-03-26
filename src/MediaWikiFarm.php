@@ -364,7 +364,7 @@ class MediaWikiFarm {
 				if( !array_key_exists( $value, $choices ) )
 					return false;
 				
-				if( isset( $this->codeDir ) && is_dir( $this->codeDir . '/' . ((string) $choices[$value]) ) && is_file( $this->codeDir . '/' . ((string) $choices[$value]) . '/includes/DefaultSettings.php' ) )
+				if( is_string( $this->codeDir ) && is_dir( $this->codeDir . '/' . ((string) $choices[$value]) ) && is_file( $this->codeDir . '/' . ((string) $choices[$value]) . '/includes/DefaultSettings.php' ) )
 					$version = (string) $choices[$value];
 			}
 		}
@@ -956,9 +956,9 @@ class MediaWikiFarm {
 		$argsCount = func_num_args();
 		for ( $i = 1; $i < $argsCount; $i++ ) {
 			foreach ( func_get_arg( $i ) as $key => $value ) {
-				if( isset( $out[$key] ) && is_array( $out[$key] ) && is_array( $value ) ) {
+				if( array_key_exists( $key, $out ) && is_array( $out[$key] ) && is_array( $value ) ) {
 					$out[$key] = self::arrayMerge( $out[$key], $value );
-				} elseif( !isset( $out[$key] ) && !is_numeric( $key ) ) {
+				} elseif( !array_key_exists( $key, $out ) && !is_numeric( $key ) ) {
 					// Values that evaluate to true given precedence, for the
 					// primary purpose of merging permissions arrays.
 					$out[$key] = $value;
