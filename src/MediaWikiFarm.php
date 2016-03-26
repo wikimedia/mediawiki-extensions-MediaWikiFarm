@@ -25,26 +25,26 @@ class MediaWikiFarm {
 	 * Properties
 	 * ---------- */
 	
-	/** @var MediaWikiFarm|null [private] Singleton. */
+	/** @var MediaWikiFarm|null Singleton. */
 	private static $self = null;
 	
-	/** @var string [private] Farm configuration directory. */
+	/** @var string Farm configuration directory. */
 	private $configDir = '';
 	
-	/** @var string|null [private] MediaWiki code directory, where each subdirectory is a MediaWiki installation. */
+	/** @var string|null MediaWiki code directory, where each subdirectory is a MediaWiki installation. */
 	private $codeDir = null;
 	
-	/** @var string|null [private] MediaWiki cache directory. */
+	/** @var string|null MediaWiki cache directory. */
 	private $cacheDir = null;
 	
-	/** @var bool [private] This object cannot be used because of an emergency error. */
+	/** @var bool This object cannot be used because of an emergency error. */
 	public $unusable = false;
 	
-	/** @var array [private] Farm configuration file. */
-	public $params = array();
-	
-	/** @var array [private] Variables related to the current request. */
+	/** @var array Variables related to the current request. */
 	public $variables = array();
+	
+	/** @var array Configuration parameters for this wiki. */
+	public $params = array();
 	
 	
 	
@@ -154,7 +154,7 @@ class MediaWikiFarm {
 	function loadMediaWikiConfig() {
 		
 		if( $this->unusable )
-			return false;
+			return;
 		
 		if( !is_array( $this->params['globals'] ) )
 			$this->getMediaWikiConfig();
@@ -178,7 +178,7 @@ class MediaWikiFarm {
 	function loadSkinsConfig() {
 		
 		if( $this->unusable )
-			return false;
+			return;
 		
 		// Load skins with the wfLoadSkin mechanism
 		foreach( $this->params['globals']['skins'] as $skin => $value ) {
@@ -211,7 +211,7 @@ class MediaWikiFarm {
 	function loadExtensionsConfig() {
 		
 		if( $this->unusable )
-			return false;
+			return;
 		
 		// Load extensions with the wfLoadExtension mechanism
 		foreach( $this->params['globals']['extensions'] as $extension => $value ) {
@@ -553,7 +553,8 @@ class MediaWikiFarm {
 			$this->params['globals'] = array(
 				'general' => array(),
 				'skins' => array(),
-				'extensions' => array()
+				'extensions' => array(),
+				'execFiles' => array(),
 			);
 			$globals =& $this->params['globals'];
 			
@@ -603,7 +604,11 @@ class MediaWikiFarm {
 		foreach( $this->params['config'] as $configFile ) {
 			
 			# Executable config files
-			if( array_key_exists( 'exec', $configFile ) ) continue;
+			if( array_key_exists( 'exec', $configFile ) ) {
+				
+				$this->params['globals']['execFiles'][] = $this->configDir . '/' . $configFile['file'];
+				continue;
+			}
 			
 			$theseSettings = $this->readFile( $configFile['file'], $this->configDir );
 			if( $theseSettings === false ) {

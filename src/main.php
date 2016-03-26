@@ -10,14 +10,15 @@
 # Protect against web entry
 if( !defined( 'MEDIAWIKI' ) ) exit;
 
+# Class where the logic is
 require_once __DIR__ . '/MediaWikiFarm.php';
-
-$wgMediaWikiFarm = MediaWikiFarm::initialise( $GLOBALS['_SERVER']['HTTP_HOST'] );
 
 
 /*
- * Check existence
+ * Verify existence of the wiki
  */
+
+$wgMediaWikiFarm = MediaWikiFarm::initialise();
 
 if( !$wgMediaWikiFarm->checkExistence() ) {
 	
@@ -30,16 +31,8 @@ if( !$wgMediaWikiFarm->checkExistence() ) {
  * MediaWiki
  */
 
-// Load general MediaWiki configuration
+# Load general MediaWiki configuration
 $wgMediaWikiFarm->loadMediaWikiConfig();
-
-
-// Set system parameters
-$wvgClient = $wgMediaWikiFarm->variables['client'];
-$wvgWiki = $wgMediaWikiFarm->variables['wiki'];
-
-$wgUploadDirectory = '/srv/www/mediawiki-farm/data/'.$wvgClient.'/'.$wvgWiki.'/images';
-$wgCacheDirectory = '/srv/www/mediawiki-farm/data/'.$wvgClient.'/'.$wvgWiki.'/cache';
 
 
 /*
@@ -71,8 +64,13 @@ foreach( $wgMediaWikiFarm->params['globals']['extensions'] as $extension => $val
 # Load extensions with the wfLoadExtension mechanism
 $wgMediaWikiFarm->loadExtensionsConfig();
 
-// L’éditeur visuel cherchant toujours à se faire remarquer par les sysadmins, la
-// ligne suivante est nécessaire tant qu’il est chargé avec require_once, car
-// l’inclusion écrase cette valeur (même si spécifiée dans les fichiers YAML)
-$wgDefaultUserOptions['visualeditor-enable'] = 1;
+
+/*
+ * Load other parameters
+ */
+
+foreach( $wgMediaWikiFarm->params['globals']['execFiles'] as $execFile ) {
+	
+	@include $execFile;
+}
 
