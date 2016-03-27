@@ -23,9 +23,9 @@ $wgMediaWikiFarm = MediaWikiFarm::initialise();
 if( !$wgMediaWikiFarm->checkExistence() ) {
 	
 	$version = $_SERVER['SERVER_PROTOCOL'] && $_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.0' ? '1.0' : '1.1';
-	header( "HTTP/$version 404 Not Found" );
-	echo 'Error: unknown wiki.';
-	exit;
+	if( PHP_SAPI != 'cli' ) header( "HTTP/$version 404 Not Found" );
+	echo "Error: unknown wiki.\n";
+	exit( 1 );
 }
 
 
