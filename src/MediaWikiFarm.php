@@ -237,7 +237,17 @@ class MediaWikiFarm {
 		}
 	}
 	
-	function loadConfigDirectory() {
+	/**
+	 * Return the file where is loaded the configuration.
+	 * 
+	 * This function is important to avoid the two parts of the extension (checking of
+	 * existence and loading of configuration) are located in the same directory in the
+	 * case mono- and multi-version installations are mixed. Without it, this class
+	 * could be defined by two different files, and PHP doesn’t like it.
+	 * 
+	 * @return string File where is loaded the configuration.
+	 */
+	function getConfigFile() {
 		
 		return $this->farmDir . '/src/main.php';
 	}
