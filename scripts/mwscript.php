@@ -10,14 +10,22 @@
 # Protect against web entry
 if( PHP_SAPI != 'cli' ) exit;
 
-/** Definition of a constant to protect dedicated entry points. */
-define( 'MEDIAWIKI_FARM', true );
-
 # Configuration of the MediaWiki Farm
-$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
-$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
-$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
-@include_once dirname( dirname( __FILE__ ) ) . '/config/MediaWikiFarmDirectories.php';
+if( is_file( dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/includes/DefaultSettings.php' ) ) {
+	
+	$IP = dirname( dirname( dirname( dirname( __FILE__ ) ) ) );
+	require "$IP/LocalSettings.php";
+}
+else {
+	
+	/** Definition of a constant to protect dedicated entry points. */
+	define( 'MEDIAWIKI_FARM', true );
+	
+	$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
+	$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
+	$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
+	require_once dirname( dirname( __FILE__ ) ) . '/config/MediaWikiFarmDirectories.php';
+}
 
 # Include library
 // @codingStandardsIgnoreStart MediaWiki.Usage.DirUsage.FunctionFound
@@ -134,10 +142,11 @@ if( preg_match( '/^[a-zA-Z-]+$/', $mwfScript ) )
 MediaWikiFarm::getEntryPoint( $mwfScript, $mwfHost );
 
 # Display parameters
+$mwfVersion = $wgMediaWikiFarm->params['version'] ? $wgMediaWikiFarm->params['version'] : 'current';
 echo <<<PARAMS
 
 Wiki:    $mwfHost (wikiID: {$wgMediaWikiFarm->params['wikiID']}; suffix: {$wgMediaWikiFarm->params['suffix']})
-Version: {$wgMediaWikiFarm->params['version']}: {$wgMediaWikiFarm->params['code']}
+Version: $mwfVersion: {$wgMediaWikiFarm->params['code']}
 Script:  $mwfScript
 
 
@@ -149,8 +158,10 @@ if( !is_file( $mwfScript ) ) {
 	exit( 1 );
 }
 $argv[0] = $mwfScript;
-unset( $mwfScript );
 unset( $mwfHost );
+unset( $mwfScript );
+unset( $mwfVersion );
+unset( $IP );
 
 # Execute the script
 // Possibly it could be better to do a true system call with a child process (PHP function "system"), BUT

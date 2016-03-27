@@ -8,7 +8,7 @@
  */
 
 # Protect against web entry
-if( !defined( 'MEDIAWIKI' ) ) exit;
+if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' ) exit;
 
 # Class where the logic is
 require_once __DIR__ . '/MediaWikiFarm.php';

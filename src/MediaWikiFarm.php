@@ -8,7 +8,7 @@
  */
 
 # Protect against web entry
-if( !defined( 'MEDIAWIKI' ) && !defined( 'MEDIAWIKI_FARM' ) ) exit;
+if( !defined( 'MEDIAWIKI' ) && !defined( 'MEDIAWIKI_FARM' ) && PHP_SAPI != 'cli' ) exit;
 
 # Protect against double inclusion
 # This could happen even with require_once in the case of multiversion installation
@@ -428,6 +428,7 @@ class MediaWikiFarm {
 		
 		global $IP, $wgVersion;
 		
+		# Replace variables in the file name containing all versions, if existing
 		$this->setWikiProperty( 'versions' );
 		
 		# In the case multiversion is configured and version is already known
@@ -458,10 +459,10 @@ class MediaWikiFarm {
 			$this->params['code'] = $this->codeDir . '/' . $version;
 		}
 		
-		# In the case no multiversion is configured
+		# In the case this is a monoversion installation
 		elseif( is_null( $this->codeDir ) ) {
 			
-			$version = $wgVersion;
+			$version = '';
 			$this->params['code'] = $IP;
 		}
 		else {
@@ -538,7 +539,8 @@ class MediaWikiFarm {
 		
 		$myWiki = $this->params['wikiID'];
 		$mySuffix = $this->params['suffix'];
-		$cacheFile = $this->replaceVariables( '$VERSION-$SUFFIX-$WIKIID.ser' );
+		if( $this->params['version'] ) $cacheFile = $this->replaceVariables( '$VERSION-$SUFFIX-$WIKIID.ser' );
+		else $cacheFile = $this->replaceVariables( '$SUFFIX-$WIKIID.ser' );
 		$this->params['globals'] = false;
 		
 		# Check modification time of original config files

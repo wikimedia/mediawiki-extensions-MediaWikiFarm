@@ -10,7 +10,7 @@
  */
 
 # Protect against web entry
-if( !defined( 'MEDIAWIKI' ) ) exit;
+if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' ) exit;
 
 /*
  * Parameters
@@ -49,5 +49,6 @@ if( !defined( 'MEDIAWIKI' ) ) exit;
  *    Code
  * ========== */
 
-require_once __DIR__ . '/src/main.php';
+if( defined( 'MEDIAWIKI' ) )
+	require_once __DIR__ . '/src/main.php';
 
