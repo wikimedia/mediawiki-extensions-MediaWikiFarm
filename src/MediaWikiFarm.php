@@ -53,17 +53,17 @@ class MediaWikiFarm {
 	 * -------------- */
 	
 	/**
-	 * In the case of multiversion installations, this select the version directory.
+	 * This is the main function to initialise the MediaWikiFarm and check for existence of the wiki.
 	 * 
-	 * This function is called very early during the loading, even before MediaWiki
-	 * is loaded (first function called by multiversion-dedicated entry points like
-	 * `www/index.php`).
+	 * In multiversion installations, this function is called very early during the loading,
+	 * even before MediaWiki is loaded (first function called by multiversion-dedicated entry points
+	 * like `www/index.php`).
 	 * 
 	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
 	 * @param string|null $host Requested host.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
-	static function getEntryPoint( $entryPoint, $host = null ) {
+	static function load( $entryPoint = '', $host = null ) {
 		
 		global $wgMediaWikiFarm;
 		
@@ -80,7 +80,8 @@ class MediaWikiFarm {
 		}
 		
 		# Go to version directory
-		chdir( $wgMediaWikiFarm->params['code'] );
+		if( getcwd() != $wgMediaWikiFarm->params['code'] )
+			chdir( $wgMediaWikiFarm->params['code'] );
 		
 		return $entryPoint;
 	}
@@ -426,7 +427,7 @@ class MediaWikiFarm {
 	 */
 	private function setVersion( $version = null ) {
 		
-		global $IP, $wgVersion;
+		global $IP;
 		
 		# Replace variables in the file name containing all versions, if existing
 		$this->setWikiProperty( 'versions' );
@@ -539,8 +540,8 @@ class MediaWikiFarm {
 		
 		$myWiki = $this->params['wikiID'];
 		$mySuffix = $this->params['suffix'];
-		if( $this->params['version'] ) $cacheFile = $this->replaceVariables( '$VERSION-$SUFFIX-$WIKIID.ser' );
-		else $cacheFile = $this->replaceVariables( '$SUFFIX-$WIKIID.ser' );
+		if( $this->params['version'] ) $cacheFile = $this->replaceVariables( 'config-$VERSION-$SUFFIX-$WIKIID.ser' );
+		else $cacheFile = $this->replaceVariables( 'config-$SUFFIX-$WIKIID.ser' );
 		$this->params['globals'] = false;
 		
 		# Check modification time of original config files

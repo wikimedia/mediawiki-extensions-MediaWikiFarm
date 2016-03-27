@@ -18,9 +18,6 @@ if( is_file( dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/includes/D
 }
 else {
 	
-	/** Definition of a constant to protect dedicated entry points. */
-	define( 'MEDIAWIKI_FARM', true );
-	
 	$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
 	$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 	$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
@@ -139,7 +136,7 @@ if( preg_match( '/^[a-zA-Z-]+$/', $mwfScript ) )
 	$mwfScript = 'maintenance/' . $mwfScript . '.php';
 
 # Initialise the requested version
-MediaWikiFarm::getEntryPoint( $mwfScript, $mwfHost );
+MediaWikiFarm::load( $mwfScript, $mwfHost );
 
 # Display parameters
 $mwfVersion = $wgMediaWikiFarm->params['version'] ? $wgMediaWikiFarm->params['version'] : 'current';

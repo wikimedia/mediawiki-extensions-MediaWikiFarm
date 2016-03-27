@@ -11,26 +11,18 @@
 if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' ) exit;
 
 # Class where the logic is
-require_once __DIR__ . '/MediaWikiFarm.php';
+require_once dirname( __FILE__ ) . '/MediaWikiFarm.php';
 
 
 /*
- * Verify existence of the wiki
+ * MediaWikiFarm loading
  */
 
-$wgMediaWikiFarm = MediaWikiFarm::initialise();
-
-if( !$wgMediaWikiFarm->checkExistence() ) {
-	
-	$version = $_SERVER['SERVER_PROTOCOL'] && $_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.0' ? '1.0' : '1.1';
-	if( PHP_SAPI != 'cli' ) header( "HTTP/$version 404 Not Found" );
-	echo "Error: unknown wiki.\n";
-	exit( 1 );
-}
+MediaWikiFarm::load();
 
 
 /*
- * MediaWiki
+ * MediaWiki configuration
  */
 
 # Load general MediaWiki configuration
@@ -38,7 +30,7 @@ $wgMediaWikiFarm->loadMediaWikiConfig();
 
 
 /*
- * Skins
+ * Skins configuration
  */
 
 # Load skins with the require_once mechanism
@@ -53,7 +45,7 @@ $wgMediaWikiFarm->loadSkinsConfig();
 
 
 /*
- * Extensions
+ * Extensions configuration
  */
 
 # Load extensions with the require_once mechanism
@@ -68,7 +60,7 @@ $wgMediaWikiFarm->loadExtensionsConfig();
 
 
 /*
- * Load other parameters
+ * Executable configuration
  */
 
 foreach( $wgMediaWikiFarm->params['globals']['execFiles'] as $execFile ) {

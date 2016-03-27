@@ -22,4 +22,4 @@ require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
 // @codingStandardsIgnoreEnd
 
 # Redirect to the requested version
-require MediaWikiFarm::getEntryPoint( 'opensearch_desc.php' );
+require MediaWikiFarm::load( 'opensearch_desc.php' );
