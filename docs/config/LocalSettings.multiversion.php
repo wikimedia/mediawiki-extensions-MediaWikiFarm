@@ -1,13 +1,13 @@
 <?php
-
 /**
  * Configuration managed by MediaWikiFarm -- MultiVersion case.
- * 
- * Note the MediaWikiFarm extension must be installed in each version.
  */
 
+# Protect against web entry
+if( !defined( 'MEDIAWIKI' ) ) exit;
+
 # Include the code.
-require_once "$IP/extensions/MediaWikiFarm/MediaWikiFarm.php";
+require_once MediaWikiFarm::getInstance()->loadConfigDirectory();
 
 # Do not add other configuration here, but instead in the config files
 # read by MediaWikiFarm -- even for global settings.

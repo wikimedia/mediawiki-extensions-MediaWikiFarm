@@ -12,43 +12,16 @@
 # Protect against web entry
 if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' ) exit;
 
-/*
- * Parameters
- * ========== */
-
-/**
- * Configuration directory.
- * 
- * Type: string (path).
- * 
- * This parameter should be specified in your LocalSettings.php, before the require_once.
- * The value must be a readable directory. Depending of your openness policy, you could
- * publish all or parts of the configuration files, but probably you don’t want to publish
- * private informations like database configuration, upgrade key, etc.
- */
-#$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
-
-
-/**
- * Code directory.
- * 
- * Type: string|null (path).
- * 
- * If your farm can manage multiple MediaWiki versions, set this parameter to a directory
- * where each subdirectory is a MediaWiki installation in a given version+flavour. Although
- * it is probably easier to name the subdirectories with the MediaWiki version, the names
- * are entirely independent from the real version inside the subdirectory.
- */
-#$wgMediaWikiFarmCodeDir = null;
-
-
-
-
-
-/*
- *    Code
- * ========== */
-
-if( defined( 'MEDIAWIKI' ) )
-	require_once __DIR__ . '/src/main.php';
-
+# Load MediaWiki configuration
+if( defined( 'MEDIAWIKI' ) ) {
+	
+	# Load class definition
+	if( !class_exists( 'MediaWikiFarm' ) )
+		require_once dirname( __FILE__ ) . '/src/MediaWikiFarm.php';
+	
+	# Load MediaWikiFarm
+	MediaWikiFarm::load();
+	
+	# Load MediaWiki configuration
+	require_once MediaWikiFarm::getInstance()->loadConfigDirectory();
+}

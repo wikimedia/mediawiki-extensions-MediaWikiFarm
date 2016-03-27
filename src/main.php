@@ -8,17 +8,7 @@
  */
 
 # Protect against web entry
-if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' ) exit;
-
-# Class where the logic is
-require_once dirname( __FILE__ ) . '/MediaWikiFarm.php';
-
-
-/*
- * MediaWikiFarm loading
- */
-
-MediaWikiFarm::load();
+if( !defined( 'MEDIAWIKI' ) ) exit;
 
 
 /*
@@ -26,7 +16,7 @@ MediaWikiFarm::load();
  */
 
 # Load general MediaWiki configuration
-$wgMediaWikiFarm->loadMediaWikiConfig();
+MediaWikiFarm::getInstance()->loadMediaWikiConfig();
 
 
 /*
@@ -34,14 +24,14 @@ $wgMediaWikiFarm->loadMediaWikiConfig();
  */
 
 # Load skins with the require_once mechanism
-foreach( $wgMediaWikiFarm->params['globals']['skins'] as $skin => $value ) {
+foreach( MediaWikiFarm::getInstance()->params['globals']['skins'] as $skin => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/skins/$skin/$skin.php";
 }
 
 # Load skins with the wfLoadSkin mechanism
-$wgMediaWikiFarm->loadSkinsConfig();
+MediaWikiFarm::getInstance()->loadSkinsConfig();
 
 
 /*
@@ -49,21 +39,21 @@ $wgMediaWikiFarm->loadSkinsConfig();
  */
 
 # Load extensions with the require_once mechanism
-foreach( $wgMediaWikiFarm->params['globals']['extensions'] as $extension => $value ) {
+foreach( MediaWikiFarm::getInstance()->params['globals']['extensions'] as $extension => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/extensions/$extension/$extension.php";
 }
 
 # Load extensions with the wfLoadExtension mechanism
-$wgMediaWikiFarm->loadExtensionsConfig();
+MediaWikiFarm::getInstance()->loadExtensionsConfig();
 
 
 /*
  * Executable configuration
  */
 
-foreach( $wgMediaWikiFarm->params['globals']['execFiles'] as $execFile ) {
+foreach( MediaWikiFarm::getInstance()->params['globals']['execFiles'] as $execFile ) {
 	
 	@include $execFile;
 }

@@ -10,7 +10,9 @@
 # Protect against web entry
 if( PHP_SAPI != 'cli' ) exit;
 
+
 # Configuration of the MediaWiki Farm
+# The config file is in different location depending if it is a mono- or multi-version installation
 if( is_file( dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/includes/DefaultSettings.php' ) ) {
 	
 	$IP = dirname( dirname( dirname( dirname( __FILE__ ) ) ) );
@@ -24,12 +26,13 @@ else {
 	require_once dirname( dirname( __FILE__ ) ) . '/config/MediaWikiFarmDirectories.php';
 }
 
+
 # Include library
 // @codingStandardsIgnoreStart MediaWiki.Usage.DirUsage.FunctionFound
 require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
 // @codingStandardsIgnoreEnd
 
-# A small helper function
+
 /**
  * Get a command line parameter.
  * 
@@ -85,7 +88,6 @@ function mwfGetParam( $name, $shift = true ) {
 	return $value;
 }
 
-# Usage help
 /**
  * Display help and return success or error.
  * 
@@ -123,6 +125,9 @@ HELP;
 	
 	exit( $error ? 1 : 0 );
 }
+
+
+# Return usage
 if( $argc == 2 && ($argv[1] == '-h' || $argv[1] == '--help') ) mwfUsage( false );
 
 # Get wiki
@@ -135,11 +140,12 @@ if( is_null( $mwfScript ) ) mwfUsage();
 if( preg_match( '/^[a-zA-Z-]+$/', $mwfScript ) )
 	$mwfScript = 'maintenance/' . $mwfScript . '.php';
 
+
 # Initialise the requested version
 MediaWikiFarm::load( $mwfScript, $mwfHost );
 
 # Display parameters
-$mwfVersion = $wgMediaWikiFarm->params['version'] ? $wgMediaWikiFarm->params['version'] : 'current';
+$mwfVersion = MediaWikiFarm::getInstance()->params['version'] ? MediaWikiFarm::getInstance()->params['version'] : 'current';
 echo <<<PARAMS
 
 Wiki:    $mwfHost (wikiID: {$wgMediaWikiFarm->params['wikiID']}; suffix: {$wgMediaWikiFarm->params['suffix']})
@@ -159,6 +165,7 @@ unset( $mwfHost );
 unset( $mwfScript );
 unset( $mwfVersion );
 unset( $IP );
+
 
 # Execute the script
 // Possibly it could be better to do a true system call with a child process (PHP function "system"), BUT

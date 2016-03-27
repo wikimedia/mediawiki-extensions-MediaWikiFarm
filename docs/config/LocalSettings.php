@@ -1,8 +1,10 @@
 <?php
-
 /**
  * Configuration managed by MediaWikiFarm -- MonoVersion case.
  */
+
+# Protect against web entry
+if( !defined( 'MEDIAWIKI' ) ) exit;
 
 // Configuration directory.
 // There must be a file 'farms.yml' or 'farms.php' or 'farms.json' inside.

@@ -7,13 +7,6 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  */
 
-# Protect against web entry
-if( !defined( 'MEDIAWIKI' ) && !defined( 'MEDIAWIKI_FARM' ) && PHP_SAPI != 'cli' ) exit;
-
-# Protect against double inclusion
-# This could happen even with require_once in the case of multiversion installation
-if( defined( 'MEDIAWIKI_FARM' ) ) return;
-
 /**
  * This class computes the configuration of a specific wiki from a set of configuration files.
  * The configuration is composed of the list of authorised wikis and different configuration
@@ -28,11 +21,14 @@ class MediaWikiFarm {
 	/** @var MediaWikiFarm|null Singleton. */
 	private static $self = null;
 	
+	/** @var string Farm code directory. */
+	private $farmDir = '';
+	
 	/** @var string Farm configuration directory. */
 	private $configDir = '';
 	
 	/** @var string|null MediaWiki code directory, where each subdirectory is a MediaWiki installation. */
-	private $codeDir = null;
+	public $codeDir = null;
 	
 	/** @var string|null MediaWiki cache directory. */
 	private $cacheDir = null;
@@ -68,7 +64,7 @@ class MediaWikiFarm {
 		global $wgMediaWikiFarm;
 		
 		# Initialise object
-		$wgMediaWikiFarm = self::initialise( $host );
+		$wgMediaWikiFarm = self::getInstance( $host );
 		
 		# Check existence
 		if( !$wgMediaWikiFarm->checkExistence() ) {
@@ -87,12 +83,12 @@ class MediaWikiFarm {
 	}
 	
 	/**
-	 * Initialise the unique object of type MediaWikiFarm.
+	 * Return (and if needed initialise) the unique object of type MediaWikiFarm.
 	 * 
 	 * @param string|null $host Requested host.
 	 * @return MediaWikiFarm Singleton.
 	 */
-	static function initialise( $host = null ) {
+	static function getInstance( $host = null ) {
 		
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 		
@@ -235,6 +231,11 @@ class MediaWikiFarm {
 		}
 	}
 	
+	function loadConfigDirectory() {
+		
+		return $this->farmDir . '/src/main.php';
+	}
+	
 	
 	
 	/*
@@ -268,9 +269,14 @@ class MediaWikiFarm {
 		}
 		
 		# Set parameters
+		$this->farmDir = dirname( dirname( __FILE__ ) );
 		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
 		$this->cacheDir = $cacheDir;
+		
+		# If installed in the classical extensions directory, force to a monoversion installation
+		if( is_file( dirname( dirname( $this->farmDir ) ) . '/includes/DefaultSettings.php' ) )
+			$this->codeDir = null;
 		
 		if( !is_dir( $this->cacheDir ) )
 			@mkdir( $this->cacheDir );
