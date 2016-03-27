@@ -22,7 +22,7 @@
 	},
 	"scripts": {
 		"validate-schema": "php ./scripts/validate-schema.php",
-		"phpdoc": "./vendor/bin/phpdoc -d ./src -t ./docs/code",
+		"phpdoc": "./vendor/bin/phpdoc -d src,scripts -e php,php.txt -t ./docs/code",
 		"parallel-lint": "./vendor/bin/parallel-lint --exclude vendor ."
 	}
 }

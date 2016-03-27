@@ -7,7 +7,7 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  */
 
-# Definition of a constant to protect dedicated entry points
+/** Definition of a constant to protect dedicated entry points. */
 define( 'MEDIAWIKI_FARM', true );
 
 # Configuration of the MediaWiki Farm

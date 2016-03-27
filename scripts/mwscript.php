@@ -10,7 +10,7 @@
 # Protect against web entry
 if( PHP_SAPI != 'cli' ) exit;
 
-# Definition of a constant to protect dedicated entry points
+/** Definition of a constant to protect dedicated entry points. */
 define( 'MEDIAWIKI_FARM', true );
 
 # Configuration of the MediaWiki Farm
