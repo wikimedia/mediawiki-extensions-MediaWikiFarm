@@ -28,7 +28,7 @@ class MediaWikiFarm {
 	private $configDir = '';
 	
 	/** @var string|null MediaWiki code directory, where each subdirectory is a MediaWiki installation. */
-	public $codeDir = null;
+	private $codeDir = null;
 	
 	/** @var string|null MediaWiki cache directory. */
 	private $cacheDir = null;
