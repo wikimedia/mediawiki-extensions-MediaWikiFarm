@@ -212,6 +212,12 @@ class MediaWikiFarm {
 		if( $this->unusable )
 			return;
 		
+		# Register this extension MediaWikiFarm to appear in Special:Version
+		if( function_exists( 'wfLoadExtension' ) ) {
+			wfLoadExtension( 'MediaWikiFarm', $this->codeDir ? $this->farmDir . '/extension.json' : null );
+			unset( $this->params['globals']['extensions']['MediaWikiFarm']['_loading'] );
+		}
+		
 		// Load extensions with the wfLoadExtension mechanism
 		foreach( $this->params['globals']['extensions'] as $extension => $value ) {
 			
@@ -590,9 +596,6 @@ class MediaWikiFarm {
 			# Extract from the general configuration skin and extension configuration
 			$this->extractSkinsAndExtensions();
 			
-			# Register this extension MediaWikiFarm to appear in Special:Version
-			$globals['extensions']['MediaWikiFarm'] = array( '_loading' => 'wfLoadExtension' );
-			
 			# Save this configuration in a serialised file
 			$this->cacheFile( $globals, $cacheFile );
 		}
@@ -756,7 +759,7 @@ class MediaWikiFarm {
 			return null;
 		
 		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
-		if( is_file( $this->params['code'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) )
+		if( function_exists( 'wfLoad'.ucfirst($type) ) && is_file( $this->params['code'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) )
 			return 'wfLoad'.ucfirst($type);
 		
 		# A MyExtension.php file is in the directory -> assume it is the loading mechanism

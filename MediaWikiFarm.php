@@ -25,3 +25,4 @@ if( defined( 'MEDIAWIKI' ) ) {
 	# Load MediaWiki configuration
 	require_once MediaWikiFarm::getInstance()->loadConfigDirectory();
 }
+
