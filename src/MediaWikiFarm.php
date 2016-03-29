@@ -360,6 +360,8 @@ class MediaWikiFarm {
 	/**
 	 * Replacement of the variables in the host name.
 	 * 
+	 * @todo Rename this function to checkHostVariables.
+	 * @todo Change the current behavious to one where the variables available during a step are only the previously-checked variables (currently all variables are available). The documentation already mention this future behavious to avoid users assume the current behaviour.
 	 * @return string|null|false If an existing version is found in files, returns a string; if no version is found, returns null; if the host is missing in existence files, returns false; if an existence file is missing or badly formatted, return false and turns this object into a unusable state.
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
@@ -999,8 +1001,6 @@ class MediaWikiFarm {
 				if( array_key_exists( $key, $out ) && is_array( $out[$key] ) && is_array( $value ) ) {
 					$out[$key] = self::arrayMerge( $out[$key], $value );
 				} elseif( !array_key_exists( $key, $out ) && !is_numeric( $key ) ) {
-					// Values that evaluate to true given precedence, for the
-					// primary purpose of merging permissions arrays.
 					$out[$key] = $value;
 				} elseif( is_numeric( $key ) ) {
 					$out[] = $value;

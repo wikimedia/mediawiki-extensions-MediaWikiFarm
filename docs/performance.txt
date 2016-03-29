@@ -1,8 +1,9 @@
+***********
 Performance
-===========
+***********
 
 Method
-------
+======
 
 Added microtime(true) at the top and bottom of the file LocalSettings.php.
 
@@ -15,7 +16,7 @@ Obviously a stronger sampling protocol and computation would be better, but this
 
 
 Figures
--------
+=======
 
 * Classical LocalSettings.php:
     

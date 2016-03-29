@@ -2,6 +2,20 @@
 
 return array(
 	
+	# Placeholder configuration for a first installation as detailled in the documentation
+	'mywiki\.example\.org' => array(
+		
+		'suffix' => 'wiki',
+		'wikiID' => 'mywiki',
+		'config' => array(
+			array( 'file' => 'LocalSettings.php',
+			       'exec' => true,
+			),
+		),
+	),
+);
+
+/*
 	# Configuration similar to the Wikimedia farm
 	'(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org' => array(
 		
@@ -19,13 +33,13 @@ return array(
 		'data' => '/srv/data/org/$family/$lang',
 		'config' => array(
 			array( 'file' => 'org/InitialiseSettings.php',
-			       'key' => '*'
+			       'key' => '*',
 			),
 			array( 'file' => 'org/PrivateSettings.php',
-			       'key' => '*'
+			       'key' => '*',
 			),
 			array( 'file' => 'org/ExecSettings.php',
-			       'exec' => true
+			       'exec' => true,
 			),
 		),
 	),
@@ -47,16 +61,16 @@ return array(
 		'data' => '/srv/data/com/example/$client/$wiki',
 		'config' => array(
 			array( 'file' => 'com/example/DefaultSettings.yml',
-			       'key' => 'default'
+			       'key' => 'default',
 			),
 			array( 'file' => 'com/example/InitialiseSettings.yml',
-			       'key' => '*'
+			       'key' => '*',
 			),
 			array( 'file' => 'com/example/PrivateSettings.yml',
-			       'key' => '*'
+			       'key' => '*',
 			),
 			array( 'file' => 'com/example/ExecSettings.php',
-			       'exec' => true
+			       'exec' => true,
 			),
 		),
 	),
@@ -67,4 +81,4 @@ return array(
 		
 		'redirect' => '$client-$wiki.example.com',
 	),
-);
+);*/
