@@ -1,5 +1,6 @@
 {
-	"mywiki\\.example\\.org": {
+	"mywiki": {
+		"server": "mywiki\\.example\\.org",
 		"suffix": "wiki",
 		"wikiID": "mywiki",
 		"config": [

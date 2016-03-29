@@ -1,6 +1,7 @@
 # Placeholder configuration for a first installation as detailled in the documentation
-'mywiki\.example\.org':
+mywiki:
     
+    server: 'mywiki\.example\.org'
     suffix: 'wiki'
     wikiID: 'mywiki'
     config:
@@ -9,7 +10,9 @@
 
 
 ## Configuration similar to the Wikimedia farm
-#'(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org':
+#wikimedia:
+#    
+#    server: '(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org'
 #    
 #    variables:
 #        
@@ -23,15 +26,20 @@
 #    versions: 'wikiversions.json'
 #    data: '/srv/data/org/$family/$lang'
 #    config:
-#      - file: 'org/InitialiseSettings.php'
+#      - file: 'org/DefaultSettings.yml'
 #        key: '*'
-#      - file: 'org/PrivateSettings.php'
+#      - file: 'org/Settings-$family.yml'
+#        key: '*$family'
+#        default: '$family'
+#      - file: 'org/PrivateSettings.yml'
 #        key: '*'
 #      - file: 'org/ExecSettings.php'
 #        exec: true
 #
 ## Configuration for a small wiki farm
-#'(?<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com':
+#com-example:
+#    
+#    server: '(?<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com'
 #    
 #    variables:
 #        
@@ -56,6 +64,7 @@
 #
 ## Aliases
 #
-#'(?<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com':
+#com-example-redirect:
 #    
+#    server: '(?<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com'
 #    redirect: '$client-$wiki.example.com'

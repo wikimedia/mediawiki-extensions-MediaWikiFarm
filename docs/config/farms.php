@@ -3,8 +3,9 @@
 return array(
 	
 	# Placeholder configuration for a first installation as detailled in the documentation
-	'mywiki\.example\.org' => array(
+	'mywiki' => array(
 		
+		'server' => 'mywiki\.example\.org',
 		'suffix' => 'wiki',
 		'wikiID' => 'mywiki',
 		'config' => array(
@@ -16,8 +17,12 @@ return array(
 );
 
 /*
+return array(
+	
 	# Configuration similar to the Wikimedia farm
-	'(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org' => array(
+	'wikimedia' => array(
+		
+		'server' => '(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org',
 		
 		'variables' => array(
 		
@@ -32,10 +37,14 @@ return array(
 		'versions' => 'wikiversions.json',
 		'data' => '/srv/data/org/$family/$lang',
 		'config' => array(
-			array( 'file' => 'org/InitialiseSettings.php',
+			array( 'file' => 'org/DefaultSettings.yml',
 			       'key' => '*',
 			),
-			array( 'file' => 'org/PrivateSettings.php',
+			array( 'file' => 'org/Settings-$family.yml',
+			       'key' => '*$family',
+			       'default' => '$family',
+			),
+			array( 'file' => 'org/PrivateSettings.yml',
 			       'key' => '*',
 			),
 			array( 'file' => 'org/ExecSettings.php',
@@ -45,7 +54,9 @@ return array(
 	),
 	
 	# Configuration for a small wiki farm
-	'(?<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com' => array(
+	'com-example' => array(
+		
+		'server' => '(?<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com',
 		
 		'variables' => array(
 			
@@ -77,8 +88,10 @@ return array(
 	
 	# Aliases
 	
-	'(?<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com' => array(
+	'com-example-redirect' => array(
 		
+		'server' => '(?<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com',
 		'redirect' => '$client-$wiki.example.com',
 	),
-);*/
+);
+*/

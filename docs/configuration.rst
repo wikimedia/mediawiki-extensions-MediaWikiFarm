@@ -21,7 +21,9 @@ The main config file is a dictionary. Here is an example in YAML syntax with all
 ::
 
     # A farm similar to the Wikimedia one (except for organisation of config files)
-    '(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org':
+    wikimedia:
+        
+        server: '(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org'
         
         variables:
             
@@ -50,14 +52,24 @@ The main config file is a dictionary. Here is an example in YAML syntax with all
         
         redirect: '$lang.$family.org'
 
-Each key is a regex of the URL of a farm, and named patterns should be used to create variables. To create an internal redirect, the only subkey must be 'redirect'.
+Each key is the (arbitrary) name of a farm, and values are the specific farm configuration.
 
-In a (non-redirect) farm, two subkeys are required, 'family' and 'wikiID', and the subkey 'config' should exist (else MediaWiki default parameters will be used).
+In a (non-redirect) farm, three subkeys are required, 'server', 'family', and 'wikiID', and the subkey 'config' should exist (else MediaWiki default parameters will be used). In a redirect, there must be two subkeys: 'server' and 'redirect'.
+
+Server
+------
+
+The most important subkey is 'server': it is a regular expression of the server name/domain name. There should be only one regex, which matchs a given server name. It is recommanded to use named patterns in the regex to capture parts of the server name to construct the wikiID and suffix.
+
+Redirect
+--------
+
+To avoid configuration duplicates, it is possible to internally redirect to another farm. Obviously you should enlarge existing regexes when possible (e.g. match two TLD), but you can use these redirects to avoid overcomplicated regexes, for instance to manage exceptions to a general schema. When the 'redirect' subkey is used, there must be no other subkeys.
 
 Variables
 ---------
 
-The first thing to configure is the 'variables' subkey. This must be an ordered list of dictionaries. For each declared variable, it can be checked if the pattern from the regex exists. If it doesn’t exists, the wiki doesn’t exist, and a 404 page is displayed. Else, it continues to the next variable. If there is no file written in this section, no check is done and the variable is assumed to exist. The file names can contain all variables already checked (but not the current variable).
+The second thing to configure is the 'variables' subkey. This must be an ordered list of dictionaries. For each declared variable, it can be checked if the pattern from the regex exists. If it doesn’t exists, the wiki doesn’t exist, and a 404 page is displayed. Else, it continues to the next variable. If there is no file written in this section, no check is done and the variable is assumed to exist. The file names can contain all variables already checked (but not the current variable).
 
 Each of these files must contain either a list of the existing values for the given variable, either a dictionary where keys are existing values for the given variable and values are MediaWiki versions. The second form is only useful for the multiversion mode and for preparation of a transition from monoversion to multiversion mode. These files can be in any previously mentionned format (YAML, JSON, PHP) or, for simple lists, in .dblist format (each line contains only a value; format used by Wikimedia).
 

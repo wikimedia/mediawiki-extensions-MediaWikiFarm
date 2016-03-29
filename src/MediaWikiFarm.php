@@ -30,8 +30,8 @@ class MediaWikiFarm {
 	/** @var string|null MediaWiki code directory, where each subdirectory is a MediaWiki installation. */
 	private $codeDir = null;
 	
-	/** @var string|null MediaWiki cache directory. */
-	private $cacheDir = null;
+	/** @var string|false MediaWiki cache directory. */
+	private $cacheDir = '/tmp/mw-cache';
 	
 	/** @var bool This object cannot be used because of an emergency error. */
 	public $unusable = false;
@@ -92,12 +92,9 @@ class MediaWikiFarm {
 		
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 		
-		if( self::$self == null ) {
-			
-			# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
-			if( is_null( $host ) ) $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
+		if( self::$self == null )
 			self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir );
-		}
+		
 		return self::$self;
 	}
 	
@@ -266,18 +263,25 @@ class MediaWikiFarm {
 	 * directory or file, or unrecognized host), no exception is thrown but the property
 	 * 'unusable' becomes true.
 	 * 
-	 * @param string $host Requested host.
+	 * @param string|null $host Requested host.
 	 * @param string $configDir Configuration directory.
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
-	 * @param string|null $cacheDir Cache directory; if null, the cache is disabled.
+	 * @param string|false|null $cacheDir Cache directory; if null, the cache is disabled.
 	 */
 	private function __construct( $host, $configDir, $codeDir = null, $cacheDir = null ) {
+		
+		# Default value for $host
+		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
+		if( is_null( $host ) ) $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
+		
+		# Default value for $cacheDir
+		if( is_null( $cacheDir ) ) $cacheDir = '/tmp/mw-cache';
 		
 		# Check parameters
 		if( !is_string( $host ) || $host == '' ||
 		    !(is_string( $configDir ) && is_dir( $configDir )) ||
 		    !(is_null( $codeDir ) xor (is_string( $codeDir ) && is_dir( $codeDir ))) ||
-		    !(is_null( $cacheDir ) xor is_string( $cacheDir ))
+		    !(is_string( $cacheDir ) xor $cacheDir === false)
 		  ) {
 		  	
 			$this->unusable = true;
@@ -295,26 +299,26 @@ class MediaWikiFarm {
 			$this->codeDir = null;
 		
 		if( !is_dir( $this->cacheDir ) )
-			@mkdir( $this->cacheDir );
+			mkdir( $this->cacheDir );
 		
-		# Read the farm(s) configuration
-		if( $configs = $this->readFile( 'farms.yml', $this->configDir ) );
-		elseif( $configs = $this->readFile( '/farms.json', $this->configDir ) );
-		elseif( $configs = $this->readFile( '/farms.php', $this->configDir ) );
+		# Read the farms configuration
+		if( $farms = $this->readFile( 'farms.yml', $this->configDir ) );
+		elseif( $farms = $this->readFile( '/farms.json', $this->configDir ) );
+		elseif( $farms = $this->readFile( '/farms.php', $this->configDir ) );
 		else $this->unusable = true;
 		
 		# Now select the right configuration amoung all farms
-		$this->unusable = !$this->selectFarm( $configs, $host );
+		$this->unusable = !$this->selectFarm( $farms, $host );
 	}
 	
 	/**
 	 * Select the farm.
 	 * 
-	 * @param array $configs All farm configurations.
+	 * @param array $farms All farm configurations.
 	 * @param string $host Requested host.
 	 * return bool One of the farm has been selected.
 	 */
-	private function selectFarm( $configs, $host ) {
+	private function selectFarm( $farms, $host ) {
 		
 		if( $this->unusable )
 			return false;
@@ -329,9 +333,9 @@ class MediaWikiFarm {
 		$this->variables = array();
 		
 		# For each proposed farm, check if the host matches
-		foreach( $configs as $regex => $config ) {
+		foreach( $farms as $farm => $config ) {
 			
-			if( !preg_match( '/^' . $regex . '$/i', $host, $matches ) )
+			if( !preg_match( '/^' . $config['server'] . '$/i', $host, $matches ) )
 				continue;
 			
 			# Initialise variables from the host
@@ -350,6 +354,14 @@ class MediaWikiFarm {
 			
 			# Get the selected configuration
 			$this->params = $config;
+			if( $this->cacheDir ) {
+				
+				$this->cacheDir .= '/' . $farm;
+				
+				# Create cache directory
+				if( !is_dir( $this->cacheDir ) )
+					mkdir( $this->cacheDir );
+			}
 			
 			return true;
 		}
@@ -834,7 +846,7 @@ class MediaWikiFarm {
 		}
 		
 		# Cached version
-		elseif( is_file( $this->cacheDir . '/' . $filename . '.ser' ) && @filemtime( $this->cacheDir . '/' . $filename . '.ser' ) >= @filemtime( $prefixedFile ) )
+		elseif( is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $filename . '.ser' ) && @filemtime( $this->cacheDir . '/' . $filename . '.ser' ) >= @filemtime( $prefixedFile ) )
 			
 			return $this->readFile( $filename . '.ser', $this->cacheDir );
 		

@@ -4,13 +4,19 @@
 	"type": "object",
 	"additionalProperties": false,
 	"patternProperties": {
-		"^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_-]+$": {
+		"^[a-zA-Z0-9_-]+$": {
 			"oneOf": [
 				{
 					"type": "object",
+					"description": "Configuration of a farm.",
 					"additionalProperties": false,
-					"required": ["suffix", "wikiID"],
+					"required": ["server", "suffix", "wikiID"],
 					"properties": {
+						"server": {
+							"type": "string",
+							"description": "Regular expression of the server names.",
+							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_-]+$"
+						},
 						"variables": {
 							"type": "array",
 							"description": "List of variables in the host.",
@@ -86,9 +92,15 @@
 				},
 				{
 					"type": "object",
+					"description": "Configuration of a redirect.",
 					"additionalProperties": false,
-					"required": ["redirect"],
+					"required": ["server", "redirect"],
 					"properties": {
+						"server": {
+							"type": "string",
+							"description": "Regular expression of the server name.",
+							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_-]+$"
+						},
 						"redirect": {
 							"type": "string",
 							"description": "Internal redirect to another farm.",

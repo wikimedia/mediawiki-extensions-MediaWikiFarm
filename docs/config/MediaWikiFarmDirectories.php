@@ -34,15 +34,3 @@ $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
  */
 $wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
 
-
-/**
- * Cache directory.
- * 
- * Type: string|null.
- * 
- * It is recommended to set this variable to a readable directory to speed up the time spent
- * by this extension from 9ms to 2ms. If you want to disable the cache, you can set this
- * variable to null.
- */
-$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
-
