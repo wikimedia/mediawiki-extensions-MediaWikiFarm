@@ -156,10 +156,6 @@ Script:  $mwfScript
 PARAMS;
 
 # Clean this script
-if( !is_file( $mwfScript ) ) {
-	echo "Script not found.\n";
-	exit( 1 );
-}
 $argv[0] = $mwfScript;
 unset( $mwfHost );
 unset( $mwfScript );
@@ -168,10 +164,9 @@ unset( $IP );
 
 
 # Execute the script
-// Possibly it could be better to do a true system call with a child process (PHP function "system"), BUT
-// hostname must be passed as an environment variable and more importantly, in the current implementation of
-// MediaWikiFarm, the called version of the extension will be $version/extensions/MediaWikiFarm, and this
-// version is probably not configured as a standalone extension (directories set in LocalSettings.php); so
-// it will not work in current implementation.
+if( !is_file( $argv[0] ) ) {
+	echo "Script not found.\n";
+	exit( 1 );
+}
 require $argv[0];
 

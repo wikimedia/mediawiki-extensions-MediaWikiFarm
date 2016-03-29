@@ -40,3 +40,18 @@ All numbers are in milliseconds.
     
     mean = 14.7820    median = 13.8605    std =  2.0367    min = 13.0639    max = 20.6609    range =  7.5970    values = 50
 
+
+Performance architecture
+========================
+
+Since the early versions of MediaWikiFarm, only the configuration of each wiki was cached (this was inspired from the Wikimedia’s CommonSettings.php). The only invalidation of this cache is when origin files are changed.
+
+This was a good point to improve performance, but two bottlenecks were then identified:
+* the reading and parsing of the YAML files (main config file, existence of variables, config files) was quite slow (7-8 ms);
+* YAML files needed an autoloading from Composer, and this was quite slow (2-3 ms).
+
+To improve these two points, a general cache directory is defined, and if this one exists, the reading function systematically write a cached file in a format natively understood by PHP -- serialised format. The next trivial step was to call Composer autoloader only when a YAML file is about to be read. After this operation, the mean time spent in LocalSettings.php decreased from about 13-15 ms to 4-5 ms. Hence, given the time spent by a classical LocalSettings.php is 3 ms, MediaWikiFarm costs 2 ms.
+
+It was tried the CDB format as an alternative to serialised format, but I was not convinced by the performance when I tried to load the entire file (wiki configuration). Three limitations of the CDB format are: it is a PHP extension (a Composer fallback library was written by Wikimedia), it is a dictionary (and cannot be a list), and values are strings (a serialisation of the value must be applied beforehand). Possibly the gain is more important when only some informations are read, as it could be the case for existence files. Another test in this direction could be tried.
+
+Another development direction is to create a unique cache file containing all wikiIDs of a given farm and associated versions and invalidate this one each time an origin file is changed. Possibly the CDB format could give good performance in this case. In this scenario, with the CDB format, the 'existence' part of MediaWikiFarm would be time-constant with a hopefully small time.

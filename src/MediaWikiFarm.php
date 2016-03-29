@@ -303,8 +303,8 @@ class MediaWikiFarm {
 		
 		# Read the farms configuration
 		if( $farms = $this->readFile( 'farms.yml', $this->configDir ) );
-		elseif( $farms = $this->readFile( '/farms.json', $this->configDir ) );
 		elseif( $farms = $this->readFile( '/farms.php', $this->configDir ) );
+		elseif( $farms = $this->readFile( '/farms.json', $this->configDir ) );
 		else $this->unusable = true;
 		
 		# Now select the right configuration amoung all farms
@@ -821,23 +821,17 @@ class MediaWikiFarm {
 			return false;
 		
 		# Detect the format
-		# Note the regex must be greedy to correctly select double extensions
-		$format = preg_replace( '/^.*\.([a-z]+)$/', '$1', $filename );
+		$format = strrchr( $filename, '.' );
 		
 		# Check the file exists
 		$prefixedFile = $directory ? $directory . '/' . $filename : $filename;
 		if( !is_file( $prefixedFile ) )
 			return false;
 		
-		# Format PHP
-		if( $format == 'php' )
-			
-			$array = @include $prefixedFile;
-		
 		# Format 'serialisation'
-		elseif( $format == 'ser' ) {
+		if( $format == '.ser' ) {
 			
-			$content = @file_get_contents( $prefixedFile );
+			$content = file_get_contents( $prefixedFile );
 			
 			if( !$content )
 				return array();
@@ -845,18 +839,24 @@ class MediaWikiFarm {
 			$array = @unserialize( $content );
 		}
 		
+		# Format PHP
+		elseif( $format == '.php' )
+			
+			$array = @include $prefixedFile;
+		
 		# Cached version
-		elseif( is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $filename . '.ser' ) && @filemtime( $this->cacheDir . '/' . $filename . '.ser' ) >= @filemtime( $prefixedFile ) )
+		elseif( is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $filename . '.ser' ) && @filemtime( $this->cacheDir . '/' . $filename . '.ser' ) >= filemtime( $prefixedFile ) )
 			
 			return $this->readFile( $filename . '.ser', $this->cacheDir );
 		
 		# Format YAML
-		elseif( $format == 'yml' || $format == 'yaml' ) {
+		elseif( $format == '.yml' || $format == '.yaml' ) {
 			
 			# Load Composer libraries
 			# There is no warning if not present because to properly handle the error by returning false
 			# This is only included here to avoid delays (~3ms) during the loading using cached files or other formats
-			@include_once __DIR__ . '/../vendor/autoload.php';
+			if( is_file( dirname( __FILE__ ) . '/../vendor/autoload.php' ) )
+				include_once dirname( __FILE__ ) . '/../vendor/autoload.php';
 			
 			if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) || !class_exists( 'Symfony\Component\Yaml\Exception\ParseException' ) )
 				return false;
@@ -871,14 +871,14 @@ class MediaWikiFarm {
 		}
 		
 		# Format JSON
-		elseif( $format == 'json' )
+		elseif( $format == '.json' )
 			
-			$array = json_decode( @file_get_contents( $prefixedFile ), true );
+			$array = json_decode( file_get_contents( $prefixedFile ), true );
 		
 		# Format 'dblist' (simple list of strings separated by newlines)
-		elseif( $format == 'dblist' ) {
+		elseif( $format == '.dblist' ) {
 			
-			$content = @file_get_contents( $prefixedFile );
+			$content = file_get_contents( $prefixedFile );
 			
 			if( !$content )
 				return array();
@@ -896,7 +896,7 @@ class MediaWikiFarm {
 		# Regular return for arrays
 		if( is_array( $array ) ) {
 			
-			if( $format !== 'php' && $format !== 'ser' )
+			if( $format != '.php' && $format != '.ser' )
 				$this->cacheFile( $array, $filename.'.ser' );
 			
 			return $array;

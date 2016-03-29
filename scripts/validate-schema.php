@@ -40,7 +40,7 @@ foreach( array( 'config/farms.yml', 'config/farms.json', 'config/farms.php' ) as
 	// If you use $ref or if you are unsure, resolve those references here
 	// This modifies the $schema object
 	$refResolver = new JsonSchema\RefResolver( $retriever );
-	$refResolver->resolve( $schema, 'file://' . __DIR__ );
+	$refResolver->resolve( $schema, 'file://' . dirname( __FILE__ ) );
 	
 	// Validate
 	$validator = new JsonSchema\Validator();
