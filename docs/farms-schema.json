@@ -10,12 +10,16 @@
 					"type": "object",
 					"description": "Configuration of a farm.",
 					"additionalProperties": false,
-					"required": ["server", "suffix", "wikiID"],
+					"required": [
+						"server",
+						"suffix",
+						"wikiID"
+					],
 					"properties": {
 						"server": {
 							"type": "string",
 							"description": "Regular expression of the server names.",
-							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_-]+$"
+							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_|-]+$"
 						},
 						"variables": {
 							"type": "array",
@@ -25,9 +29,11 @@
 								"type": "object",
 								"description": "An host variable.",
 								"additionalProperties": false,
-								"required": ["variable"],
+								"required": [
+									"variable"
+								],
 								"properties": {
-										"variable": {
+									"variable": {
 										"type": "string",
 										"description": "Name of the host variable."
 									},
@@ -64,7 +70,9 @@
 								"type": "object",
 								"description": "A configuration file.",
 								"additionalProperties": false,
-								"required": ["file"],
+								"required": [
+									"file"
+								],
 								"properties": {
 									"file": {
 										"type": "string",
@@ -83,7 +91,9 @@
 									"exec": {
 										"type": "boolean",
 										"description": "This file must be directly.",
-										"enum": [true]
+										"enum": [
+											true
+										]
 									}
 								}
 							}
@@ -94,12 +104,15 @@
 					"type": "object",
 					"description": "Configuration of a redirect.",
 					"additionalProperties": false,
-					"required": ["server", "redirect"],
+					"required": [
+						"server",
+						"redirect"
+					],
 					"properties": {
 						"server": {
 							"type": "string",
 							"description": "Regular expression of the server name.",
-							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_-]+$"
+							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_|-]+$"
 						},
 						"redirect": {
 							"type": "string",
