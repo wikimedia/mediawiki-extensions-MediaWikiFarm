@@ -576,8 +576,8 @@ class MediaWikiFarm {
 		
 		$myWiki = $this->params['wikiID'];
 		$mySuffix = $this->params['suffix'];
-		if( $this->params['version'] ) $cacheFile = $this->replaceVariables( 'config-$VERSION-$SUFFIX-$WIKIID.ser' );
-		else $cacheFile = $this->replaceVariables( 'config-$SUFFIX-$WIKIID.ser' );
+		if( $this->params['version'] ) $cacheFile = $this->replaceVariables( 'config-$VERSION-$SUFFIX-$WIKIID.php' );
+		else $cacheFile = $this->replaceVariables( 'config-$SUFFIX-$WIKIID.php' );
 		$this->params['globals'] = false;
 		
 		# Check modification time of original config files
@@ -828,8 +828,13 @@ class MediaWikiFarm {
 		if( !is_file( $prefixedFile ) )
 			return false;
 		
+		# Format PHP
+		if( $format == '.php' )
+			
+			$array = @include $prefixedFile;
+		
 		# Format 'serialisation'
-		if( $format == '.ser' ) {
+		elseif( $format == '.ser' ) {
 			
 			$content = file_get_contents( $prefixedFile );
 			
@@ -839,22 +844,17 @@ class MediaWikiFarm {
 			$array = @unserialize( $content );
 		}
 		
-		# Format PHP
-		elseif( $format == '.php' )
-			
-			$array = @include $prefixedFile;
-		
 		# Cached version
-		elseif( is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $filename . '.ser' ) && @filemtime( $this->cacheDir . '/' . $filename . '.ser' ) >= filemtime( $prefixedFile ) )
+		elseif( is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $filename . '.php' ) && @filemtime( $this->cacheDir . '/' . $filename . '.php' ) >= filemtime( $prefixedFile ) )
 			
-			return $this->readFile( $filename . '.ser', $this->cacheDir );
+			return $this->readFile( $filename . '.php', $this->cacheDir );
 		
 		# Format YAML
 		elseif( $format == '.yml' || $format == '.yaml' ) {
 			
 			# Load Composer libraries
 			# There is no warning if not present because to properly handle the error by returning false
-			# This is only included here to avoid delays (~3ms) during the loading using cached files or other formats
+			# This is only included here to avoid delays (~3ms without OPcache) during the loading using cached files or other formats
 			if( is_file( dirname( __FILE__ ) . '/../vendor/autoload.php' ) )
 				include_once dirname( __FILE__ ) . '/../vendor/autoload.php';
 			
@@ -897,7 +897,7 @@ class MediaWikiFarm {
 		if( is_array( $array ) ) {
 			
 			if( $format != '.php' && $format != '.ser' )
-				$this->cacheFile( $array, $filename.'.ser' );
+				$this->cacheFile( $array, $filename.'.php' );
 			
 			return $array;
 		}
@@ -925,14 +925,14 @@ class MediaWikiFarm {
 			mkdir( dirname( $prefixedFile ) );
 		$tmpFile = $prefixedFile . '.tmp';
 		
-		if( preg_match( '/\.ser$/', $filename ) ) {
+		if( preg_match( '/\.php$/', $filename ) ) {
+			if( file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $array, true ).';' ) )
+				rename( $tmpFile, $prefixedFile );
+		}
+		elseif( preg_match( '/\.ser$/', $filename ) ) {
 			if( file_put_contents( $tmpFile, serialize( $array ) ) ) {
 				rename( $tmpFile, $prefixedFile );
 			}
-		}
-		elseif( preg_match( '/\.php$/', $filename ) ) {
-			if( file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $array, true ).';' ) )
-				rename( $tmpFile, $prefixedFile );
 		}
 	}
 	

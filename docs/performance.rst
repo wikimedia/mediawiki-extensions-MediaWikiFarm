@@ -50,6 +50,10 @@ All numbers are in milliseconds.
     
     mean =  0.7494    median =  0.6160    std =  0.2886    min =  0.4861    max =  1.6530    range =  1.1668    values = 50
 
+* LocalSettings.php with only MediaWikiFarm extension with cache, with PHP extension OPcache and cache in PHP format:
+    
+    mean =  0.3264    median =  0.2786    std =  0.1485    min =  0.1972    max =  0.8500    range =  0.6528    values = 50
+
 Performance architecture
 ========================
 
