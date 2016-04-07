@@ -606,7 +606,7 @@ class MediaWikiFarm {
 			# Get specific configuration for this wiki
 			# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
 			# ineffective and there would be inconsistencies in this process
-			$globals['general'] = $wgConf->getAll( $myWiki, $mySuffix );
+			$globals['general'] = $wgConf->getAll( $myWiki, $mySuffix, array( 'data' => $this->params['data'] ) );
 			
 			# For the permissions array, fix a small strangeness: when an existing default permission
 			# is true, it is not possible to make it false in the specific configuration

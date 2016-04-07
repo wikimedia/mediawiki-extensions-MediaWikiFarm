@@ -54,6 +54,7 @@ All numbers are in milliseconds.
     
     mean =  0.3264    median =  0.2786    std =  0.1485    min =  0.1972    max =  0.8500    range =  0.6528    values = 50
 
+
 Performance architecture
 ========================
 
