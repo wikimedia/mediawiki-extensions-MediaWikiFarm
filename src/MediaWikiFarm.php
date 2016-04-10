@@ -606,7 +606,7 @@ class MediaWikiFarm {
 			
 			# Populate wgConf
 			if( !$this->populatewgConf() )
-			return false;
+				return false;
 			
 			# Get specific configuration for this wiki
 			# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
@@ -628,6 +628,8 @@ class MediaWikiFarm {
 			# Save this configuration in a serialised file
 			$this->cacheFile( $globals, $cacheFile );
 		}
+		
+		$wgConf->siteParamsCallback = array( $this, 'SiteConfigurationSiteParamsCallback' );
 	}
 	
 	/**
@@ -700,6 +702,29 @@ class MediaWikiFarm {
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Callback to use in SiteConfiguration.
+	 * 
+	 * It is not possible to retrieve the language because SiteConfiguration will loop.
+	 * It is not ideal since other parameters from other suffixes are not known.
+	 * 
+	 * @param SiteConfiguration $wgConf SiteConfiguration object.
+	 * @param string $dbName Database name.
+	 * @return array
+	 */
+	function SiteConfigurationSiteParamsCallback( $wgConf, $wikiID ) {
+		
+		if( substr( $wikiID, strlen( $wikiID ) - strlen( $this->params['suffix'] ) ) != $this->params['suffix'] )
+			return null;
+		
+		return array(
+			'suffix' => $this->params['suffix'],
+			'lang' => '',
+			'tags' => [],
+			'params' => [],
+		);
 	}
 	
 	/**
