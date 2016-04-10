@@ -298,7 +298,7 @@ class MediaWikiFarm {
 		if( is_file( dirname( dirname( $this->farmDir ) ) . '/includes/DefaultSettings.php' ) )
 			$this->codeDir = null;
 		
-		if( !is_dir( $this->cacheDir ) )
+		if( $this->cacheDir && !is_dir( $this->cacheDir ) )
 			mkdir( $this->cacheDir );
 		
 		# Read the farms configuration
