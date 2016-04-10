@@ -15,6 +15,11 @@ if( !defined( 'MEDIAWIKI' ) ) exit;
  * MediaWiki configuration
  */
 
+# Old MediaWiki installations doesn’t load DefaultSettings.php before LocalSettings.php
+if( !isset( $wgVersion ) ) {
+	require_once "$IP/includes/DefaultSettings.php";
+}
+
 # Load general MediaWiki configuration
 MediaWikiFarm::getInstance()->loadMediaWikiConfig();
 

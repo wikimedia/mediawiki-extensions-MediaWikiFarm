@@ -574,6 +574,11 @@ class MediaWikiFarm {
 		if( $this->unusable )
 			return false;
 		
+		# In MediaWiki 1.16, $wgConf is not created by default
+		if( is_null( $wgConf ) ) {
+			$wgConf = new SiteConfiguration();
+		}
+		
 		$myWiki = $this->params['wikiID'];
 		$mySuffix = $this->params['suffix'];
 		if( $this->params['version'] ) $cacheFile = $this->replaceVariables( 'config-$VERSION-$SUFFIX-$WIKIID.php' );
