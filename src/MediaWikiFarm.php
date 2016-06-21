@@ -220,6 +220,18 @@ class MediaWikiFarm {
 			wfLoadExtension( 'MediaWikiFarm', $this->codeDir ? $this->farmDir . '/extension.json' : null );
 			unset( $this->params['globals']['extensions']['MediaWikiFarm']['_loading'] );
 		}
+		else {
+			$GLOBALS['wgExtensionCredits']['other'][] = array(
+				'path' => dirname( dirname( __FILE__ ) ) . '/MediaWikiFarm.php',
+				'name' => 'MediaWikiFarm',
+				'version' => '0.1.0',
+				'author' => 'Seb35',
+				'url' => 'https://www.mediawiki.org/wiki/Extension:MediaWikiFarm',
+				'descriptionmsg' => 'mediawikifarm-desc',
+				'license-name' => 'GPL-3.0+'
+			);
+
+		}
 		
 		// Load extensions with the wfLoadExtension mechanism
 		foreach( $this->params['globals']['extensions'] as $extension => $value ) {

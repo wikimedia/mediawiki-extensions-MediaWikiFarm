@@ -1,11 +1,12 @@
 {
 	"name": "MediaWikiFarm",
-	"version": "0.1.0-dev",
+	"version": "0.1.0",
 	"author": [
 		"Seb35"
 	],
 	"descriptionmsg": "mediawikifarm-desc",
 	"license-name": "GPL-3.0+",
+	"url": "https://www.mediawiki.org/wiki/Extension:MediaWikiFarm",
 	"type": "other",
 	"requires": {
 		"MediaWiki": ">= 1.1.0"
