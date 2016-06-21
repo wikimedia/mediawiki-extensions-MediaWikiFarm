@@ -79,6 +79,12 @@ class MediaWikiFarm {
 		if( getcwd() != $wgMediaWikiFarm->params['code'] )
 			chdir( $wgMediaWikiFarm->params['code'] );
 		
+		# Define config callback to avoid creating a stub LocalSettings.php (experimental)
+		#define( 'MW_CONFIG_CALLBACK', 'MediaWikiFarm::loadConfig' );
+		
+		# Define config file to avoid creating a stub LocalSettings.php
+		define( 'MW_CONFIG_FILE', $wgMediaWikiFarm->getConfigFile() );
+		
 		return $entryPoint;
 	}
 	
@@ -249,6 +255,36 @@ class MediaWikiFarm {
 		return $this->farmDir . '/src/main.php';
 	}
 	
+	/**
+	 * Load the whole configuration in the case MW_CONFIG_CALLBACK is registered (experimental).
+	 * 
+	 * This is about the same thing as the file src/main.php, but given it is not possible
+	 * to "execute require_once in a global scope", the extensions/skins loaded with
+	 * require_once are not called (existing global variables could be introduced with
+	 * extract( $GLOBALS, EXTR_REFS ) but newly-created variables can not be detected and
+	 * exported to global scope).
+	 * 
+	 * NB: this loading mechanism (constant MW_CONFIG_CALLBACK) exists since MediaWiki 1.15.
+	 * 
+	 * @return void
+	 */
+	static function loadConfig() {
+		
+		# Load general MediaWiki configuration
+		MediaWikiFarm::getInstance()->loadMediaWikiConfig();
+		
+		# Load skins with the wfLoadSkin mechanism
+		MediaWikiFarm::getInstance()->loadSkinsConfig();
+		
+		# Load extensions with the wfLoadExtension mechanism
+		MediaWikiFarm::getInstance()->loadExtensionsConfig();
+		
+		foreach( MediaWikiFarm::getInstance()->params['globals']['execFiles'] as $execFile ) {
+			
+			@include $execFile;
+		}
+	}
+	
 	
 	
 	/*
@@ -316,7 +352,7 @@ class MediaWikiFarm {
 	 * 
 	 * @param array $farms All farm configurations.
 	 * @param string $host Requested host.
-	 * return bool One of the farm has been selected.
+	 * @return bool One of the farm has been selected.
 	 */
 	private function selectFarm( $farms, $host ) {
 		
