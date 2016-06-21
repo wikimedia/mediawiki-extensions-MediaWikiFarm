@@ -767,35 +767,35 @@ class MediaWikiFarm {
 		}
 		
 		# Extract skin and extension configuration from the general configuration
-		$regexSkins = '/^wg(' . implode( '|',
+		$regexSkins = count( $globals['skins'] ) ? '/^wg(' . implode( '|',
 			array_map(
 				function( $a ) { return preg_quote( $a, '/' ); },
 				array_keys( $globals['skins'] )
 			)
-		) . ')/';
-		$regexExtensions = '/^wg(' . implode( '|',
+		) . ')/' : false;
+		$regexExtensions = count( $globals['extensions'] ) ? '/^wg(' . implode( '|',
 			array_map(
 				function( $a ) { return preg_quote( $a, '/' ); },
 				array_keys( $globals['extensions'] )
 			)
-		) . ')/';
-		$regexUnsetPrefixes = '/^wg(' . implode( '|',
+		) . ')/' : false;
+		$regexUnsetPrefixes = count( $unsetPrefixes ) ? '/^wg(' . implode( '|',
 			array_map(
 				function( $a ) { return preg_quote( $a, '/' ); },
 				$unsetPrefixes
 			)
-		) . ')/';
+		) . ')/' : false;
 		foreach( $globals['general'] as $setting => $value ) {
 			
-			if( preg_match( $regexSkins, $setting, $matches ) ) {
+			if( $regexSkins && preg_match( $regexSkins, $setting, $matches ) ) {
 				$globals['skins'][$matches[1]][$setting] = $value;
 				unset( $setting );
 			}
-			elseif( preg_match( $regexExtensions, $setting, $matches ) ) {
+			elseif( $regexExtensions && preg_match( $regexExtensions, $setting, $matches ) ) {
 				$globals['extensions'][$matches[1]][$setting] = $value;
 				unset( $setting );
 			}
-			elseif( preg_match( $regexUnsetPrefixes, $setting, $matches ) )
+			elseif( $regexUnsetPrefixes && preg_match( $regexUnsetPrefixes, $setting, $matches ) )
 				unset( $matches[1] );
 		}
 	}
