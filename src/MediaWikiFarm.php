@@ -253,6 +253,19 @@ class MediaWikiFarm {
 	}
 	
 	/**
+	 * Synchronise the version in the 'expected version' and deployment files.
+	 * 
+	 * @return void
+	 */
+	function updateVersionAfterMaintenance() {
+		
+		if( !array_key_exists( 'version', $this->params ) )
+			return;
+		
+		$this->updateVersion( $this->params['version'] );
+	}
+	
+	/**
 	 * Return the file where is loaded the configuration.
 	 * 
 	 * This function is important to avoid the two parts of the extension (checking of
@@ -511,17 +524,39 @@ class MediaWikiFarm {
 	 */
 	private function setVersion( $version = null ) {
 		
-		global $IP;
+		global $IP, $mwfScript;
 		
-		# Replace variables in the file name containing all versions, if existing
-		$this->setWikiProperty( 'versions' );
+		# Special case for the update: new (uncached) version must be used
+		$force = false;
+		if( is_string( $mwfScript ) && $mwfScript == 'maintenance/update.php' )
+			$force = true;
+		
+		# Read cache file
+		$deployments = array();
+		$this->setWikiProperty( 'deployments' );
+		if( array_key_exists( 'deployments', $this->params ) && !$force ) {
+			if( strrchr( $this->params['deployments'], '.' ) != '.php' ) $this->params['deployments'] .= '.php';
+			$deployments = $this->readFile( $this->params['deployments'], $this->configDir );
+			if( $deployments === false ) $deployments = array();
+		}
+		if( array_key_exists( $this->params['wikiID'], $deployments ) )
+			$this->params['code'] = $this->codeDir . '/' . $deployments[$this->params['wikiID']];
 		
 		# In the case multiversion is configured and version is already known
-		if( is_string( $this->codeDir ) && is_string( $version ) )
+		elseif( is_string( $this->codeDir ) && is_string( $version ) ) {
+			
+			# Cache the version
+			if( !$force )
+				$this->updateVersion( $version );
+			
 			$this->params['code'] = $this->codeDir . '/' . $version;
+		}
 		
 		# In the case multiversion is configured, but version is not known as of now
 		elseif( is_string( $this->codeDir ) && is_null( $version ) ) {
+			
+			# Replace variables in the file name containing all versions, if existing
+			$this->setWikiProperty( 'versions' );
 			
 			$versions = $this->readFile( $this->params['versions'], $this->configDir );
 			
@@ -540,6 +575,10 @@ class MediaWikiFarm {
 				$version = $versions['default'];
 			
 			else return false;
+			
+			# Cache the version
+			if( !$force )
+				$this->updateVersion( $version );
 			
 			$this->params['code'] = $this->codeDir . '/' . $version;
 		}
@@ -560,6 +599,30 @@ class MediaWikiFarm {
 		$this->params['version'] = $version;
 		
 		return true;
+	}
+	
+	/**
+	 * Update the version in the deployment file.
+	 * 
+	 * @param string $version The new version, should be the version found in the 'expected version' file.
+	 * @return void
+	 */
+	private function updateVersion( $version ) {
+	
+		# Check a deployment file is wanted
+		if( !array_key_exists( 'deployments', $this->params ) )
+			return;
+		
+		# Read current deployments
+		if( strrchr( $this->params['deployments'], '.' ) != '.php' ) $this->params['deployments'] .= '.php';
+		$deployments = $this->readFile( $this->params['deployments'], $this->configDir );
+		if( $deployments === false ) $deployments = array();
+		elseif( array_key_exists( $this->params['wikiID'], $deployments ) && $deployments[$this->params['wikiID']] == $version )
+			return;
+		
+		# Update the deployment file
+		$deployments[$this->params['wikiID']] = $version;
+		$this->cacheFile( $deployments, $this->params['deployments'], $this->configDir );
 	}
 	
 	/**
@@ -989,14 +1052,18 @@ class MediaWikiFarm {
 	 * 
 	 * @param array $array Array of the data to be cached.
 	 * @param string $filename Name of the cache file; this filename must have an extension '.ser' or '.php' else no cache file is saved.
+	 * @param string|null $directory Name of the parent directory; null for default cache directory
 	 * @return void
 	 */
-	private function cacheFile( $array, $filename ) {
+	private function cacheFile( $array, $filename, $directory = null ) {
 		
-		if( !is_string( $this->cacheDir ) || !is_dir( $this->cacheDir ) )
+		if( is_null( $directory ) )
+			$directory = $this->cacheDir;
+		
+		if( !is_string( $directory ) || !is_dir( $directory ) )
 			return;
 		
-		$prefixedFile = $this->cacheDir . '/' . $filename;
+		$prefixedFile = $directory . '/' . $filename;
 		
 		# Create temporary file
 		if( !is_dir( dirname( $prefixedFile ) ) )

@@ -170,3 +170,6 @@ if( !is_file( $argv[0] ) ) {
 }
 require $argv[0];
 
+# Update version after maintenance/update.php (the only case where another version is given before execution)
+MediaWikiFarm::getInstance()->updateVersionAfterMaintenance();
+
