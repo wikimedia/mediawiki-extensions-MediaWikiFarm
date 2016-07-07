@@ -2,7 +2,8 @@
 *.swp
 *~
 
-# Composer
+# Composer & npm
+/node_modules
 /vendor
 
 # Installation
