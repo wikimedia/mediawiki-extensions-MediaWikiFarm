@@ -539,9 +539,10 @@ class MediaWikiFarm {
 			$deployments = $this->readFile( $this->params['deployments'], $this->configDir );
 			if( $deployments === false ) $deployments = array();
 		}
-		if( array_key_exists( $this->params['wikiID'], $deployments ) )
-			$this->params['code'] = $this->codeDir . '/' . $deployments[$this->params['wikiID']];
-		
+		if( array_key_exists( $this->params['wikiID'], $deployments ) ) {
+			$version = $deployments[$this->params['wikiID']];
+			$this->params['code'] = $this->codeDir . '/' . $version;
+		}
 		# In the case multiversion is configured and version is already known
 		elseif( is_string( $this->codeDir ) && is_string( $version ) ) {
 			
