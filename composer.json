@@ -18,11 +18,13 @@
 		"justinrainbow/json-schema": "*",
 		"phpdocumentor/phpdocumentor": "*",
 		"jakub-onderka/php-parallel-lint": "*",
-		"phpmd/phpmd" : "*"
+		"phpmd/phpmd": "*",
+		"mediawiki/mediawiki-codesniffer": "*"
 	},
 	"scripts": {
 		"validate-schema": "php ./scripts/validate-schema.php",
 		"phpdoc": "./vendor/bin/phpdoc -d src,scripts -e php,php.txt -t ./docs/code",
-		"parallel-lint": "./vendor/bin/parallel-lint --exclude vendor ."
+		"parallel-lint": "./vendor/bin/parallel-lint --exclude vendor .",
+		"phpcs": "phpcs -p -s"
 	}
 }
