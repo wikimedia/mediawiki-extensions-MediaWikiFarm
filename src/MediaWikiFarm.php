@@ -769,8 +769,11 @@ class MediaWikiFarm {
 			
 			$theseSettings = $this->readFile( $configFile['file'], $this->configDir );
 			if( $theseSettings === false ) {
-				$this->unusable = true;
-				return false;
+				# If a file is unavailable, skip it
+				continue;
+				# Exiting is fatal and, in case of mistake, is worse than some parameters missing
+				#$this->unusable = true;
+				#return false;
 			}
 			
 			# Key 'default' => no choice of the wiki
