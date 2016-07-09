@@ -58,6 +58,10 @@
 							"type": "string",
 							"description": "File containing an array where each key is a wikiID and each value is the corresponding MediaWiki version."
 						},
+						"nonexistant": {
+							"type": "string",
+							"description": "PHP or HTML file displayed in case of a nonexistant wiki."
+						},
 						"data": {
 							"type": "string",
 							"description": "Data directory where files of the wiki are stored."

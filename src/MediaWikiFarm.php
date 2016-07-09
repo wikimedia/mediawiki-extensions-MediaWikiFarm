@@ -69,10 +69,15 @@ class MediaWikiFarm {
 		# Check existence
 		if( !$wgMediaWikiFarm->checkExistence() ) {
 			
+			if( PHP_SAPI == 'cli' )
+				exit( 1 );
+			
+			# Display an informational page when the requested wiki doesn’t exist, only when a page was requested, but not a resource, to avoid waste resources
 			$version = $_SERVER['SERVER_PROTOCOL'] && $_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.0' ? '1.0' : '1.1';
-			if( PHP_SAPI != 'cli' ) header( "HTTP/$version 404 Not Found" );
-			echo "Error: unknown wiki.\n";
-			exit( 1 );
+			header( "HTTP/$version 404 Not Found" );
+			if( $entryPoint == 'index.php' && array_key_exists( 'nonexistant', $wgMediaWikiFarm->params ) && is_file( $wgMediaWikiFarm->params['nonexistant'] ) )
+				include $wgMediaWikiFarm->params['nonexistant'];
+			exit;
 		}
 		
 		# Go to version directory
