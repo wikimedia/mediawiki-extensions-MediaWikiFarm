@@ -1,8 +1,11 @@
 # Backup files
-*.swp
+.swo
+.swp
+.*.swp
 *~
 
 # Composer & npm
+/composer.lock
 /node_modules
 /vendor
 
