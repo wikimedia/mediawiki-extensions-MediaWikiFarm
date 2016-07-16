@@ -1,0 +1,131 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"name": "Configuration of MediaWikiFarm extension to manage MediaWiki farms.",
+	"type": "object",
+	"additionalProperties": false,
+	"patternProperties": {
+		"^[a-zA-Z0-9_-]+$": {
+			"oneOf": [
+				{
+					"type": "object",
+					"description": "Configuration of a farm.",
+					"additionalProperties": false,
+					"required": [
+						"server",
+						"suffix",
+						"wikiID"
+					],
+					"properties": {
+						"server": {
+							"type": "string",
+							"description": "Regular expression of the server names.",
+							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_|-]+$"
+						},
+						"variables": {
+							"type": "array",
+							"description": "List of variables in the host.",
+							"additionalItems": false,
+							"items": {
+								"type": "object",
+								"description": "An host variable.",
+								"additionalProperties": false,
+								"required": [
+									"variable"
+								],
+								"properties": {
+									"variable": {
+										"type": "string",
+										"description": "Name of the host variable."
+									},
+									"file": {
+										"type": "string",
+										"description": "Path of the existing values for this variable."
+									}
+								}
+							}
+						},
+						"suffix": {
+							"type": "string",
+							"description": "Suffix of the wiki.",
+							"pattern": "^[a-z$-]+$"
+						},
+						"wikiID": {
+							"type": "string",
+							"description": "Unique identifier of the wiki.",
+							"pattern": "^[a-z$-]+$"
+						},
+						"versions": {
+							"type": "string",
+							"description": "File containing an array where each key is a wikiID and each value is the corresponding MediaWiki version."
+						},
+						"nonexistant": {
+							"type": "string",
+							"description": "PHP or HTML file displayed in case of a nonexistant wiki."
+						},
+						"data": {
+							"type": "string",
+							"description": "Data directory where files of the wiki are stored."
+						},
+						"config": {
+							"type": "array",
+							"description": "List of configuration files.",
+							"additionalItems": false,
+							"items": {
+								"type": "object",
+								"description": "A configuration file.",
+								"additionalProperties": false,
+								"required": [
+									"file"
+								],
+								"properties": {
+									"file": {
+										"type": "string",
+										"description": "Path of the configuration file."
+									},
+									"key": {
+										"type": "string",
+										"description": "Pattern of the of the key.",
+										"pattern": "^(default|\\*|[a-z$*-]+)$"
+									},
+									"default": {
+										"type": "string",
+										"description": "Default key.",
+										"pattern": "^[a-z$-]+$"
+									},
+									"exec": {
+										"type": "boolean",
+										"description": "This file must be directly.",
+										"enum": [
+											true
+										]
+									}
+								}
+							}
+						}
+					}
+				},
+				{
+					"type": "object",
+					"description": "Configuration of a redirect.",
+					"additionalProperties": false,
+					"required": [
+						"server",
+						"redirect"
+					],
+					"properties": {
+						"server": {
+							"type": "string",
+							"description": "Regular expression of the server name.",
+							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_|-]+$"
+						},
+						"redirect": {
+							"type": "string",
+							"description": "Internal redirect to another farm.",
+							"pattern": "^[a-zA-Z0-9.$_-]+$"
+						}
+					}
+				}
+			]
+		}
+	}
+}

@@ -1,0 +1,13 @@
+{
+	"mywiki": {
+		"server": "mywiki\\.example\\.org",
+		"suffix": "wiki",
+		"wikiID": "mywiki",
+		"config": [
+			{
+				"file": "LocalSettings.php",
+				"exec": true
+			}
+		]
+	}
+}

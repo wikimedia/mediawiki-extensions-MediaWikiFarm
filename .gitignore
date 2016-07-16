@@ -1,0 +1,14 @@
+# Backup files
+.swo
+.swp
+.*.swp
+*~
+
+# Composer & npm
+/composer.lock
+/node_modules
+/vendor
+
+# Installation
+/config
+/www
