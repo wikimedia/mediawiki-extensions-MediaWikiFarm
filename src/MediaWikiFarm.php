@@ -842,8 +842,8 @@ class MediaWikiFarm {
 		return array(
 			'suffix' => $this->params['suffix'],
 			'lang' => '',
-			'tags' => [],
-			'params' => [],
+			'tags' => array(),
+			'params' => array(),
 		);
 	}
 	
@@ -889,19 +889,19 @@ class MediaWikiFarm {
 		# Extract skin and extension configuration from the general configuration
 		$regexSkins = count( $globals['skins'] ) ? '/^wg(' . implode( '|',
 			array_map(
-				function( $a ) { return preg_quote( $a, '/' ); },
+				array( 'MediaWikiFarm', 'protectRegex' ),
 				array_keys( $globals['skins'] )
 			)
 		) . ')/' : false;
 		$regexExtensions = count( $globals['extensions'] ) ? '/^wg(' . implode( '|',
 			array_map(
-				function( $a ) { return preg_quote( $a, '/' ); },
+				array( 'MediaWikiFarm', 'protectRegex' ),
 				array_keys( $globals['extensions'] )
 			)
 		) . ')/' : false;
 		$regexUnsetPrefixes = count( $unsetPrefixes ) ? '/^wg(' . implode( '|',
 			array_map(
-				function( $a ) { return preg_quote( $a, '/' ); },
+				array( 'MediaWikiFarm', 'protectRegex' ),
 				$unsetPrefixes
 			)
 		) . ')/' : false;
@@ -918,6 +918,17 @@ class MediaWikiFarm {
 			elseif( $regexUnsetPrefixes && preg_match( $regexUnsetPrefixes, $setting, $matches ) )
 				unset( $matches[1] );
 		}
+	}
+	
+	/**
+	 * Helper function used in extractSkinsAndExtensions.
+	 * 
+	 * @param string $a String to be regex-escaped.
+	 * @return string Escaped string.
+	 */
+	static private function protectRegex( $a ) {
+		
+		return preg_quote( $a, '/' );
 	}
 	
 	/**
@@ -1005,18 +1016,11 @@ class MediaWikiFarm {
 			# Load Composer libraries
 			# There is no warning if not present because to properly handle the error by returning false
 			# This is only included here to avoid delays (~3ms without OPcache) during the loading using cached files or other formats
-			if( is_file( dirname( __FILE__ ) . '/../vendor/autoload.php' ) )
-				include_once dirname( __FILE__ ) . '/../vendor/autoload.php';
-			
-			if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) || !class_exists( 'Symfony\Component\Yaml\Exception\ParseException' ) )
-				return false;
-			
-			try {
-				$array = Symfony\Component\Yaml\Yaml::parse( @file_get_contents( $prefixedFile ) );
-			}
-			catch( Symfony\Component\Yaml\Exception\ParseException $e ) {
+			if( version_compare( PHP_VERSION, '5.3.0' ) >= 0 ) {
 				
-				return false;
+				$array = require 'Yaml.php';
+				if( $array === false )
+					return false;
 			}
 		}
 		
