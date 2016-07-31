@@ -10,33 +10,10 @@
 # Protect against web entry
 if( PHP_SAPI != 'cli' ) exit;
 
-
-# Configuration of the MediaWiki Farm
-# The config file is in different location depending if it is a mono- or multi-version installation
-if( is_file( dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/includes/DefaultSettings.php' ) ) {
-	
-	$IP = dirname( dirname( dirname( dirname( __FILE__ ) ) ) );
-	require "$IP/LocalSettings.php";
-}
-else {
-	
-	$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
-	$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
-	$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
-	require_once dirname( dirname( __FILE__ ) ) . '/config/MediaWikiFarmDirectories.php';
-}
-
-
-# Include library
-// @codingStandardsIgnoreStart MediaWiki.Usage.DirUsage.FunctionFound
-require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
-// @codingStandardsIgnoreEnd
-
-
 /**
  * Get a command line parameter.
  * 
- * The parameter can be removed from the list, except the first parameter (script name).
+ * The parameter can be removed from the list.
  * 
  * @param string|integer $name Parameter name or position (from 0).
  * @param bool $shift Remove this parameter from the list?
@@ -70,11 +47,10 @@ function mwfGetParam( $name, $shift = true ) {
 	
 	# Search a positional parameter
 	elseif( is_int( $name ) ) {
-		if( $name == 0 )
-			$shift = false;
 		if( $name >= $argc )
 			return null;
 		$value = $argv[$name];
+		$posArg = $name;
 		$nbArgs = 1;
 	}
 	
@@ -83,6 +59,8 @@ function mwfGetParam( $name, $shift = true ) {
 		
 		$argc -= $nbArgs;
 		$argv = array_merge( array_slice( $argv, 0, $posArg ), array_slice( $argv, $posArg+$nbArgs ) );
+		$_SERVER['argc'] = $argc;
+		$_SERVER['argv'] = $argv;
 	}
 	
 	return $value;
@@ -132,17 +110,48 @@ if( $argc == 2 && ($argv[1] == '-h' || $argv[1] == '--help') ) mwfUsage( false )
 
 # Get wiki
 $mwfHost = mwfGetParam( 'wiki' );
+$_SERVER['HTTP_HOST'] = $mwfHost;
+$_SERVER['SERVER_NAME'] = $mwfHost;
 if( is_null( $mwfHost ) ) mwfUsage();
 
 # Get script
-$mwfScript = mwfGetParam( 1 );
+$mwfScript = mwfGetParam( 1, false );
+
+# Remove script name
+mwfGetParam( 0 );
+
 if( is_null( $mwfScript ) ) mwfUsage();
-if( preg_match( '/^[a-zA-Z-]+$/', $mwfScript ) )
+if( preg_match( '/^[a-zA-Z-]+$/', $mwfScript ) ) {
 	$mwfScript = 'maintenance/' . $mwfScript . '.php';
+	$argv[0] = $mwfScript;
+}
+
+
+# Configuration of the MediaWiki Farm
+# The config file is in different location depending if it is a mono- or multi-version installation
+if( is_file( dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/includes/DefaultSettings.php' ) ) {
+	
+	$IP = dirname( dirname( dirname( dirname( __FILE__ ) ) ) );
+	require "$IP/LocalSettings.php";
+}
+else {
+	
+	$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
+	$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
+	$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
+	require_once dirname( dirname( __FILE__ ) ) . '/config/MediaWikiFarmDirectories.php';
+}
+
+
+# Include library
+// @codingStandardsIgnoreStart MediaWiki.Usage.DirUsage.FunctionFound
+require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
+// @codingStandardsIgnoreEnd
 
 
 # Initialise the requested version
-MediaWikiFarm::load( $mwfScript, $mwfHost );
+MediaWikiFarm::load( $mwfScript );
+
 
 # Display parameters
 $mwfVersion = MediaWikiFarm::getInstance()->params['version'] ? MediaWikiFarm::getInstance()->params['version'] : 'current';
@@ -155,8 +164,8 @@ Script:  $mwfScript
 
 PARAMS;
 
+
 # Clean this script
-$argv[0] = $mwfScript;
 unset( $mwfHost );
 unset( $mwfScript );
 unset( $mwfVersion );
@@ -170,6 +179,6 @@ if( !is_file( $argv[0] ) ) {
 }
 require $argv[0];
 
+
 # Update version after maintenance/update.php (the only case where another version is given before execution)
 MediaWikiFarm::getInstance()->updateVersionAfterMaintenance();
-

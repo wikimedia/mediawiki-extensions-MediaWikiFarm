@@ -16,9 +16,7 @@ Testing
 
 MediaWikiFarm has an experimental support of unit tests with `PHPUnit`_.
 
-Because of the very specific use case of PHPUnit called in CLI, it is recommended to set up a classical wiki installation with a classical LocalSettings.php with its own database and (fakely) load MediaWikiFarm with :code:`wfLoadExtension( 'MediaWikiFarm' )`. In fact this will not load the MediaWikiFarm executable code due to a lack of of support of extension registration (difficult problem in this case), so this will only load the class MediaWikiFarm needed to execute unit tests.
-
-Then, to execute PHPUnit, go to root MediaWiki directory and run :command:`php tests/phpunit/phpunit.php --group MediaWikiFarm`. You can add :command:`--debug` if you want more details.
+Executing PHPUnit is like executing any other script in the farm: :command:`php extensions/MediaWikiFarm/scripts/mwscript.php --wiki=your.wiki.example.org tests/phpunit/phpunit.php --group MediaWikiFarm`. You can add :command:`--debug` if you want more details.
 
 .. _PHPUnit: http://www.phpunit.de
 

@@ -56,15 +56,14 @@ class MediaWikiFarm {
 	 * like `www/index.php`).
 	 * 
 	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
-	 * @param string|null $host Requested host.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
-	static function load( $entryPoint = '', $host = null ) {
+	static function load( $entryPoint = '' ) {
 		
 		global $wgMediaWikiFarm;
 		
 		# Initialise object
-		$wgMediaWikiFarm = self::getInstance( $host );
+		$wgMediaWikiFarm = self::getInstance();
 		
 		# Check existence
 		if( !$wgMediaWikiFarm->checkExistence() ) {
@@ -97,15 +96,25 @@ class MediaWikiFarm {
 	/**
 	 * Return (and if needed initialise) the unique object of type MediaWikiFarm.
 	 * 
-	 * @param string|null $host Requested host.
+	 * @throws DomainException When there is no $_SERVER['HTTP_HOST'] nor $_SERVER['SERVER_NAME'].
 	 * @return MediaWikiFarm Singleton.
 	 */
-	static function getInstance( $host = null ) {
+	static function getInstance() {
 		
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 		
-		if( self::$self == null )
-			self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir );
+		# Object was already created
+		if( self::$self )
+			return self::$self;
+		
+		# Detect the current host
+		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
+		if( array_key_exists( 'HTTP_HOST', $_SERVER ) || array_key_exists( 'SERVER_NAME', $_SERVER ) )
+			$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
+		else throw new DomainException( 'Undefined host' );
+		
+		# Create the object for this host
+		self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir );
 		
 		return self::$self;
 	}
@@ -266,7 +275,7 @@ class MediaWikiFarm {
 	 */
 	function updateVersionAfterMaintenance() {
 		
-		if( !array_key_exists( 'version', $this->params ) )
+		if( !array_key_exists( 'version', $this->params ) || !$this->params['version'] )
 			return;
 		
 		$this->updateVersion( $this->params['version'] );
@@ -332,25 +341,18 @@ class MediaWikiFarm {
 	 * 'unusable' becomes true.
 	 * It is a public method for testing needs, but it should never directly called in real code.
 	 * 
-	 * @param string|null $host Requested host.
+	 * @param string $host Requested host.
 	 * @param string $configDir Configuration directory.
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
 	 * @param string|false|null $cacheDir Cache directory; if null, the cache is disabled.
 	 */
 	public function __construct( $host, $configDir, $codeDir = null, $cacheDir = null ) {
 		
-		# Default value for $host
-		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
-		if( is_null( $host ) ) {
-			if( array_key_exists( 'HTTP_HOST', $_SERVER ) || array_key_exists( 'SERVER_NAME', $_SERVER ) )
-				$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
-		}
-		
 		# Default value for $cacheDir
 		if( is_null( $cacheDir ) ) $cacheDir = '/tmp/mw-cache';
 		
 		# Check parameters
-		if( !is_string( $host ) || $host == '' ||
+		if( !is_string( $host ) ||
 		    !(is_string( $configDir ) && is_dir( $configDir )) ||
 		    !(is_null( $codeDir ) xor (is_string( $codeDir ) && is_dir( $codeDir ))) ||
 		    !(is_string( $cacheDir ) xor $cacheDir === false)

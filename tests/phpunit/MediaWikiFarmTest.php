@@ -6,15 +6,18 @@
  */
 class MediaWikiFarmTest extends MediaWikiTestCase {
 	
+	/** @var MediaWikiFarm|null Test object. */
+	protected $farm = null;
+	
 	/**
 	 * Set up the default MediaWikiFarm object with a sample correct configuration file.
 	 */
-	public function setUp() {
+	protected function setUp() {
 		
 		parent::setUp();
 		
-		$this->setMwGlobals( 'wgMediaWikiFarmConfigDir', dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config' );
-		MediaWikiFarm::getInstance( 'a.testfarm.example.org' );
+		$wgMediaWikiFarmTestConfigDir = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config';
+		$this->farm = new MediaWikiFarm( 'a.testfarm.example.org', $wgMediaWikiFarmTestConfigDir );
 	}
 	
 	/**
@@ -23,8 +26,8 @@ class MediaWikiFarmTest extends MediaWikiTestCase {
 	public function testFailedConstruction() {
 		
 		$wgMediaWikiFarmBadConfigDir = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'data';
-		$wgMediaWikiFarm = new MediaWikiFarm( 'a.testfarm.example.org', $wgMediaWikiFarmBadConfigDir );
-		$this->assertTrue( $wgMediaWikiFarm->unusable );
+		$farm = new MediaWikiFarm( 'a.testfarm.example.org', $wgMediaWikiFarmBadConfigDir );
+		$this->assertTrue( $farm->unusable );
 	}
 	
 	/**
@@ -32,7 +35,7 @@ class MediaWikiFarmTest extends MediaWikiTestCase {
 	 */
 	public function testSuccessfulConstruction() {
 		
-		$this->assertFalse( MediaWikiFarm::getInstance()->unusable );
+		$this->assertFalse( $this->farm->unusable );
 	}
 	
 	/**
@@ -40,7 +43,7 @@ class MediaWikiFarmTest extends MediaWikiTestCase {
 	 */
 	public function testFarmLocalSettingsFile() {
 		
-		$this->assertEquals( MediaWikiFarm::getInstance()->getConfigFile(), dirname( dirname( dirname( __FILE__ ) ) ) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'main.php' );
+		$this->assertEquals( $this->farm->getConfigFile(), dirname( dirname( dirname( __FILE__ ) ) ) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'main.php' );
 	}
 	
 	/**
@@ -48,6 +51,6 @@ class MediaWikiFarmTest extends MediaWikiTestCase {
 	 */
 	public function testVariables() {
 		
-		$this->assertEquals( MediaWikiFarm::getInstance()->variables, array( 'wiki' => 'a' ) );
+		$this->assertEquals( $this->farm->variables, array( 'wiki' => 'a' ) );
 	}
 }
