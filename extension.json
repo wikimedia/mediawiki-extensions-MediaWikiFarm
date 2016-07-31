@@ -22,7 +22,7 @@
 		]
 	},
 	"AutoloadClasses": {
-		"MediaWikiFarms": "src/MediaWikiFarm.php"
+		"MediaWikiFarm": "src/MediaWikiFarm.php"
 	},
 	"manifest_version": 1
 }

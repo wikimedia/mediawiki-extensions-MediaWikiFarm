@@ -88,7 +88,8 @@ class MediaWikiFarm {
 		#define( 'MW_CONFIG_CALLBACK', 'MediaWikiFarm::loadConfig' );
 		
 		# Define config file to avoid creating a stub LocalSettings.php
-		define( 'MW_CONFIG_FILE', $wgMediaWikiFarm->getConfigFile() );
+		if( !defined( 'MW_CONFIG_FILE' ) )
+			define( 'MW_CONFIG_FILE', $wgMediaWikiFarm->getConfigFile() );
 		
 		return $entryPoint;
 	}
@@ -163,7 +164,7 @@ class MediaWikiFarm {
 		if( $this->unusable )
 			return;
 		
-		if( !is_array( $this->params['globals'] ) )
+		if( !array_key_exists( 'globals', $this->params ) || !is_array( $this->params['globals'] ) )
 			$this->getMediaWikiConfig();
 		
 		// Set general parameters as global variables
@@ -1181,4 +1182,3 @@ class MediaWikiFarm {
 		return $out;
 	}
 }
-

@@ -1,0 +1,13 @@
+# Expected configuration files for a multiversion installation
+# See docs/config for samples
+
+# If you want to change any of the two configuration parameters
+/MediaWikiFarmDirectories.php
+
+# Main config file if this directory is the main configuration directory
+/farms.yml
+/farms.json
+/farms.php
+
+# Other config files can have any name
+*
