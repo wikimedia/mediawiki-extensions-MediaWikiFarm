@@ -165,6 +165,7 @@ class MediaWikiFarm {
 			return;
 		
 		if( !array_key_exists( 'globals', $this->params ) || !is_array( $this->params['globals'] ) )
+			
 			$this->getMediaWikiConfig();
 		
 		// Set general parameters as global variables
@@ -192,7 +193,7 @@ class MediaWikiFarm {
 		foreach( $this->params['globals']['skins'] as $skin => $value ) {
 			
 			if( $value['_loading'] == 'wfLoadSkin' )
-			
+				
 				wfLoadSkin( $skin );
 			
 			unset( $this->params['globals']['skins'][$skin]['_loading'] );
@@ -329,17 +330,21 @@ class MediaWikiFarm {
 	 * farm depending of the host (when there are multiple farms). In case of error (unreadable
 	 * directory or file, or unrecognized host), no exception is thrown but the property
 	 * 'unusable' becomes true.
+	 * It is a public method for testing needs, but it should never directly called in real code.
 	 * 
 	 * @param string|null $host Requested host.
 	 * @param string $configDir Configuration directory.
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
 	 * @param string|false|null $cacheDir Cache directory; if null, the cache is disabled.
 	 */
-	private function __construct( $host, $configDir, $codeDir = null, $cacheDir = null ) {
+	public function __construct( $host, $configDir, $codeDir = null, $cacheDir = null ) {
 		
 		# Default value for $host
 		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
-		if( is_null( $host ) ) $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
+		if( is_null( $host ) ) {
+			if( array_key_exists( 'HTTP_HOST', $_SERVER ) || array_key_exists( 'SERVER_NAME', $_SERVER ) )
+				$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
+		}
 		
 		# Default value for $cacheDir
 		if( is_null( $cacheDir ) ) $cacheDir = '/tmp/mw-cache';
@@ -1180,5 +1185,19 @@ class MediaWikiFarm {
 		}
 		
 		return $out;
+	}
+	
+	/**
+	 * Add files for unit testing.
+	 * 
+	 * @param string[] $files The test files.
+	 */
+	public static function onUnitTestsList( array &$files ) {
+		
+		$dir = dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'phpunit' . DIRECTORY_SEPARATOR;
+		
+		$files[] = $dir . 'MediaWikiFarmTest.php';
+		
+		return true;
 	}
 }

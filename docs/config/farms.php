@@ -22,7 +22,7 @@ return array(
 	# Configuration similar to the Wikimedia farm
 	'wikimedia' => array(
 		
-		'server' => '(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org',
+		'server' => '(?P<lang>[a-z-]+)\.(?<family>[a-z]+)\.org',
 		
 		'variables' => array(
 		
@@ -56,7 +56,7 @@ return array(
 	# Configuration for a small wiki farm
 	'com-example' => array(
 		
-		'server' => '(?<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com',
+		'server' => '(?P<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com',
 		
 		'variables' => array(
 			
@@ -90,7 +90,7 @@ return array(
 	
 	'com-example-redirect' => array(
 		
-		'server' => '(?<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com',
+		'server' => '(?P<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com',
 		'redirect' => '$client-$wiki.example.com',
 	),
 );

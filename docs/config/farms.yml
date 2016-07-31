@@ -12,7 +12,7 @@ mywiki:
 ## Configuration similar to the Wikimedia farm
 #wikimedia:
 #    
-#    server: '(?<lang>[a-z-]+)\.(?<family>[a-z]+)\.org'
+#    server: '(?P<lang>[a-z-]+)\.(?<family>[a-z]+)\.org'
 #    
 #    variables:
 #        
@@ -39,7 +39,7 @@ mywiki:
 ## Configuration for a small wiki farm
 #com-example:
 #    
-#    server: '(?<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com'
+#    server: '(?P<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com'
 #    
 #    variables:
 #        
@@ -66,5 +66,5 @@ mywiki:
 #
 #com-example-redirect:
 #    
-#    server: '(?<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com'
+#    server: '(?P<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com'
 #    redirect: '$client-$wiki.example.com'

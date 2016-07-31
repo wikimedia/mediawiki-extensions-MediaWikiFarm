@@ -21,6 +21,11 @@
 			"i18n"
 		]
 	},
+	"Hooks": {
+		"UnitTestsList": [
+			"MediaWikiFarm::onUnitTestsList"
+		]
+	},
 	"AutoloadClasses": {
 		"MediaWikiFarm": "src/MediaWikiFarm.php"
 	},
