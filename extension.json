@@ -9,7 +9,7 @@
 	"url": "https://www.mediawiki.org/wiki/Extension:MediaWikiFarm",
 	"type": "other",
 	"requires": {
-		"MediaWiki": ">= 1.1.0"
+		"MediaWiki": ">= 1.6.0"
 	},
 	"config": {
 		"MediaWikiFarmConfigDir": "/etc/mediawiki",

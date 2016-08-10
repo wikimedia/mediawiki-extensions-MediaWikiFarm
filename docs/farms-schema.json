@@ -56,7 +56,11 @@
 						},
 						"versions": {
 							"type": "string",
-							"description": "File containing an array where each key is a wikiID and each value is the corresponding MediaWiki version."
+							"description": "File containing an array where each key is a wikiID and each value is the corresponding MediaWiki version. When a 'deployments' key is present, this file contains expected versions before the 'maintenance/update.php' script is run, actual versions after."
+						},
+						"deployments": {
+							"type": "string",
+							"description": "File containing an array where each key is a wikiID and each value is the corresponding MediaWiki version similarly to 'versions', but this file contains actual versions, before and after the 'maintenance/update.php' script is run."
 						},
 						"nonexistant": {
 							"type": "string",

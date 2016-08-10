@@ -423,7 +423,7 @@ class MediaWikiFarm {
 			if( array_key_exists( 'redirect', $config ) ) {
 				
 				$redirects++;
-				return $this->selectFarm( $configs, $this->replaceVariables( $config['redirect'] ) );
+				return $this->selectFarm( $farms, $this->replaceVariables( $config['redirect'] ) );
 			}
 			
 			# Get the selected configuration

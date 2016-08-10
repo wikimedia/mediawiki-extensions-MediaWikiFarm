@@ -13,9 +13,8 @@ require_once "vendor/autoload.php";
 
 foreach( array( 'config/farms.yml', 'config/farms.json', 'config/farms.php' ) as $filename ) {
 	
-	// Get the schema and data as objects
-	$retriever = new JsonSchema\Uri\UriRetriever;
-	$schema = $retriever->retrieve('file://' . realpath('docs/farms-schema.json'));
+	if( !is_file( $filename ) )
+		continue;
 	
 	echo "\n$filename:\n";
 	if( preg_match( '/\.yml$/', $filename ) ) {
@@ -37,10 +36,14 @@ foreach( array( 'config/farms.yml', 'config/farms.json', 'config/farms.php' ) as
 		$data = json_decode( $dataJSON );
 	}
 	
+	// Initialise objects
+	$resolver = new JsonSchema\Uri\UriResolver();
+	$retriever = new JsonSchema\Uri\UriRetriever();
+	
 	// If you use $ref or if you are unsure, resolve those references here
 	// This modifies the $schema object
-	$refResolver = new JsonSchema\RefResolver( $retriever );
-	$refResolver->resolve( $schema, 'file://' . dirname( __FILE__ ) );
+	$refResolver = new JsonSchema\RefResolver( $retriever, $resolver );
+	$schema = $refResolver->resolve( 'file://' . realpath( 'docs/farms-schema.json' ) );
 	
 	// Validate
 	$validator = new JsonSchema\Validator();
