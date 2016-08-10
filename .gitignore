@@ -9,5 +9,8 @@
 /node_modules
 /vendor
 
-# Installation
+# Web access for multiversion farms
+# You can put e.g. dedicated 404 error pages in addition of entry points
+# If you want to version-control this subdirectory with git, you can – in this case
+# add /index.php and others in its .gitignore to avoid double version-control.)
 /www

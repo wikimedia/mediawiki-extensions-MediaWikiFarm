@@ -13,14 +13,14 @@ There shouldn’t be any interruption of service if everything is followed caref
 Preparation
 ===========
 
-It is out of scope to explain out to install and configure the full HTTP stack, neither how to make it compatible with a MediaWiki farm and evolve with the time. For a raw overview, you must configure in a multisite fashion: the DNS servers, the HTTP servers, and possibly the associated security versions DNSSEC and HTTPS, and possibly the domain names depending of your specific configuration. It is also out of scope the installation and configuration of other services and backends: database servers, memcached servers, other caching or performance services, MediaWiki external services as Parsoid, Mathoid, Citoid, etc. You should also be comfortable with command line on a *nix system.
+It is out of scope to explain out to install and configure the full HTTP stack, neither how to make it compatible with a MediaWiki farm and evolve with the time. For a raw overview, you must configure in a multisite fashion: the DNS servers, the HTTP servers, and possibly the associated security versions DNSSEC and HTTPS, and possibly the domain names depending of your specific configuration. It is also out of scope the installation and configuration of other services and backends: database servers, memcached servers, other caching or performance services, MediaWiki external services as Parsoid, Mathoid, Citoid, etc. You should also be comfortable with command line on a \*nix system.
 
 It is assumed you have an existing MediaWiki (standalone) installation. A new installation is theoretically possible, but it has not been tested.
 
 Before installing the files, you must prepare these informations:
 * regular expression(s) for your farm(s) with named patterns;
 * *configuration directory* where will be placed MediaWiki configurations, the default is :path:`/etc/mediawiki`;
-* *cache directory*, a directory where config files will be cached; the default is :path:`/tmp/mw-cache`; it can speed up MediaWikiFarm from 9ms to 2ms.
+* *cache directory*, a directory where config files will be cached; the default is :path:`/tmp/mw-cache`; it can speed up MediaWikiFarm from 9ms to 2ms (without OpCache).
 
 For your initial configuration, you can choose the regular expression of your farm simply as the name of your existing wiki, e.g. "mywiki\.example\.org". If you do that, the suffix and wikiID can be fixed without variables, but you should quickly think how you want to organise your wikis and farms to change these to significant values before you have too much things in your config files.
 
@@ -40,27 +40,26 @@ In this mode, MediaWikiFarm can be installed (almost) like any other MediaWiki e
 1. Copy the extension MediaWikiFarm and install it in the subdirectory :path:`$IP/extensions/MediaWikiFarm`;
 2. If you downloaded it from Git and want the YAML syntax, go inside the directory and run :command:`composer install --no-dev` (see Composer_ if needed);
 3. Copy your existing :path:`LocalSettings.php` file in your configuration directory;
-4. Verify there is no absolute path inside: ``__FILE__`` and ``__DIR__`` must be replaced by their original value to avoid any missing file require (it’s fine to use the MediaWiki installation variable :path:`$IP`);
+4. Verify there is no absolute path inside: ``__FILE__`` and ``__DIR__`` should probably be replaced by their original value to avoid any missing file require (it’s fine to use the MediaWiki installation variable :path:`$IP`);
 5. Copy the MediaWikiFarm file :path:`docs/config/LocalSettings.php` next to your existing :path:`$IP/LocalSettings.php`, e.g. in :path:`$IP/LocalSettings.new.php`;
 6. Check or customise the directory paths inside;
-5. /!\ Make MediaWikiFarm live by moving this file in place of your existing :path:`$IP/LocalSettings.php`.
+7. /!\ Make MediaWikiFarm live by moving this file in place of your existing :path:`$IP/LocalSettings.php`.
 
 Multiversion mode
 =================
 
 Decide on the path where will be MediaWiki versions, this will be called the *code directory*. It is recalled each MediaWiki version (version + flavour more exactly) will be in a subdirectory of this code directory, and the names of these subdirectories will be the names of the versions. This code directory is independent from the configuration directory.
 
-It is assumed here all the directories are not use on the live website; if it is not the case, you must be more careful.
+It is assumed here all the directories are not used on the live website; if it is not the case, you must be more careful.
 
 1. Create this directory, copy your existing MediaWiki installation in a subdirectory, and rename this subdirectory to an understandable name, for instance the name of the MediaWiki version (e.g. "1.25.5").
 2. Copy the extension MediaWikiFarm in a subdirectory of this code directory. You can name this subdirectory as you want.
 3. Go inside this directory; if there is no Composer :path:`vendor` directory and you want the YAML syntax, run :command:`composer install --no-dev` (see Composer_ if needed);
-4. Always in the MediaWikiFarm directory, create a directory :path:`www`, and copy inside the entry points: :command:`cp src/index.php.txt www/index.php` and the same for the four other entry points.
-5. Always in the MediaWikiFarm directory, create a directory :path:`config`, copy inside the file :path:`docs/config/MediaWikiFarmDirectories.php`, and check or customise the directory paths inside.
-6. Go inside your MediaWiki installation and copy your existing :path:`LocalSettings.php` file in your configuration directory.
-7. Verify there is no absolute path inside: ``__FILE__`` and ``__DIR__`` must be replaced by their corresponding value in the MediaWiki installation directory to avoid any missing file require (it’s fine to use the MediaWiki installation variable :path:`$IP`).
-8. Go inside your MediaWiki installation and replace the existing :path:`$IP/LocalSettings.php` by the MediaWikiFarm file :path:`docs/config/LocalSettings.multiversion.php` (and renaming it with the classical name :path:`$IP/LocalSettings.php`).
-9. /!\ Make MediaWikiFarm live by changing your Web server configuration to make entry points index.php and others point to the files :path:`www/index.php` and others in the MediaWikiFarm directory.
+4. Always in the MediaWikiFarm directory, create a directory :path:`config`, copy inside the file :path:`docs/config/MediaWikiFarmDirectories.php`, and check or customise the directory paths inside.
+5. Go inside your MediaWiki installation and copy your existing :path:`LocalSettings.php` file in your configuration directory.
+6. Verify there is no absolute path inside: ``__FILE__`` and ``__DIR__`` should probably be replaced by their corresponding value in the MediaWiki installation directory to avoid any missing file require (it’s fine to use the MediaWiki installation variable :path:`$IP`).
+7. Go inside your MediaWiki installation and replace the existing :path:`$IP/LocalSettings.php` by the MediaWikiFarm file :path:`docs/config/LocalSettings.multiversion.php` (and renaming it with the classical name :path:`$IP/LocalSettings.php`).
+8. /!\ Make MediaWikiFarm live by changing your Web server configuration to make entry points index.php and others point to the files :path:`www/index.php` and others in the MediaWikiFarm directory.
 
 Transition from monoversion to multiversion mode
 ================================================
