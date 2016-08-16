@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Metalhead64"
+		]
+	},
+	"mediawikifarm-desc": "Wandelt eine MediaWiki-Installation in eine Farm um, bestehend aus mehreren unabhängigen Wikis."
+}

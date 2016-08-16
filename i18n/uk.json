@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Piramidion"
+		]
+	},
+	"mediawikifarm-desc": "Перетворює інсталяцію MediaWiki у ферму, що складається з декількох незалежних вікі."
+}

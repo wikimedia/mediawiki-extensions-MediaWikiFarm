@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Liuxinyu970226"
+		]
+	},
+	"mediawikifarm-desc": "将MediaWiki安装副本变成由多个独立wiki组成的农场。"
+}
