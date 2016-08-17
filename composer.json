@@ -15,7 +15,7 @@
 		"symfony/yaml": "^2.0 || ^3.0"
 	},
 	"require-dev": {
-		"justinrainbow/json-schema": "*",
+		"justinrainbow/json-schema": "~3.0",
 		"phpdocumentor/phpdocumentor": "*",
 		"jakub-onderka/php-parallel-lint": "*",
 		"phpmd/phpmd": "*",

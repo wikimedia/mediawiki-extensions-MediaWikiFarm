@@ -36,18 +36,10 @@ foreach( array( 'config/farms.yml', 'config/farms.json', 'config/farms.php' ) as
 		$data = json_decode( $dataJSON );
 	}
 	
-	// Initialise objects
-	$resolver = new JsonSchema\Uri\UriResolver();
-	$retriever = new JsonSchema\Uri\UriRetriever();
-	
-	// If you use $ref or if you are unsure, resolve those references here
-	// This modifies the $schema object
-	$refResolver = new JsonSchema\RefResolver( $retriever, $resolver );
-	$schema = $refResolver->resolve( 'file://' . realpath( 'docs/farms-schema.json' ) );
-	
 	// Validate
 	$validator = new JsonSchema\Validator();
-	$validator->check( $data, $schema );
+	$validator->check( $data, (object) array( '$ref' =>
+		'file://' . realpath( 'docs/farms-schema.json' ) ) );
 	
 	if( $validator->isValid() ) {
 		echo "The supplied JSON validates against the schema.\n";
