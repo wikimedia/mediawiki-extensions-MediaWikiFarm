@@ -1,6 +1,6 @@
 {
 	"name": "MediaWikiFarm",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"author": [
 		"Seb35"
 	],
@@ -27,7 +27,8 @@
 		]
 	},
 	"AutoloadClasses": {
-		"MediaWikiFarm": "src/MediaWikiFarm.php"
+		"MediaWikiFarm": "src/MediaWikiFarm.php",
+		"MWFConfigurationException": "src/MediaWikiFarm.php"
 	},
 	"manifest_version": 1
 }

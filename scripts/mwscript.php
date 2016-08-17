@@ -154,11 +154,11 @@ MediaWikiFarm::load( $mwfScript );
 
 
 # Display parameters
-$mwfVersion = MediaWikiFarm::getInstance()->params['version'] ? MediaWikiFarm::getInstance()->params['version'] : 'current';
+$mwfVersion = MediaWikiFarm::getInstance()->getVariable( '$VERSION' ) ? MediaWikiFarm::getInstance()->getVariable( '$VERSION' ) : 'current';
 echo <<<PARAMS
 
-Wiki:    $mwfHost (wikiID: {$wgMediaWikiFarm->params['wikiID']}; suffix: {$wgMediaWikiFarm->params['suffix']})
-Version: $mwfVersion: {$wgMediaWikiFarm->params['code']}
+Wiki:    $mwfHost (wikiID: {$wgMediaWikiFarm->getVariable( '$WIKIID' )}; suffix: {$wgMediaWikiFarm->getVariable( '$SUFFIX' )})
+Version: $mwfVersion: {$wgMediaWikiFarm->getVariable( '$CODE' )}
 Script:  $mwfScript
 
 
