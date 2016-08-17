@@ -12,6 +12,7 @@
 					"additionalProperties": false,
 					"required": [
 						"server",
+						"variables",
 						"suffix",
 						"wikiID"
 					],
@@ -25,6 +26,7 @@
 							"type": "array",
 							"description": "List of variables in the host.",
 							"additionalItems": false,
+							"minItems": 1,
 							"items": {
 								"type": "object",
 								"description": "An host variable.",
@@ -98,10 +100,8 @@
 									},
 									"exec": {
 										"type": "boolean",
-										"description": "This file must be directly.",
-										"enum": [
-											true
-										]
+										"description": "This PHP file must be directly read.",
+										"default": false
 									}
 								}
 							}

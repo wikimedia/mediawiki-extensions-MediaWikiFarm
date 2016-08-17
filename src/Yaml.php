@@ -12,7 +12,7 @@
  */
 
 # Load Composer
-if( is_file( dirname( __FILE__ ) . '/../vendor/autoload.php' ) )
+if( is_file( dirname( __FILE__ ) . '/../vendor/autoload.php' ) && !class_exists( 'Symfony\Component\Yaml\Yaml' ) )
 	include_once dirname( __FILE__ ) . '/../vendor/autoload.php';
 
 # If the class doesn’t exist, return an error

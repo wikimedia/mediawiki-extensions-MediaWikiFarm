@@ -23,6 +23,7 @@ if( !isset( $wgVersion ) ) {
 	require_once "$IP/includes/DefaultSettings.php";
 }
 
+
 # Load general MediaWiki configuration
 MediaWikiFarm::getInstance()->loadMediaWikiConfig();
 
@@ -32,7 +33,7 @@ MediaWikiFarm::getInstance()->loadMediaWikiConfig();
  */
 
 # Load skins with the require_once mechanism
-foreach( MediaWikiFarm::getInstance()->params['globals']['skins'] as $skin => $value ) {
+foreach( MediaWikiFarm::getInstance()->getConfiguration( 'skins' ) as $skin => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/skins/$skin/$skin.php";
@@ -47,7 +48,7 @@ MediaWikiFarm::getInstance()->loadSkinsConfig();
  */
 
 # Load extensions with the require_once mechanism
-foreach( MediaWikiFarm::getInstance()->params['globals']['extensions'] as $extension => $value ) {
+foreach( MediaWikiFarm::getInstance()->getConfiguration( 'extensions' ) as $extension => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/extensions/$extension/$extension.php";
@@ -60,9 +61,7 @@ MediaWikiFarm::getInstance()->loadExtensionsConfig();
 /*
  * Executable configuration
  */
-
-foreach( MediaWikiFarm::getInstance()->params['globals']['execFiles'] as $execFile ) {
+foreach( MediaWikiFarm::getInstance()->getConfiguration( 'execFiles' ) as $execFile ) {
 	
 	@include $execFile;
 }
-
