@@ -52,7 +52,98 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	function testFailedConstruction() {
 		
 		$wgMediaWikiFarmConfigDirBadTest = dirname( __FILE__ ) . '/data';
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirBadTest, null, false );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Missing host name in constructor
+	 */
+	function testFailedConstruction2() {
+		
+		$wgMediaWikiFarmConfigDirBadTest = dirname( __FILE__ ) . '/data/config';
+		$farm = new MediaWikiFarm( 0, $wgMediaWikiFarmConfigDirBadTest );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Invalid directory for the farm configuration
+	 */
+	function testFailedConstruction3() {
+		
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', 0 );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Invalid directory for the farm configuration
+	 */
+	function testFailedConstruction4() {
+		
+		$wgMediaWikiFarmConfigDirBadTest = dirname( __FILE__ ) . '/data/config/farms.php';
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirBadTest );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Code directory must be null or a directory
+	 */
+	function testFailedConstruction5() {
+		
+		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirTest, 0 );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Code directory must be null or a directory
+	 */
+	function testFailedConstruction6() {
+		
+		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmConfigDirTest . '/farms.php' );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Cache directory must be false, null, or a directory
+	 */
+	function testFailedConstruction7() {
+		
+		global $IP;
+		
+		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
+		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, 0 );
+	}
+	
+	/**
+	 * Test creation of cache directory.
+	 */
+	function testCacheDirectoryCreation() {
+		
+		global $IP;
+		
+		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
+		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
+		$wgMediaWikiFarmCacheDirTest = dirname( __FILE__ ) . '/data/cache';
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, $wgMediaWikiFarmCacheDirTest );
+		
+		$this->assertEquals( $wgMediaWikiFarmCacheDirTest . '/testfarm-monoversion', $farm->getCacheDir() );
+		$this->assertTrue( is_dir( $wgMediaWikiFarmCacheDirTest ) );
+		$this->assertTrue( is_dir( $wgMediaWikiFarmCacheDirTest . '/testfarm-monoversion' ) );
 	}
 	
 	/**
@@ -176,4 +267,29 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 			),
 			$this->farm->getVariables() );
 	}*/
+	
+	/**
+	 * Test onUnitTestsList hook
+	 */
+	function testOnUnitTestsListHook() {	
+		
+		$array = array();
+		MediaWikiFarm::onUnitTestsList( $array );
+		$this->assertEquals(
+			array(
+				__FILE__,
+				dirname( __FILE__ ) . '/MediaWikiFarmMultiversionInstallationTest.php',
+			),
+			$array );
+	}
+	
+	/**
+	 * Remove 'data/cache' cache directory.
+	 */
+	protected function tearDown() {
+		
+		wfRecursiveRemoveDir( dirname( __FILE__ ) . '/data/cache' );
+		
+		parent::tearDown();
+	}
 }

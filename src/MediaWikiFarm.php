@@ -164,6 +164,7 @@ class MediaWikiFarm {
 	}
 	
 	
+	
 	/* 
 	 * Entry points in normal operation
 	 * -------------------------------- */
@@ -253,6 +254,12 @@ class MediaWikiFarm {
 		
 		return self::$self;
 	}
+	
+	
+	
+	/*
+	 * Functions of interest in normal operations
+	 * ------------------------------------------ */
 	
 	/**
 	 * Check the existence of the wiki, given variables values and files listing existing wikis.
@@ -412,7 +419,7 @@ class MediaWikiFarm {
 	}
 	
 	/**
-	 * Return the file where is loaded the configuration.
+	 * Return the file where must be loaded the configuration from.
 	 * 
 	 * This function is important to avoid the two parts of the extension (checking of
 	 * existence and loading of configuration) are located in the same directory in the
@@ -732,6 +739,19 @@ class MediaWikiFarm {
 	}
 	
 	/**
+	 * Computation of secondary variables.
+	 * 
+	 * These can reuse previously-computed variables: URL variables (lowercase), '$WIKIID', '$SUFFIX', '$VERSION', '$CODE'.
+	 * 
+	 * @throws InvalidArgumentException
+	 * @return void
+	 */
+	function setOtherVariables() {
+		
+		$this->setVariable( 'data' );
+	}
+	
+	/**
 	 * Update the version in the deployment file.
 	 * 
 	 * @param string $version The new version, should be the version found in the 'expected version' file.
@@ -753,19 +773,6 @@ class MediaWikiFarm {
 		# Update the deployment file
 		$deployments[$this->variables['$WIKIID']] = $version;
 		$this->cacheFile( $deployments, $this->variables['$DEPLOYMENTS'], $this->configDir );
-	}
-	
-	/**
-	 * Computation of secondary variables.
-	 * 
-	 * These can reuse previously-computed variables: URL variables (lowercase), '$WIKIID', '$SUFFIX', '$VERSION', '$CODE'.
-	 * 
-	 * @throws InvalidArgumentException
-	 * @return void
-	 */
-	function setOtherVariables() {
-		
-		$this->setVariable( 'data' );
 	}
 	
 	/**
@@ -963,7 +970,7 @@ class MediaWikiFarm {
 	}
 	
 	/**
-	 * Extract from the general configuration skin and extension configuration
+	 * Extract skin and extension configuration from the general configuration.
 	 * 
 	 * @return void
 	 */
@@ -974,23 +981,14 @@ class MediaWikiFarm {
 		# Search for skin and extension activation
 		$unsetPrefixes = array();
 		foreach( $globals['general'] as $setting => $value ) {
-			if( preg_match( '/^wgUseSkin(.+)$/', $setting, $matches ) && $value === true ) {
+			if( preg_match( '/^wgUse(Extension|Skin)(.+)$/', $setting, $matches ) && $value === true ) {
 				
-				$skin = $matches[1];
-				$loadingMechanism = $this->detectLoadingMechanism( 'skin', $skin );
+				$type = strtolower( $matches[1] );
+				$name = $matches[2];
+				$loadingMechanism = $this->detectLoadingMechanism( $type, $name );
 				
-				if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $skin;
-				else $globals['skins'][$skin] = array( '_loading' => $loadingMechanism );
-				
-				unset( $globals['general'][$setting] );
-			}
-			elseif( preg_match( '/^wgUseExtension(.+)$/', $setting, $matches ) && $value === true ) {
-				
-				$extension = $matches[1];
-				$loadingMechanism = $this->detectLoadingMechanism( 'extension', $extension );
-				
-				if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $extension;
-				else $globals['extensions'][$extension] = array( '_loading' => $loadingMechanism );
+				if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $name;
+				else $globals[$type.'s'][$name] = array( '_loading' => $loadingMechanism );
 				
 				unset( $globals['general'][$setting] );
 			}
@@ -1036,19 +1034,6 @@ class MediaWikiFarm {
 	}
 	
 	/**
-	 * Helper function used in extractSkinsAndExtensions.
-	 * 
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 * @param string $a String to be regex-escaped.
-	 * @return string Escaped string.
-	 */
-	static function protectRegex( $a ) {
-		
-		return preg_quote( $a, '/' );
-	}
-	
-	/**
 	 * Detection of the loading mechanism of extensions and skins.
 	 * 
 	 * @mediawikifarm-const
@@ -1074,6 +1059,71 @@ class MediaWikiFarm {
 			return 'composer';
 		
 		return null;
+	}
+	
+	/**
+	 * Set a wiki property and replace placeholders (property name version).
+	 * 
+	 * @param string $name Name of the property.
+	 * @param bool This variable is mandatory.
+	 * @throws MWFConfigurationException When the variable is mandatory and missing.
+	 * @throws InvalidArgumentException
+	 * @return void
+	 */
+	function setVariable( $name, $mandatory = false ) {
+		
+		if( !array_key_exists( $name, $this->farmConfig ) ) {
+			if( $mandatory ) throw new MWFConfigurationException( 'Missing key \'$name\' in farm configuration.' );
+			return;
+		}
+		
+		if( !is_string( $this->farmConfig[$name] ) )
+			return;
+		
+		$this->variables['$'.strtoupper($name)] = $this->replaceVariables( $this->farmConfig[$name] );
+	}
+	
+	/**
+	 * Replace variables in a string.
+	 * 
+	 * Constant function (do not write any object property).
+	 * 
+	 * @param string|string[] $value Value of the property.
+	 * @throws InvalidArgumentException When argument type is incorrect.
+	 * @return string|string[] Input where variables were replaced.
+	 */
+	function replaceVariables( $value ) {
+		
+		if( is_string( $value ) )
+			return str_replace( array_keys( $this->variables ), $this->variables, $value );
+		
+		elseif( is_array( $value ) ) {
+			
+			foreach( $value as &$subvalue ) {
+				$subvalue = str_replace( array_keys( $this->variables ), $this->variables, $subvalue );
+			}
+			return $value;
+		}
+		
+		throw new InvalidArgumentException( 'Argument of MediaWikiFarm->replaceVariables() must be a string or an array.' );
+	}
+	
+	/**
+	 * Add files for unit testing.
+	 * 
+	 * @mediawikifarm-const
+	 * @mediawikifarm-idempotent
+	 * @param string[] $files The test files.
+	 * @return true
+	 */
+	static function onUnitTestsList( array &$files ) {
+		
+		$dir = dirname( dirname( __FILE__ ) ) . '/tests/phpunit/';
+		
+		$files[] = $dir . 'MediaWikiFarmMonoversionInstallationTest.php';
+		$files[] = $dir . 'MediaWikiFarmMultiversionInstallationTest.php';
+		
+		return true;
 	}
 	
 	
@@ -1138,8 +1188,10 @@ class MediaWikiFarm {
 			# This is only included here to avoid delays (~3ms without OPcache) during the loading using cached files or other formats
 			if( version_compare( PHP_VERSION, '5.3.0' ) >= 0 ) {
 				
-				$array = require dirname( __FILE__ ) . '/' . 'Yaml.php';
-				if( $array === false )
+				require_once dirname( __FILE__ ) . '/Yaml.php';
+				
+				$array = MediaWikiFarm_readYAML( $prefixedFile );
+				if( is_null( $array ) )
 					return false;
 			}
 		}
@@ -1219,50 +1271,34 @@ class MediaWikiFarm {
 	}
 	
 	/**
-	 * Set a wiki property and replace placeholders (property name version).
+	 * Guess if a given directory contains MediaWiki.
 	 * 
-	 * @param string $name Name of the property.
-	 * @param bool This variable is mandatory.
-	 * @throws MWFConfigurationException When the variable is mandatory and missing.
-	 * @throws InvalidArgumentException
-	 * @return void
+	 * This heuristic (presence of [dir]/includes/DefaultSettings.php) has no false negatives
+	 * (every MediaWiki from 1.1 to (at least) 1.27 has such a file) and probably has a few, if
+	 * any, false positives (another software which has the very same file).
+	 * 
+	 * @mediawikifarm-const
+	 * @mediawikifarm-idempotent
+	 * @param string $dir The base directory which could contain MediaWiki.
+	 * @return bool The directory really contains MediaWiki.
 	 */
-	function setVariable( $name, $mandatory = false ) {
-		
-		if( !array_key_exists( $name, $this->farmConfig ) ) {
-			if( $mandatory ) throw new MWFConfigurationException( 'Missing key \'$name\' in farm configuration.' );
-			return;
-		}
-		
-		if( !is_string( $this->farmConfig[$name] ) )
-			return;
-		
-		$this->variables['$'.strtoupper($name)] = $this->replaceVariables( $this->farmConfig[$name] );
+	static function isMediaWiki( $dir ) {
+		return is_file( $dir . '/includes/DefaultSettings.php' );
 	}
 	
 	/**
-	 * Replace variables in a string.
+	 * Helper function used in extractSkinsAndExtensions.
 	 * 
-	 * Constant function (do not write any object property).
+	 * Isolate this function is needed for compatibility with PHP 5.2.
 	 * 
-	 * @param string|string[] $value Value of the property.
-	 * @throws InvalidArgumentException When argument type is incorrect.
-	 * @return string|string[] Input where variables were replaced.
+	 * @mediawikifarm-const
+	 * @mediawikifarm-idempotent
+	 * @param string $a String to be regex-escaped.
+	 * @return string Escaped string.
 	 */
-	function replaceVariables( $value ) {
+	static function protectRegex( $a ) {
 		
-		if( is_string( $value ) )
-			return str_replace( array_keys( $this->variables ), $this->variables, $value );
-		
-		elseif( is_array( $value ) ) {
-			
-			foreach( $value as &$subvalue ) {
-				$subvalue = str_replace( array_keys( $this->variables ), $this->variables, $subvalue );
-			}
-			return $value;
-		}
-		
-		throw new InvalidArgumentException( 'Argument of MediaWikiFarm->replaceVariables() must be a string or an array.' );
+		return preg_quote( $a, '/' );
 	}
 	
 	/**
@@ -1296,39 +1332,5 @@ class MediaWikiFarm {
 		}
 		
 		return $out;
-	}
-	
-	/**
-	 * Guess if a given directory contains MediaWiki.
-	 * 
-	 * This heuristic (presence of [dir]/includes/DefaultSettings.php) has no false negatives
-	 * (every MediaWiki from 1.1 to (at least) 1.27 has such a file) and probably has a few, if
-	 * any, false positives (another software which has the very same file).
-	 * 
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 * @param string $dir The base directory which could contain MediaWiki.
-	 * @return bool The directory really contains MediaWiki.
-	 */
-	static function isMediaWiki( $dir ) {
-		return is_file( $dir . '/includes/DefaultSettings.php' );
-	}
-	
-	/**
-	 * Add files for unit testing.
-	 * 
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 * @param string[] $files The test files.
-	 * @return true
-	 */
-	static function onUnitTestsList( array &$files ) {
-		
-		$dir = dirname( dirname( __FILE__ ) ) . '/tests/phpunit/';
-		
-		$files[] = $dir . 'MediaWikiFarmMonoversionInstallationTest.php';
-		$files[] = $dir . 'MediaWikiFarmMultiversionInstallationTest.php';
-		
-		return true;
 	}
 }

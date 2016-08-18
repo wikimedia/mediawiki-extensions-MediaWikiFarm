@@ -33,14 +33,14 @@ MediaWikiFarm::getInstance()->loadMediaWikiConfig();
  */
 
 # Load skins with the require_once mechanism
-foreach( MediaWikiFarm::getInstance()->getConfiguration( 'skins' ) as $skin => $value ) {
+foreach( $wgMediaWikiFarm->getConfiguration( 'skins' ) as $skin => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/skins/$skin/$skin.php";
 }
 
 # Load skins with the wfLoadSkin mechanism
-MediaWikiFarm::getInstance()->loadSkinsConfig();
+$wgMediaWikiFarm->loadSkinsConfig();
 
 
 /*
@@ -48,20 +48,20 @@ MediaWikiFarm::getInstance()->loadSkinsConfig();
  */
 
 # Load extensions with the require_once mechanism
-foreach( MediaWikiFarm::getInstance()->getConfiguration( 'extensions' ) as $extension => $value ) {
+foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $extension => $value ) {
 	
 	if( $value['_loading'] == 'require_once' )
 		require_once "$IP/extensions/$extension/$extension.php";
 }
 
 # Load extensions with the wfLoadExtension mechanism
-MediaWikiFarm::getInstance()->loadExtensionsConfig();
+$wgMediaWikiFarm->loadExtensionsConfig();
 
 
 /*
  * Executable configuration
  */
-foreach( MediaWikiFarm::getInstance()->getConfiguration( 'execFiles' ) as $execFile ) {
+foreach( $wgMediaWikiFarm->getConfiguration( 'execFiles' ) as $execFile ) {
 	
 	@include $execFile;
 }

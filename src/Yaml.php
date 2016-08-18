@@ -15,15 +15,29 @@
 if( is_file( dirname( __FILE__ ) . '/../vendor/autoload.php' ) && !class_exists( 'Symfony\Component\Yaml\Yaml' ) )
 	include_once dirname( __FILE__ ) . '/../vendor/autoload.php';
 
-# If the class doesn’t exist, return an error
-if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) || !class_exists( 'Symfony\Component\Yaml\Exception\ParseException' ) )
-	return false;
-
-# Return the array read from YAML or an error
-try {
-	return Symfony\Component\Yaml\Yaml::parse( @file_get_contents( $prefixedFile ) );
-}
-catch( Symfony\Component\Yaml\Exception\ParseException $e ) {
+/**
+ * Read a YAML file.
+ * 
+ * Isolate this function is needed for compatibility with PHP 5.2.
+ * 
+ * @param string $filename Name of the YAML file.
+ * @return array|string|int|bool|null Content of the YAML file or null in case of error.
+ */
+function MediaWikiFarm_readYAML( $filename ) {
 	
-	return false;
+	# If the class or the file don’t exist, return an error
+	if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) || !class_exists( 'Symfony\Component\Yaml\Exception\ParseException' ) ) {
+		return null;
+	}
+	if( !is_file( $filename ) ) {
+		return null;
+	}
+	
+	# Return the array read from YAML or an error
+	try {
+		return Symfony\Component\Yaml\Yaml::parse( file_get_contents( $filename ) );
+	}
+	catch( Symfony\Component\Yaml\Exception\ParseException $e ) {}
+	
+	return null;
 }

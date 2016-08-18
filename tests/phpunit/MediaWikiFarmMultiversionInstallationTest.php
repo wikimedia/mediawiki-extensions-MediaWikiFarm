@@ -74,7 +74,98 @@ PHP;
 	function testFailedConstruction() {
 		
 		$wgMediaWikiFarmConfigDirBadTest = dirname( __FILE__ ) . '/data';
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirBadTest, null, false );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Missing host name in constructor
+	 */
+	function testFailedConstruction2() {
+		
+		$wgMediaWikiFarmConfigDirBadTest = dirname( __FILE__ ) . '/data/config';
+		$farm = new MediaWikiFarm( 0, $wgMediaWikiFarmConfigDirBadTest );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Invalid directory for the farm configuration
+	 */
+	function testFailedConstruction3() {
+		
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', 0 );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Invalid directory for the farm configuration
+	 */
+	function testFailedConstruction4() {
+		
+		$wgMediaWikiFarmConfigDirBadTest = dirname( __FILE__ ) . '/data/config/farms.php';
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirBadTest );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Code directory must be null or a directory
+	 */
+	function testFailedConstruction5() {
+		
+		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirTest, 0 );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Code directory must be null or a directory
+	 */
+	function testFailedConstruction6() {
+		
+		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmConfigDirTest . '/farms.php' );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 * 
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Cache directory must be false, null, or a directory
+	 */
+	function testFailedConstruction7() {
+		
+		global $IP;
+		
+		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
+		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, 0 );
+	}
+	
+	/**
+	 * Test creation of cache directory.
+	 */
+	function testCacheDirectoryCreation() {
+		
+		global $IP;
+		
+		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
+		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
+		$wgMediaWikiFarmCacheDirTest = dirname( __FILE__ ) . '/data/cache';
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, $wgMediaWikiFarmCacheDirTest );
+		
+		$this->assertEquals( $wgMediaWikiFarmCacheDirTest . '/testfarm-multiversion', $farm->getCacheDir() );
+		$this->assertTrue( is_dir( $wgMediaWikiFarmCacheDirTest ) );
+		$this->assertTrue( is_dir( $wgMediaWikiFarmCacheDirTest . '/testfarm-multiversion' ) );
 	}
 	
 	/**
@@ -201,7 +292,32 @@ PHP;
 	}
 	
 	/**
-	 * Remove fake 'data/config/versions.php' config file.
+	 * Test onUnitTestsList hook
+	 */
+	function testOnUnitTestsListHook() {	
+		
+		$array = array();
+		MediaWikiFarm::onUnitTestsList( $array );
+		$this->assertEquals(
+			array(
+				dirname( __FILE__ ) . '/MediaWikiFarmMonoversionInstallationTest.php',
+				__FILE__,
+			),
+			$array );
+	}
+	
+	/**
+	 * Remove 'data/cache' cache directory.
+	 */
+	protected function tearDown() {
+		
+		wfRecursiveRemoveDir( dirname( __FILE__ ) . '/data/cache' );
+		
+		parent::tearDown();
+	}
+	
+	/**
+	 * Remove 'data/config/versions.php' config file.
 	 */
 	static function tearDownAfterClass() {
 		

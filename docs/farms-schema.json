@@ -64,7 +64,7 @@
 							"type": "string",
 							"description": "File containing an array where each key is a wikiID and each value is the corresponding MediaWiki version similarly to 'versions', but this file contains actual versions, before and after the 'maintenance/update.php' script is run."
 						},
-						"nonexistant": {
+						"HTTP404": {
 							"type": "string",
 							"description": "PHP or HTML file displayed in case of a nonexistant wiki."
 						},
