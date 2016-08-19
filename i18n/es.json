@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Macofe"
+		]
+	},
+	"mediawikifarm-desc": "Convierte una instalación de MediaWiki en una granja que consta de múltiples wikis independientes."
+}
