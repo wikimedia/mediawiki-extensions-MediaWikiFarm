@@ -17,3 +17,4 @@
 
 # Tests
 /tests/phpunit/data/config/versions.php
+/tests/phpunit/data/config/varwikiversions.php

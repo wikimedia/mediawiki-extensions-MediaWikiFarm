@@ -11,9 +11,9 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Construct a default MediaWikiFarm object with a sample correct configuration file.
-	 * 
+	 *
 	 * Use the current MediaWiki installation to simulate a monoversion installation.
-	 * 
+	 *
 	 * @param string $host Host name.
 	 * @return MediaWikiFarm
 	 */
@@ -23,6 +23,27 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 		$farm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDirTest, null, false );
 		
 		return $farm;
+	}
+	
+	/**
+	 * Set up versions files with the current MediaWiki installation.
+	 */
+	static function setUpBeforeClass() {
+
+		global $IP;
+
+		$dirIP = basename( $IP );
+
+		# Create varwikiversions.php: the list of existing values for variable '$wiki' with their associated versions
+		$versionsFile = <<<PHP
+<?php
+
+return array(
+	'a' => '$dirIP',
+);
+
+PHP;
+		file_put_contents( dirname( __FILE__ ) . '/data/config/varwikiversions.php', $versionsFile );
 	}
 	
 	/**
@@ -45,7 +66,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Test when there is no configuration file farms.yml/json/php.
-	 * 
+	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No configuration file found
 	 */
@@ -57,7 +78,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Test bad arguments in constructor.
-	 * 
+	 *
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Missing host name in constructor
 	 */
@@ -69,7 +90,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Test bad arguments in constructor.
-	 * 
+	 *
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Invalid directory for the farm configuration
 	 */
@@ -80,7 +101,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Test bad arguments in constructor.
-	 * 
+	 *
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Invalid directory for the farm configuration
 	 */
@@ -92,7 +113,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Test bad arguments in constructor.
-	 * 
+	 *
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Code directory must be null or a directory
 	 */
@@ -104,7 +125,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Test bad arguments in constructor.
-	 * 
+	 *
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Code directory must be null or a directory
 	 */
@@ -116,7 +137,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Test bad arguments in constructor.
-	 * 
+	 *
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Cache directory must be false, null, or a directory
 	 */
@@ -127,6 +148,21 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
 		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, 0 );
+	}
+	
+	/**
+	 * Test bad arguments in constructor.
+	 *
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Entry point must be a string
+	 */
+	function testFailedConstruction8() {
+		
+		global $IP;
+		
+		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
+		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, false, 0 );
 	}
 	
 	/**
@@ -191,7 +227,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Test an infinite redirect.
-	 * 
+	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Infinite or too long redirect detected
 	 */
@@ -202,7 +238,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	
 	/**
 	 * Test a missing farm.
-	 * 
+	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No farm corresponding to this host
 	 */
@@ -210,11 +246,11 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 		
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-missing.example.org' );
 	}
-	
+
 	/**
-	 * Test further properties.
+	 * Test basic variables.
 	 */
-	function testProperties() {
+	function testVariables() {
 		
 		global $IP;
 		
@@ -232,10 +268,58 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 			),
 			$this->farm->getVariables() );
 	}
-	
+
+	/**
+	 * Test when a farm definition has no suffix.
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage Missing key 'suffix' in farm configuration.
+	 */
+	function testMissingSuffixVariable() {
+		
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-missing-suffix.example.org' );
+		$farm->checkExistence();
+	}
+
+	/**
+	 * Test when a farm definition has no wikiID.
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage Missing key 'wikiID' in farm configuration.
+	 */
+	function testMissingWikiIDVariable() {
+		
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-missing-wikiid.example.org' );
+		$farm->checkExistence();
+	}
+
+	/**
+	 * Test when a mandatory variable has a bad definition.
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage Wrong type (non-string) for key 'suffix' in farm configuration.
+	 */
+	function testBadTypeMandatoryVariable() {
+		
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-bad-type-mandatory.example.org' );
+		$farm->checkExistence();
+	}
+
+	/**
+	 * Test when a non-mandatory variable has a bad definition.
+	 */
+	function testBadTypeNonMandatoryVariable() {
+		
+		global $IP;
+		
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-bad-type-nonmandatory.example.org' );
+		$farm->checkExistence();
+		$this->assertNull( $farm->getVariable( '$DATA' ) );
+	}
+
 	/**
 	 * Test edge cases when reading config file: missing defined variables, missing versions file.
-	 * 
+	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Undefined key 'variables' in the farm configuration
 	 */
@@ -246,6 +330,75 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 		$farm->checkExistence();
 	}
 	
+	/**
+	 * Test a existing host in a farm with a file variable without version defined inside.
+	 */
+	function testVariableFileWithoutVersion() {
+		
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion-with-file-variable-without-version.example.org' );
+		$this->assertTrue( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test a nonexistant host in a farm with a file variable without version defined inside.
+	 */
+	function testVariableFileWithoutVersionNonexistant() {
+		
+		$farm = self::constructMediaWikiFarm( 'b.testfarm-monoversion-with-file-variable-without-version.example.org' );
+		$this->assertFalse( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test a existing host in a farm with a file variable with version defined inside.
+	 */
+	function testVariableFileWithVersion() {
+		
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion-with-file-variable-with-version.example.org' );
+		$this->assertTrue( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test a nonexistant host in a farm with a file variable with version defined inside.
+	 */
+	function testVariableFileWithVersionNonexistant() {
+		
+		$farm = self::constructMediaWikiFarm( 'b.testfarm-monoversion-with-file-variable-with-version.example.org' );
+		$this->assertFalse( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test an undefined variable, declared in the host regex but not in the list of variables.
+	 *
+	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
+	 */
+	function testUndefinedVariable() {
+		
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion-with-undefined-variable.example.org' );
+		$this->assertTrue( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test memoisation of checkExistence()
+	 *
+	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
+	 */
+	function testMemoisationCheckExistence() {
+		
+		$this->farm->checkExistence();
+		$this->assertTrue( $this->farm->checkExistence() );
+	}
+
+	/**
+	 * Test memoisation of checkHostVariables()
+	 *
+	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
+	 */
+	function testMemoisationCheckHostVariables() {
+		
+		$this->farm->checkExistence();
+		$this->assertTrue( $this->farm->checkHostVariables() );
+	}
+
 	/**
 	 * Test further properties.
 	 *
@@ -269,21 +422,6 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	}*/
 	
 	/**
-	 * Test onUnitTestsList hook
-	 */
-	function testOnUnitTestsListHook() {	
-		
-		$array = array();
-		MediaWikiFarm::onUnitTestsList( $array );
-		$this->assertEquals(
-			array(
-				__FILE__,
-				dirname( __FILE__ ) . '/MediaWikiFarmMultiversionInstallationTest.php',
-			),
-			$array );
-	}
-	
-	/**
 	 * Remove 'data/cache' cache directory.
 	 */
 	protected function tearDown() {
@@ -291,5 +429,13 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 		wfRecursiveRemoveDir( dirname( __FILE__ ) . '/data/cache' );
 		
 		parent::tearDown();
+	}
+	
+	/**
+	 * Remove 'data/config/versions.php' config file.
+	 */
+	static function tearDownAfterClass() {
+		
+		unlink( dirname( __FILE__ ) . '/data/config/varwikiversions.php' );
 	}
 }

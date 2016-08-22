@@ -29,12 +29,15 @@ class MWFConfigurationException extends RuntimeException {}
  */
 class MediaWikiFarm {
 
-	/* 
+	/*
 	 * Properties
 	 * ---------- */
 
 	/** @var MediaWikiFarm|null Singleton. */
 	private static $self = null;
+
+	/** @var string Entry point script. */
+	private $entryPoint = '';
 
 	/** @var string Farm code directory. */
 	private $farmDir = '';
@@ -73,6 +76,18 @@ class MediaWikiFarm {
 	/*
 	 * Accessors
 	 * --------- */
+
+	/**
+	 * Get entry point script.
+	 *
+	 * @mediawikifarm-const
+	 * @mediawikifarm-idempotent
+	 *
+	 * @return string Entry point script.
+	 */
+	function getEntryPoint() {
+		return $this->entryPoint;
+	}
 
 	/**
 	 * Get code directory, where subdirectories are MediaWiki versions.
@@ -172,7 +187,7 @@ class MediaWikiFarm {
 
 
 
-	/* 
+	/*
 	 * Entry points in normal operation
 	 * -------------------------------- */
 
@@ -192,7 +207,7 @@ class MediaWikiFarm {
 
 		try {
 			# Initialise object
-			$wgMediaWikiFarm = self::getInstance();
+			$wgMediaWikiFarm = self::getInstance( $entryPoint );
 
 			# Check existence
 			$exists = $wgMediaWikiFarm->checkExistence();
@@ -237,12 +252,13 @@ class MediaWikiFarm {
 	/**
 	 * Create or return the unique object of type MediaWikiFarm for this request.
 	 *
-	 * There is no explicit parameter, but $_SERVER['HTTP_HOST'] or $_SERVER['SERVER_NAME'] must be defined.
+	 * An implicit (global) parameter for this function is the host: either $_SERVER['HTTP_HOST'] or $_SERVER['SERVER_NAME'] must be defined.
 	 *
+	 * @param string $entryPoint Entry point script.
 	 * @return MediaWikiFarm Singleton.
 	 * @throws MWFConfigurationException When there is no $_SERVER['HTTP_HOST'] nor $_SERVER['SERVER_NAME'] or issue with main configuration file.
 	 */
-	static function getInstance() {
+	static function getInstance( $entryPoint = '' ) {
 
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 
@@ -263,7 +279,7 @@ class MediaWikiFarm {
 		}
 
 		# Create the object for this host
-		self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir );
+		self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
 
 		return self::$self;
 	}
@@ -307,7 +323,9 @@ class MediaWikiFarm {
 		$this->setVariable( 'wikiID', true );
 
 		# Set the version of the wiki
-		$this->setVersion();
+		if( !$this->setVersion() ) {
+			return false;
+		}
 
 		# Set other variables of the wiki
 		$this->setOtherVariables();
@@ -386,7 +404,7 @@ class MediaWikiFarm {
 	 * @return void
 	 */
 	function loadExtensionsConfig() {
-	
+
 		# Register this extension MediaWikiFarm to appear in Special:Version
 		if( function_exists( 'wfLoadExtension' ) ) {
 			wfLoadExtension( 'MediaWikiFarm', $this->codeDir ? $this->farmDir . '/extension.json' : null );
@@ -472,7 +490,7 @@ class MediaWikiFarm {
 	 * @return void
 	 */
 	static function loadConfig() {
-	
+
 		# Load general MediaWiki configuration
 		MediaWikiFarm::getInstance()->loadMediaWikiConfig();
 
@@ -505,11 +523,12 @@ class MediaWikiFarm {
 	 * @param string $configDir Configuration directory.
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
 	 * @param string|false|null $cacheDir Cache directory; if false, the cache is disabled.
+	 * @param string $entryPoint Entry point script.
 	 * @return MediaWikiFarm
 	 * @throws MWFConfigurationException When no farms.yml/php/json is found.
 	 * @throws InvalidArgumentException When wrong input arguments are passed.
 	 */
-	function __construct( $host, $configDir, $codeDir = null, $cacheDir = null ) {
+	function __construct( $host, $configDir, $codeDir = null, $cacheDir = null, $entryPoint = '' ) {
 
 		# Default value for $cacheDir
 		if( is_null( $cacheDir ) ) $cacheDir = '/tmp/mw-cache';
@@ -527,9 +546,13 @@ class MediaWikiFarm {
 		if( !is_string( $cacheDir ) && $cacheDir !== false ) {
 			throw new InvalidArgumentException( 'Cache directory must be false, null, or a directory' );
 		}
+		if( !is_string( $entryPoint ) ) {
+			throw new InvalidArgumentException( 'Entry point must be a string' );
+		}
 
 		# Set parameters
 		$this->farmDir = dirname( dirname( __FILE__ ) );
+		$this->entryPoint = $entryPoint;
 		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
 		$this->cacheDir = $cacheDir;
@@ -553,6 +576,7 @@ class MediaWikiFarm {
 				mkdir( $this->cacheDir );
 			}
 			$this->variables['$SERVER'] = $result['host'];
+			return;
 		}
 
 		# Hard fail
@@ -562,9 +586,7 @@ class MediaWikiFarm {
 		elseif( $result['redirects'] <= 0 ) {
 			throw new MWFConfigurationException( 'Infinite or too long redirect detected' );
 		}
-		elseif( !$result['farm'] ) {
-			throw new MWFConfigurationException( 'No farm corresponding to this host' );
-		}
+		throw new MWFConfigurationException( 'No farm corresponding to this host' );
 	}
 
 	/**
@@ -578,7 +600,7 @@ class MediaWikiFarm {
 	 * @param string $host Requested host.
 	 * @param array $farms All farm configurations.
 	 * @param integer $redirects Number of remaining internal redirects before error.
-	 * @return array 
+	 * @return array
 	 */
 	function selectFarm( $host, $farms, $redirects ) {
 
@@ -622,6 +644,9 @@ class MediaWikiFarm {
 	/**
 	 * Check the variables in the host name to verify the wiki exists.
 	 *
+	 * This function generates strange code coverage, some lines (e.g. $this->variables['$VERSION']) are indicated as covered,
+	 * but its parent “if” is not.
+	 *
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 *
@@ -631,7 +656,9 @@ class MediaWikiFarm {
 	 */
 	function checkHostVariables() {
 
-		$this->variables['$VERSION'] = null;
+		if( $this->variables['$VERSION'] ) {
+			return true;
+		}
 
 		if( !array_key_exists( 'variables', $this->farmConfig ) ) {
 			throw new MWFConfigurationException( 'Undefined key \'variables\' in the farm configuration' );
@@ -699,33 +726,34 @@ class MediaWikiFarm {
 	 * @throws MWFConfigurationException When the file defined by 'versions' is missing or badly formatted.
 	 * @throws LogicException
 	 */
-	private function setVersion() {
+	function setVersion() {
 
-		global $IP, $mwfScript;
+		global $IP;
 
 		# Special case for the update: new (uncached) version must be used
-		$force = false;
-		if( is_string( $mwfScript ) && $mwfScript == 'maintenance/update.php' )
-			$force = true;
+		$cache = ($this->entryPoint != 'maintenance/update.php');
 
 		# Read cache file
 		$deployments = array();
 		$this->setVariable( 'deployments' );
-		if( array_key_exists( '$DEPLOYMENTS', $this->variables ) && !$force ) {
+		if( array_key_exists( '$DEPLOYMENTS', $this->variables ) && $cache ) {
 			if( strrchr( $this->variables['$DEPLOYMENTS'], '.' ) != '.php' ) $this->variable['$DEPLOYMENTS'] .= '.php';
 			$deployments = $this->readFile( $this->variables['$DEPLOYMENTS'], $this->configDir );
-			if( $deployments === false ) $deployments = array();
+			if( !is_array( $deployments ) )
+				$deployments = array();
 		}
 
 		# Multiversion mode – use cached file
 		if( is_string( $this->codeDir ) && array_key_exists( $this->variables['$WIKIID'], $deployments ) ) {
 			$this->variables['$VERSION'] = $deployments[$this->variables['$WIKIID']];
+			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
 		}
 		# Multiversion mode – version was given in a ‘variables’ file
 		elseif( is_string( $this->codeDir ) && is_string( $this->variables['$VERSION'] ) ) {
 
 			# Cache the version
-			if( !$force )
+			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
+			if( $cache )
 				$this->updateVersion( $this->variables['$VERSION'] );
 		}
 		# Multiversion mode – version is given in a ‘versions’ file
@@ -733,7 +761,7 @@ class MediaWikiFarm {
 
 			$this->setVariable( 'versions' );
 			$versions = $this->readFile( $this->variables['$VERSIONS'], $this->configDir );
-			if( !$versions ) {
+			if( !is_array( $versions ) ) {
 				throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $this->variables['$VERSIONS'] . '\' containing the versions for wikis.' );
 			}
 
@@ -750,7 +778,8 @@ class MediaWikiFarm {
 			else return false;
 
 			# Cache the version
-			if( !$force )
+			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
+			if( $cache )
 				$this->updateVersion( $this->variables['$VERSION'] );
 		}
 		# Monoversion mode
@@ -761,11 +790,6 @@ class MediaWikiFarm {
 		}
 		else {
 			throw new LogicException( 'Wrong combinaison of $this->codeDir and $this->variables[\'$VERSION\'].' );
-		}
-
-		# Set the version in the wiki configuration and as a variable
-		if( $this->variables['$VERSION'] ) {
-			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
 		}
 
 		return true;
@@ -1119,8 +1143,12 @@ class MediaWikiFarm {
 			return;
 		}
 
-		if( !is_string( $this->farmConfig[$name] ) )
+		if( !is_string( $this->farmConfig[$name] ) ) {
+			if( $mandatory ) {
+				throw new MWFConfigurationException( "Wrong type (non-string) for key '$name' in farm configuration." );
+			}
 			return;
+		}
 
 		$this->variables['$'.strtoupper($name)] = $this->replaceVariables( $this->farmConfig[$name] );
 	}
@@ -1213,10 +1241,12 @@ class MediaWikiFarm {
 
 			$content = file_get_contents( $prefixedFile );
 
-			if( !$content )
-				return array();
-			
-			$array = @unserialize( $content );
+			if( preg_match( "/^\r?\n?$/m", $content ) ) {
+				$array = array();
+			}
+			else {
+				$array = @unserialize( $content );
+			}
 		}
 
 		# Cached version
@@ -1234,17 +1264,29 @@ class MediaWikiFarm {
 
 				require_once dirname( __FILE__ ) . '/Yaml.php';
 
-				$array = MediaWikiFarm_readYAML( $prefixedFile );
-				if( is_null( $array ) )
-
+				try {
+					$array = MediaWikiFarm_readYAML( $prefixedFile );
+				}
+				catch( RuntimeException $e ) {
 					return false;
+				}
 			}
 		}
 
 		# Format JSON
 		elseif( $format == '.json' ) {
 
-			$array = json_decode( file_get_contents( $prefixedFile ), true );
+			$content = file_get_contents( $prefixedFile );
+
+			if( preg_match( "/^null\r?\n?$/m", $content ) ) {
+				$array = array();
+			}
+			else {
+				$array = json_decode( file_get_contents( $prefixedFile ), true );
+				if( is_null( $array ) ) {
+					return false;
+				}
+			}
 		}
 
 		# Format 'dblist' (simple list of strings separated by newlines)
@@ -1252,24 +1294,31 @@ class MediaWikiFarm {
 
 			$content = file_get_contents( $prefixedFile );
 
-			if( !$content )
-				return array();
-			
-			return explode( "\n", $content );
+			$array = array();
+			$arraytmp = explode( "\n", $content );
+			foreach( $arraytmp as $line ) {
+				if( $line != '' ) {
+					$array[] = $line;
+				}
+			}
 		}
 
 		# Error for any other format
-		else return false;
+		else {
+			return false;
+		}
 
 		# A null value is an empty file or value 'null'
-		if( is_null( $array ) )
+		if( is_null( $array ) ) {
 			$array = array();
+		}
 
 		# Regular return for arrays
 		if( is_array( $array ) ) {
 
-			if( $format != '.php' && $format != '.ser' )
+			if( $format != '.php' ) {
 				$this->cacheFile( $array, $filename.'.php' );
+			}
 
 			return $array;
 		}
@@ -1285,7 +1334,7 @@ class MediaWikiFarm {
 	 * @mediawikifarm-idempotent
 	 *
 	 * @param array $array Array of the data to be cached.
-	 * @param string $filename Name of the cache file; this filename must have an extension '.ser' or '.php' else no cache file is saved.
+	 * @param string $filename Name of the cache file; this filename must have an extension '.php' else no cache file is saved.
 	 * @param string|null $directory Name of the parent directory; null for default cache directory
 	 * @return void
 	 */
@@ -1300,17 +1349,9 @@ class MediaWikiFarm {
 		$prefixedFile = $directory . '/' . $filename;
 
 		# Create temporary file
-		if( !is_dir( dirname( $prefixedFile ) ) ) {
-			mkdir( dirname( $prefixedFile ) );
-		}
 		$tmpFile = $prefixedFile . '.tmp';
 		if( preg_match( '/\.php$/', $filename ) ) {
 			if( file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $array, true ).';' ) ) {
-				rename( $tmpFile, $prefixedFile );
-			}
-		}
-		elseif( preg_match( '/\.ser$/', $filename ) ) {
-			if( file_put_contents( $tmpFile, serialize( $array ) ) ) {
 				rename( $tmpFile, $prefixedFile );
 			}
 		}
