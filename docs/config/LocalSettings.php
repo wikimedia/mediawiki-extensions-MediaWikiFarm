@@ -4,7 +4,7 @@
  */
 
 # Protect against web entry
-if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' ) exit;
+if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) exit;
 
 // Configuration directory.
 // There must be a file 'farms.yml' or 'farms.php' or 'farms.json' inside.

@@ -129,11 +129,12 @@ class MediaWikiFarm {
 	 * Get a variable related to the current request.
 	 * 
 	 * @mediawikifarm-const
-	 * @param string $var Variable name (prefixed with '$').
+	 * @param string $varname Variable name (prefixed with '$').
+	 * @param mixed $default Default value returned when the variable does not exist.
 	 * @return string|null Requested variable or null if the variable does not exist.
 	 */
-	function getVariable( $var ) {
-		return array_key_exists( $var, $this->variables ) ? $this->variables[$var] : null;
+	function getVariable( $varname, $default = null ) {
+		return array_key_exists( $varname, $this->variables ) ? $this->variables[$varname] : $default;
 	}
 	
 	/**
@@ -192,7 +193,7 @@ class MediaWikiFarm {
 		}
 		catch( Exception $e ) {
 			
-			if( PHP_SAPI == 'cli' )
+			if( PHP_SAPI == 'cli' || PHP_SAPI == 'phpdbg' )
 				exit( 1 );
 			
 			$httpProto = $_SERVER['SERVER_PROTOCOL'] ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
@@ -202,7 +203,7 @@ class MediaWikiFarm {
 		
 		if( !$exists ) {
 			
-			if( PHP_SAPI == 'cli' )
+			if( PHP_SAPI == 'cli' || PHP_SAPI == 'phpdbg' )
 				exit( 1 );
 			
 			# Display an informational page when the requested wiki doesn’t exist, only when a page was requested, but not a resource, to avoid waste resources

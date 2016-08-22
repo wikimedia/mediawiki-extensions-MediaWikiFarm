@@ -8,7 +8,7 @@
  */
 
 # Protect against web entry
-if( PHP_SAPI != 'cli' ) exit;
+if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) exit;
 
 /**
  * Get a command line parameter.
@@ -154,11 +154,10 @@ MediaWikiFarm::load( $mwfScript );
 
 
 # Display parameters
-$mwfVersion = $wgMediaWikiFarm->getVariable( '$VERSION' ) ? $wgMediaWikiFarm->getVariable( '$VERSION' ) : 'current';
 echo <<<PARAMS
 
 Wiki:    $mwfHost (wikiID: {$wgMediaWikiFarm->getVariable( '$WIKIID' )}; suffix: {$wgMediaWikiFarm->getVariable( '$SUFFIX' )})
-Version: $mwfVersion: {$wgMediaWikiFarm->getVariable( '$CODE' )}
+Version: {$wgMediaWikiFarm->getVariable( '$VERSION', 'current' )}: {$wgMediaWikiFarm->getVariable( '$CODE' )}
 Script:  $mwfScript
 
 
@@ -168,7 +167,6 @@ PARAMS;
 # Clean this script
 unset( $mwfHost );
 unset( $mwfScript );
-unset( $mwfVersion );
 unset( $IP );
 
 
