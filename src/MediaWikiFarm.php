@@ -988,10 +988,12 @@ class MediaWikiFarm {
 
 				$defaultKey = '';
 				$classicKey = '';
-				if( array_key_exists( 'default', $configFile ) && is_string( $configFile['default'] ) )
+				if( array_key_exists( 'default', $configFile ) && is_string( $configFile['default'] ) ) {
 					$defaultKey = $this->replaceVariables( $configFile['default'] );
-				elseif( is_string( $configFile['key'] ) )
+				}
+				if( is_string( $configFile['key'] ) ) {
 					$classicKey = $this->replaceVariables( $configFile['key'] );
+				}
 
 				foreach( $theseSettings as $setting => $values ) {
 
@@ -1164,8 +1166,10 @@ class MediaWikiFarm {
 	 */
 	function replaceVariables( $value ) {
 
-		if( is_string( $value ) )
+		if( is_string( $value ) ) {
+
 			return str_replace( array_keys( $this->variables ), $this->variables, $value );
+		}
 
 		elseif( is_array( $value ) ) {
 
