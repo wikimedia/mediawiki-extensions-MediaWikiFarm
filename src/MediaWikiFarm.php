@@ -66,6 +66,8 @@ class MediaWikiFarm {
 	/** @var array Configuration parameters for this wiki. */
 	private $configuration = array(
 		'general' => array(),
+		'settings' => array(),
+		'arrays' => array(),
 		'skins' => array(),
 		'extensions' => array(),
 		'execFiles' => array(),
@@ -162,6 +164,8 @@ class MediaWikiFarm {
 	 *
 	 * This associative array contains four sections:
 	 *   - 'general': associative array of MediaWiki configuration (e.g. 'wgServer' => '//example.org');
+	 *   - 'settings': associative array of MediaWiki configuration (e.g. 'wgServer' => '//example.org');
+	 *   - 'arrays': associative array of MediaWiki configuration of type array (e.g. 'wgGroupPermissions' => array( 'edit' => false ));
 	 *   - 'skins': associative array of skins configuration (e.g. 'Vector' => array( '_loading' => 'wfLoadSkin' ));
 	 *   - 'extensions': associative array of extensions configuration (e.g. 'ParserFunctions' => array( '_loading' => 'wfLoadExtension' ));
 	 *   - 'execFiles': list of PHP files to execute at the end.
@@ -175,6 +179,10 @@ class MediaWikiFarm {
 		switch( $key ) {
 			case 'general':
 				return $this->configuration['general'];
+			case 'settings':
+				return $this->configuration['settings'];
+			case 'arrays':
+				return $this->configuration['arrays'];
 			case 'skins':
 				return $this->configuration['skins'];
 			case 'extensions':
@@ -349,6 +357,7 @@ class MediaWikiFarm {
 	 */
 	function loadMediaWikiConfig() {
 
+		//if( count( $this->configuration['settings'] ) == 0 && count( $this->configuration['arrays'] ) == 0 ) {
 		if( count( $this->configuration['general'] ) == 0 ) {
 			$this->getMediaWikiConfig();
 		}
@@ -358,6 +367,12 @@ class MediaWikiFarm {
 
 			$GLOBALS[$setting] = $value;
 		}
+
+		# Merge general array parameters into global variables
+		//foreach( $this->configuration['arrays'] as $setting => $value ) {
+		//
+		//	$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
+		//}
 	}
 
 	/**
@@ -917,14 +932,17 @@ class MediaWikiFarm {
 
 				$globals['general']['wgGroupPermissions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ), $globals['general']['wgGroupPermissions'] );
 
-			//if( array_key_exists( '+wgDefaultUserOptions', $wgConf->settings ) )
-				//$globals['general']['wgDefaultUserOptions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgDefaultUserOptions', $myWiki, $mySuffix ), $globals['general']['wgDefaultUserOptions'] );
+
+			# Get specific configuration for this wiki
+			if( !$this->populateSettings() ) {
+				return false;
+			}
 
 			# Extract from the general configuration skin and extension configuration
 			$this->extractSkinsAndExtensions();
 
-			# Save this configuration in a serialised file
-			$this->cacheFile( $globals, $cacheFile );
+			# Save this configuration in a PHP file
+			$this->cacheFile( $this->configuration, $cacheFile );
 		}
 
 		$wgConf->siteParamsCallback = array( $this, 'SiteConfigurationSiteParamsCallback' );
@@ -1001,6 +1019,217 @@ class MediaWikiFarm {
 
 						if( $wiki == 'default' && $defaultKey ) $wgConf->settings[$setting][$defaultKey] = $val;
 						else $wgConf->settings[$setting][str_replace( '*', $wiki, $classicKey )] = $val;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Popuplate the settings array directly from config files (without wgConf).
+	 *
+	 * There should be no major differences is results between this function and results
+	 * of SiteConfiguration::getAll(), but probably some edge cases. At the contrary of
+	 * Siteconfiguration, this implementation is focused on performance for current wiki:
+	 * only the parameters for current wikis are issued, contrary to wgConf’s strategy
+	 * map-all-and-reduce. An additional loop over config files is here; wgConf delegates
+	 * this externally if wanted.
+	 *
+	 * The priories used here are implicit in wgConf but exist and behave similarly:
+	 * 0 = default value from MW; 1 = explicit very default value from a specific file;
+	 * 2 = standard default value; 3 = value with suffix-priority;
+	 * 4 = value with tag-priority; 5 = value with specific-wiki-priority. Files are
+	 * processed in-order and linearly; for a given setting, only values with a greater
+	 * or equal priority can override a previous value.
+	 *
+	 * There are two resulting arrays in the object property array 'configuration':
+	 *   - settings: scalar (or array) values overriding the default MW values;
+	 *   - arrays: array values merged into the default MW values.
+	 * They are processed differently given their different nature, and to facilitate
+	 * mass-import into global scope (or other configuration object). Another minor
+	 * reason is: if this processing is done on a MediaWiki installation in a version
+	 * different from the target version (sort of cross-compilation), the compiling
+	 * MW is not aware of the default array value of the target MW, so it is
+	 * safer to only manipulate the known difference.
+	 *
+	 * @SuppressWarnings(PHPMD.ElseExpression)
+	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+	 *
+	 * @return bool Success.
+	 */
+	function populateSettings() {
+
+		$settings = &$this->configuration['settings'];
+		$priorities = array();
+		$settingsArray = &$this->configuration['arrays'];
+		$prioritiesArray = array();
+
+		foreach( $this->farmConfig['config'] as $configFile ) {
+
+			if( !is_array( $configFile ) ) {
+				continue;
+			}
+
+			# Replace variables
+			$configFile = $this->replaceVariables( $configFile );
+
+			# Executable config files
+			if( array_key_exists( 'exec', $configFile ) && $configFile['exec'] ) {
+
+				$this->configuration['execFiles'][] = $this->configDir . '/' . $configFile['file'];
+				continue;
+			}
+
+			$theseSettings = $this->readFile( $configFile['file'], $this->configDir );
+			if( $theseSettings === false ) {
+				# If a file is unavailable, skip it
+				continue;
+			}
+
+			# Key 'default' => no choice of the wiki
+			if( $configFile['key'] == 'default' ) {
+
+				foreach( $theseSettings as $setting => $value ) {
+
+					if( substr( $setting, 0, 1 ) == '+' ) {
+						if( !array_key_exists( substr($setting,1), $prioritiesArray ) || $prioritiesArray[substr($setting,1)] <= 1 ) {
+							$settingsArray[substr($setting,1)] = $value;
+							$prioritiesArray[$setting] = 1;
+						}
+					}
+					elseif( !array_key_exists( $setting, $priorities ) || $priorities[$setting] <= 1 ) {
+						$settings[$setting] = $value;
+						$priorities[$setting] = 1;
+					}
+				}
+			}
+
+			# Other key
+			else {
+
+				$tags = array(); # @todo: data sources not implemented, but code to selection parameters from a tag is below
+
+				$defaultKey = '';
+				$classicKey = '';
+				if( array_key_exists( 'default', $configFile ) && is_string( $configFile['default'] ) ) {
+					$defaultKey = $this->replaceVariables( $configFile['default'] );
+				}
+				if( is_string( $configFile['key'] ) ) {
+					$classicKey = $this->replaceVariables( $configFile['key'] );
+				}
+
+				# These are precomputations of the condition `$classicKey == $wikiID` (is current wiki equal to key indicated in config file?)
+				# to avoid recompute it each time in the loop. This is a bit more complex to take into account the star: $wikiID is the part
+				# corresponding to the star from the variable $WIKIID if $classicKey can match $WIKIID when remplacing the star by something
+				# (the star will be the key in the files). This reasonning is “inversed” compared to a loop checking each key in the files
+				# in order to use array_key_exists, assumed to be quicker than a direct loop.
+				$wikiIDKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $classicKey ).'$/', $this->variables['$WIKIID'], $matches );
+				$wikiID = $wikiIDKey ? $matches[1] : $this->variables['$WIKIID'];
+				$suffixKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $classicKey ).'$/', $this->variables['$SUFFIX'], $matches );
+				$suffix = $suffixKey ? $matches[1] : $this->variables['$SUFFIX'];
+				$tagKey = array();
+				foreach( $tags as $tag ) {
+					$tagKey[$tag] = ($classicKey == $tag);
+				}
+				if( $defaultKey ) {
+					$wikiIDDefaultKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $defaultKey ).'$/', $this->variables['$WIKIID'], $matches );
+					$suffixDefaultKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $defaultKey ).'$/', $this->variables['$SUFFIX'], $matches );
+					$tagDefaultKey = in_array( $defaultKey, $tags );
+				}
+
+				foreach( $theseSettings as $setting => $values ) {
+
+					#if( $this->getVariable('$wiki') == 'a' ){var_dump($theseSettings);}
+					# Depending if it is an array diff or not, create and initialise the variables
+					if( substr( $setting, 0, 1 ) == '+' ) {
+						if( !array_key_exists( substr($setting,1), $prioritiesArray ) ) {
+							$settingsArray[substr($setting,1)] = array();
+							$prioritiesArray[substr($setting,1)] = 0;
+						}
+						$thisSetting =  &$settingsArray[substr($setting,1)];
+						$thisPriority = &$prioritiesArray[substr($setting,1)];
+					} else {
+						if( !array_key_exists( $setting, $priorities ) ) {
+							$settings[$setting] = null;
+							$priorities[$setting] = 0; }
+						$thisSetting =  &$settings[$setting];
+						$thisPriority = &$priorities[$setting];
+					}
+
+					# Set value if there is a label corresponding to wikiID
+					if( $wikiIDKey ) {
+						if( array_key_exists( $wikiID, $values ) ) {
+							$thisSetting = $values[$wikiID];
+							$thisPriority = 5;
+							continue;
+						}
+						if( array_key_exists( '+'.$wikiID, $values ) && is_array( $values['+'.$wikiID] ) ) {
+							$thisSetting = self::arrayMerge( $thisSetting, $values['+'.$wikiID] );
+							$thisPriority = 5;
+						}
+					}
+
+					# Set value if there are labels corresponding to given tags
+					$setted = false;
+					foreach( $tags as $tag ) {
+						if( $tagKey[$tag] && $thisPriority <= 4 ) {
+							if( array_key_exists( $tag, $values ) ) {
+								$thisSetting = $value[$tag];
+								$thisPriority = 4;
+								$setted = true;
+								# NB: for strict equivalence with wgConf there should be here a `break`, but by consistency
+								# (last value kept) and given the case should not appear, there is no.
+							}
+							elseif( array_key_exists( '+'.$tak, $values ) && is_array( $values['+'.$tag] ) ) {
+								$thisSetting = self::arrayMerge( $thisSetting, $values['+'.$tag] );
+								$thisPriority = 4;
+							}
+						}
+					}
+					if( $setted ) {
+						continue;
+					}
+
+					# Set value if there is a label corresponding to suffix
+					if( $suffixKey && $thisPriority <= 3 ) {
+						if( array_key_exists( $suffix, $values ) ) {
+							$thisSetting = $values[$suffix];
+							$thisPriority = 3;
+							continue;
+						}
+						if( array_key_exists( '+'.$suffix, $values ) && is_array( $values['+'.$suffix] ) ) {
+							$thisSetting = self::arrayMerge( $thisSetting, $value['+'.$suffix] );
+							$thisPriority = 3;
+						}
+					}
+
+					# Default value
+					if( $thisPriority <= 2 && array_key_exists( 'default', $values ) ) {
+						$thisSetting = $values['default'];
+						$thisPriority = 2;
+						if( $defaultKey ) {
+							if( $suffixDefaultKey ) {
+								$thisPriority = 3;
+							} elseif( $tagDefaultKey ) {
+								$thisPriority = 4;
+							} elseif( $wikiIDDefaultKey ) {
+								$thisPriority = 5;
+							}
+						}
+						continue;
+					}
+
+					# Nothing was selected, clean up
+					if( $thisPriority == 0 ) {
+						if( substr( $setting, 0, 1 ) == '+' ) {
+							unset( $settingsArray[substr($setting,1)] );
+							unset( $prioritiesArray[substr($setting,1)] );
+						} else {
+							unset( $settings[$setting] );
+							unset( $priorities[$setting] );
+						}
 					}
 				}
 			}
