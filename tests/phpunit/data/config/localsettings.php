@@ -1,8 +1,16 @@
 <?php
 
 return array (
-  'wgServer' => 
-  array (
-    'master' => 'https://mediawiki-master-local.seb35.fr',
-  ),
+  'wgServer' =>
+    array (
+      'a' => 'https://a.testfarm-monoversion.example.org',
+    ),
+  'wgMemCachedTimeout' =>
+    array(
+      'default' => 200000,
+    ),
+  'wgSitename' =>
+    array(
+      'b' => 'https://b.testfarm-monoversion.example.org',
+    ),
 );

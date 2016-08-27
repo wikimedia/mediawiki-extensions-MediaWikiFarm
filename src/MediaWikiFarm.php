@@ -166,8 +166,8 @@ class MediaWikiFarm {
 	 *   - 'general': associative array of MediaWiki configuration (e.g. 'wgServer' => '//example.org');
 	 *   - 'settings': associative array of MediaWiki configuration (e.g. 'wgServer' => '//example.org');
 	 *   - 'arrays': associative array of MediaWiki configuration of type array (e.g. 'wgGroupPermissions' => array( 'edit' => false ));
-	 *   - 'skins': associative array of skins configuration (e.g. 'Vector' => array( '_loading' => 'wfLoadSkin' ));
-	 *   - 'extensions': associative array of extensions configuration (e.g. 'ParserFunctions' => array( '_loading' => 'wfLoadExtension' ));
+	 *   - 'skins': associative array of skins configuration (e.g. 'Vector' => 'wfLoadSkin' );
+	 *   - 'extensions': associative array of extensions configuration (e.g. 'ParserFunctions' => 'wfLoadExtension' );
 	 *   - 'execFiles': list of PHP files to execute at the end.
 	 *
 	 * @mediawikifarm-const
@@ -343,10 +343,6 @@ class MediaWikiFarm {
 		// For now, remove loading of one config file to improve a bit performance
 		//$this->setWgConf();
 
-		if( !$this->variables['$CODE'] || !is_dir( $this->variables['$CODE'] ) ) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -357,22 +353,31 @@ class MediaWikiFarm {
 	 */
 	function loadMediaWikiConfig() {
 
-		//if( count( $this->configuration['settings'] ) == 0 && count( $this->configuration['arrays'] ) == 0 ) {
-		if( count( $this->configuration['general'] ) == 0 ) {
+		if( count( $this->configuration['general'] ) == 0 && count( $this->configuration['settings'] ) == 0 && count( $this->configuration['arrays'] ) == 0 ) {
 			$this->getMediaWikiConfig();
 		}
 
-		# Set general parameters as global variables
-		foreach( $this->configuration['general'] as $setting => $value ) {
+		if( $this->newEngine ) {
 
-			$GLOBALS[$setting] = $value;
+			# Set general parameters as global variables
+			foreach( $this->configuration['settings'] as $setting => $value ) {
+
+				$GLOBALS[$setting] = $value;
+			}
+
+			# Merge general array parameters into global variables
+			foreach( $this->configuration['arrays'] as $setting => $value ) {
+
+				$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
+			}
 		}
+		else {
+			# Set general parameters as global variables
+			foreach( $this->configuration['general'] as $setting => $value ) {
 
-		# Merge general array parameters into global variables
-		//foreach( $this->configuration['arrays'] as $setting => $value ) {
-		//
-		//	$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
-		//}
+				$GLOBALS[$setting] = $value;
+			}
+		}
 	}
 
 	/**
@@ -391,18 +396,9 @@ class MediaWikiFarm {
 		# Load skins with the wfLoadSkin mechanism
 		foreach( $this->configuration['skins'] as $skin => $value ) {
 
-			if( $value['_loading'] == 'wfLoadSkin' ) {
+			if( $value == 'wfLoadSkin' ) {
 
 				wfLoadSkin( $skin );
-			}
-		}
-
-		# Set skin parameters as global variables
-		foreach( $this->configuration['skins'] as $skin => $settings ) {
-
-			foreach( $settings as $setting => $value ) {
-
-				$GLOBALS[$setting] = $value;
 			}
 		}
 	}
@@ -444,18 +440,9 @@ class MediaWikiFarm {
 		# Load extensions with the wfLoadExtension mechanism
 		foreach( $this->configuration['extensions'] as $extension => $value ) {
 
-			if( $value['_loading'] == 'wfLoadExtension' ) {
+			if( $value == 'wfLoadExtension' ) {
 
 				wfLoadExtension( $extension );
-			}
-		}
-
-		# Set extension parameters as global variables
-		foreach( $this->configuration['extensions'] as $extension => $settings ) {
-
-			foreach( $settings as $setting => $value ) {
-
-				$GLOBALS[$setting] = $value;
 			}
 		}
 	}
@@ -539,11 +526,12 @@ class MediaWikiFarm {
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
 	 * @param string|false|null $cacheDir Cache directory; if false, the cache is disabled.
 	 * @param string $entryPoint Entry point script.
+	 * @param bool $newEngine Use the new configuration compiler engine (development-only, temporary parameter).
 	 * @return MediaWikiFarm
 	 * @throws MWFConfigurationException When no farms.yml/php/json is found.
 	 * @throws InvalidArgumentException When wrong input arguments are passed.
 	 */
-	function __construct( $host, $configDir, $codeDir = null, $cacheDir = null, $entryPoint = '' ) {
+	function __construct( $host, $configDir, $codeDir = null, $cacheDir = null, $entryPoint = '', $newEngine = false ) {
 
 		# Default value for $cacheDir
 		if( is_null( $cacheDir ) ) $cacheDir = '/tmp/mw-cache';
@@ -571,6 +559,7 @@ class MediaWikiFarm {
 		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
 		$this->cacheDir = $cacheDir;
+		$this->newEngine = $newEngine;
 
 		# Create cache directory
 		if( $this->cacheDir && !is_dir( $this->cacheDir ) ) {
@@ -875,12 +864,10 @@ class MediaWikiFarm {
 	 *
 	 * The returned array has the following format:
 	 * array( 'general' => array( 'wgSitename' => 'Foo', ... ),
-	 *        'skins' => array( '_loading' => 'wfLoadSkin'|'require_once',
-	 *                          'wgFlowParsoidTimeout' => 100, ...
-	 *                        ),
-	 *        'extensions' => array( '_loading' => 'wfLoadExtension'|'require_once',
-	 *                               'wgFlowParsoidTimeout' => 100, ...
-	 *                             )
+	 *        'settings' => array( 'wgSitename' => 'Foo', ... ),
+	 *        'arrays' => array( 'wgGroupPermission' => array(), ... ),
+	 *        'skins' => 'wfLoadSkin'|'require_once',
+	 *        'extensions' => 'wfLoadExtension'|'require_once',
 	 *      )
 	 *
 	 * @SuppressWarnings(PHPMD.StaticAccess)
@@ -915,23 +902,21 @@ class MediaWikiFarm {
 
 		else {
 
-			$globals =& $this->configuration;
-
 			# Populate wgConf
-			if( !$this->populatewgConf() )
+			if( !$this->populatewgConf() ) {
 				return false;
+			}
 
 			# Get specific configuration for this wiki
 			# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
 			# ineffective and there would be inconsistencies in this process
-			$globals['general'] = $wgConf->getAll( $myWiki, $mySuffix, array( 'data' => $this->variables['$DATA'] ) );
+			$this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array( 'data' => $this->variables['$DATA'] ) );
 
 			# For the permissions array, fix a small strangeness: when an existing default permission
 			# is true, it is not possible to make it false in the specific configuration
 			if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) )
 
-				$globals['general']['wgGroupPermissions'] = MediaWikiFarm::arrayMerge( $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ), $globals['general']['wgGroupPermissions'] );
-
+				$this->configuration['general']['wgGroupPermissions'] = self::arrayMerge( $this->configuration['general']['wgGroupPermissions'], $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ) );
 
 			# Get specific configuration for this wiki
 			if( !$this->populateSettings() ) {
@@ -1270,60 +1255,42 @@ class MediaWikiFarm {
 	 */
 	function extractSkinsAndExtensions() {
 
-		$globals =& $this->configuration;
+		if( $this->newEngine ) {
+			$settings = &$this->configuration['settings'];
+		} else {
+			$settings = &$this->configuration['general'];
+		}
 
 		# Search for skin and extension activation
-		$unsetPrefixes = array();
-		foreach( $globals['general'] as $setting => $value ) {
+		foreach( $settings as $setting => $value ) {
 			if( preg_match( '/^wgUse(Extension|Skin)(.+)$/', $setting, $matches ) && $value === true ) {
 
 				$type = strtolower( $matches[1] );
 				$name = $matches[2];
 				$loadingMechanism = $this->detectLoadingMechanism( $type, $name );
 
-				if( is_null( $loadingMechanism ) ) $unsetPrefixes[] = $name;
-				else $globals[$type.'s'][$name] = array( '_loading' => $loadingMechanism );
-
-				unset( $globals['general'][$setting] );
+				if( is_null( $loadingMechanism ) ) $settings[$setting] = false;
+				else $this->configuration[$type.'s'][$name] = $loadingMechanism;
 			}
-			elseif( preg_match( '/^wgUse(?:Skin|Extension|LocalExtension)(.+)$/', $setting, $matches ) && $value !== true ) {
+			elseif( preg_match( '/^wgUse(.+)$/', $setting, $matches ) && $value === true ) {
 
-				$unsetPrefixes[] = $matches[1];
-				unset( $globals['general'][$setting] );
-			}
-		}
+				$name = $matches[1];
 
-		# Extract skin and extension configuration from the general configuration
-		$regexSkins = count( $globals['skins'] ) ? '/^wg(' . implode( '|',
-			array_map(
-				array( 'MediaWikiFarm', 'protectRegex' ),
-				array_keys( $globals['skins'] )
-			)
-		) . ')/' : false;
-		$regexExtensions = count( $globals['extensions'] ) ? '/^wg(' . implode( '|',
-			array_map(
-				array( 'MediaWikiFarm', 'protectRegex' ),
-				array_keys( $globals['extensions'] )
-			)
-		) . ')/' : false;
-		$regexUnsetPrefixes = count( $unsetPrefixes ) ? '/^wg(' . implode( '|',
-			array_map(
-				array( 'MediaWikiFarm', 'protectRegex' ),
-				$unsetPrefixes
-			)
-		) . ')/' : false;
-		foreach( $globals['general'] as $setting => $value ) {
+				$loadingMechanism = $this->detectLoadingMechanism( 'extension', $name );
+				if( !is_null( $loadingMechanism ) ) {
+					$this->configuration['extensions'][$name] = $loadingMechanism;
+					$settings['wgUseExtension'.$name][$setting] = true;
+				}
 
-			if( $regexSkins && preg_match( $regexSkins, $setting, $matches ) ) {
-				$globals['skins'][$matches[1]][$setting] = $value;
-				unset( $setting );
+				$loadingMechanism = $this->detectLoadingMechanism( 'skin', $name );
+				if( !is_null( $loadingMechanism ) ) {
+					$this->configuration['skins'][$name] = $loadingMechanism;
+					$settings['wgUseSkin'.$name][$setting] = true;
+				}
+				elseif( !preg_match( '/^Local/', $name ) ) {
+					$settings[$setting] = false;
+				}
 			}
-			elseif( $regexExtensions && preg_match( $regexExtensions, $setting, $matches ) ) {
-				$globals['extensions'][$matches[1]][$setting] = $value;
-				unset( $setting );
-			}
-			elseif( $regexUnsetPrefixes && preg_match( $regexUnsetPrefixes, $setting, $matches ) )
-				unset( $matches[1] );
 		}
 	}
 
@@ -1403,7 +1370,9 @@ class MediaWikiFarm {
 		elseif( is_array( $value ) ) {
 
 			foreach( $value as &$subvalue ) {
-				$subvalue = str_replace( array_keys( $this->variables ), $this->variables, $subvalue );
+				if( is_string( $subvalue ) || is_array( $subvalue ) ) {
+					$subvalue = $this->replaceVariables( $subvalue );
+				}
 			}
 			return $value;
 		}
@@ -1640,13 +1609,13 @@ class MediaWikiFarm {
 	 * @return array
 	 */
 	static function arrayMerge( $array1/* ... */ ) {
-		$out = $array1;
+		$out = array();
 		$argsCount = func_num_args();
-		for ( $i = 1; $i < $argsCount; $i++ ) {
+		for ( $i = 0; $i < $argsCount; $i++ ) {
 			foreach ( func_get_arg( $i ) as $key => $value ) {
-				if( array_key_exists( $key, $out ) && is_array( $out[$key] ) && is_array( $value ) ) {
+				if( array_key_exists( $key, $out ) && is_string( $key ) && is_array( $out[$key] ) && is_array( $value ) ) {
 					$out[$key] = self::arrayMerge( $out[$key], $value );
-				} elseif( !array_key_exists( $key, $out ) && !is_numeric( $key ) ) {
+				} elseif( !is_numeric( $key ) ) {
 					$out[$key] = $value;
 				} elseif( is_numeric( $key ) ) {
 					$out[] = $value;

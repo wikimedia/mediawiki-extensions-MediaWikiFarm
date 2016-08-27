@@ -35,8 +35,9 @@ MediaWikiFarm::getInstance()->loadMediaWikiConfig();
 # Load skins with the require_once mechanism
 foreach( $wgMediaWikiFarm->getConfiguration( 'skins' ) as $skin => $value ) {
 	
-	if( $value['_loading'] == 'require_once' )
+	if( $value == 'require_once' ) {
 		require_once "$IP/skins/$skin/$skin.php";
+	}
 }
 
 # Load skins with the wfLoadSkin mechanism
@@ -50,8 +51,9 @@ $wgMediaWikiFarm->loadSkinsConfig();
 # Load extensions with the require_once mechanism
 foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $extension => $value ) {
 	
-	if( $value['_loading'] == 'require_once' )
+	if( $value == 'require_once' ) {
 		require_once "$IP/extensions/$extension/$extension.php";
+	}
 }
 
 # Load extensions with the wfLoadExtension mechanism

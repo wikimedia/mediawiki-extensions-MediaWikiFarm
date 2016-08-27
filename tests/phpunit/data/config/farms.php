@@ -30,8 +30,12 @@ return array(
 		'suffix' => 'testfarm',
 		'wikiID' => '$wikitestfarm',
 		'config' => array(
-			array( 'file' => 'settings.yml',
+			array( 'file' => 'settings.php',
 			       'key' => 'default',
+			),
+			array( 'file' => 'localsettings.php',
+			       'key' => '*testfarm',
+			       'default' => 'testfarm',
 			),
 			array( 'file' => 'LocalSettings.php',
 			       'exec' => true,

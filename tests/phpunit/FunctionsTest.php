@@ -105,4 +105,131 @@ class FunctionsTest extends MediaWikiTestCase {
 
 		$this->assertEquals( '\/\(a\.\\\\', MediaWikiFarm::protectRegex( '/(a.\\' ) );
 	}
+
+	/**
+	 * Test arrayMerge
+	 *
+	 * @covers MediaWikiFarm::arrayMerge
+	 */
+	function testArrayMerge() {	
+
+		$this->assertEquals(
+			array(
+				'a' => 'A',
+				'b' => 'BB',
+				'c' => 0,
+				'd' => null,
+				'e' => 'E',
+				'f' => false,
+			),
+			MediaWikiFarm::arrayMerge(
+				array(
+					'a' => 'A',
+					'b' => 'B',
+					'c' => 0,
+					'd' => null,
+				),
+				array(
+					'e' => 'E',
+					'b' => 'BB',
+					'f' => false,
+				)
+			)
+		);
+
+		$this->assertEquals(
+			array(
+				'a' => true,
+				'b' => false,
+				'c' => false,
+				0 => 11,
+				1 => 12,
+				2 => 121,
+				3 => 13,
+			),
+			MediaWikiFarm::arrayMerge(
+				array(
+					'a' => false,
+					'b' => true,
+					'c' => false,
+					1 => 11,
+					2 => 12,
+				),
+				array(
+					'b' => false,
+					'a' => true,
+					2 => 121,
+					'c' => false,
+					3 => 13,
+				)
+			)
+		);
+
+		$this->assertEquals(
+			array(
+				0 => array(
+					'1a' => '1A',
+					'1b' => '1B',
+					'1c' => 12,
+					'1d' => null,
+					'1e' => true,
+				),
+				1 => array(
+					'1f' => '1F',
+					'1b' => '1BB',
+					'1g' => false,
+					'1e' => false,
+				),
+				2 => 44,
+				'k' => array(
+					'ka' => 'kA',
+					'kb' => array(
+						0 => 7,
+					),
+					'kc' => 1012,
+					'kd' => null,
+					'ke' => false,
+					'kf' => 'kF',
+					'kg' => false,
+				),
+			),
+			MediaWikiFarm::arrayMerge(
+				array(
+					1 => array(
+						'1a' => '1A',
+						'1b' => '1B',
+						'1c' => 12,
+						'1d' => null,
+						'1e' => true,
+					),
+					'k' => array(
+						'ka' => 'kA',
+						'kb' => 'kB',
+						'kc' => 1012,
+						'kd' => null,
+						'ke' => true,
+					),
+				),
+				array(
+					1 => array(
+						'1f' => '1F',
+						'1b' => '1BB',
+						'1g' => false,
+						'1e' => false,
+					),
+					4 => 44,
+				),
+				array(
+					'k' => array(
+						'kf' => 'kF',
+						'kb' => array(
+							7
+						),
+						'kg' => false,
+						'ke' => false,
+					),
+				)
+			)
+		);
+	}
 }

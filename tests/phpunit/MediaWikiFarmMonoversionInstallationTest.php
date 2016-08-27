@@ -20,7 +20,7 @@ class MediaWikiFarmMonoversionInstallationTest extends MediaWikiTestCase {
 	static function constructMediaWikiFarm( $host ) {
 		
 		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$farm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDirTest, null, false );
+		$farm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDirTest, null, false, 'index.php' );
 		
 		return $farm;
 	}
@@ -58,10 +58,39 @@ PHP;
 	
 	/**
 	 * Test a successful initialisation of MediaWikiFarm with a correct configuration file farms.php.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 * @covers MediaWikiFarm::getEntryPoint
+	 * @covers MediaWikiFarm::getFarmConfiguration
 	 */
 	function testSuccessfulConstruction() {
 		
 		$this->assertEquals( 'a.testfarm-monoversion.example.org', $this->farm->getVariable( '$SERVER' ) );
+
+		$this->assertEquals( 'index.php', $this->farm->getEntryPoint( 'index.php' ) );
+
+		$farmConfig = array(
+			'server' => '(?P<wiki>[a-z])\.testfarm-monoversion\.example\.org',
+			'variables' => array(
+				array( 'variable' => 'wiki', ),
+			),
+			'suffix' => 'testfarm',
+			'wikiID' => '$wikitestfarm',
+			'config' => array(
+				array( 'file' => 'settings.php',
+				       'key' => 'default',
+				),
+				array( 'file' => 'localsettings.php',
+				       'key' => '*testfarm',
+				       'default' => 'testfarm',
+				),
+				array( 'file' => 'LocalSettings.php',
+				       'exec' => true,
+				),
+			),
+		);
+		$this->assertEquals( $farmConfig, $this->farm->getFarmConfiguration() );
 	}
 	
 	/**
@@ -344,7 +373,7 @@ PHP;
 	 */
 	function testVariableFileWithoutVersionNonexistant() {
 		
-		$farm = self::constructMediaWikiFarm( 'b.testfarm-monoversion-with-file-variable-without-version.example.org' );
+		$farm = self::constructMediaWikiFarm( 'c.testfarm-monoversion-with-file-variable-without-version.example.org' );
 		$this->assertFalse( $farm->checkExistence() );
 	}
 

@@ -2,4 +2,5 @@
 
 return array(
 	'a',
+	'b',
 );

@@ -23,7 +23,7 @@ class MediaWikiFarmMultiversionInstallationTest extends MediaWikiTestCase {
 		
 		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
 		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
-		$farm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, false );
+		$farm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, false, 'index.php' );
 		
 		return $farm;
 	}
@@ -72,10 +72,36 @@ PHP;
 	
 	/**
 	 * Test a successful initialisation of MediaWikiFarm with a correct configuration file farms.php.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 * @covers MediaWikiFarm::getEntryPoint
+	 * @covers MediaWikiFarm::getFarmConfiguration
 	 */
 	function testSuccessfulConstruction() {
 		
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $this->farm->getVariable( '$SERVER' ) );
+
+		$this->assertEquals( 'index.php', $this->farm->getEntryPoint( 'index.php' ) );
+
+		$farmConfig = array(
+			'server' => '(?P<wiki>[a-z])\.testfarm-multiversion\.example\.org',
+			'variables' => array(
+				array( 'variable' => 'wiki', ),
+			),
+			'suffix' => 'testfarm',
+			'wikiID' => '$wikitestfarm',
+			'versions' => 'versions.php',
+			'config' => array(
+				array( 'file' => 'settings.yml',
+				       'key' => 'default',
+				),
+				array( 'file' => 'LocalSettings.php',
+				       'exec' => true,
+				),
+			),
+		);
+		$this->assertEquals( $farmConfig, $this->farm->getFarmConfiguration() );
 	}
 	
 	/**
@@ -377,9 +403,18 @@ PHP;
 	/**
 	 * Test a nonexistant host in a farm with a file variable without version defined inside.
 	 */
-	function testVariableFileWithoutVersionNonexistant() {
+	function testVariableFileWithoutVersionMissingVersion() {
 		
 		$farm = self::constructMediaWikiFarm( 'b.testfarm-multiversion-with-file-variable-without-version.example.org' );
+		$this->assertFalse( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test a nonexistant host in a farm with a file variable without version defined inside.
+	 */
+	function testVariableFileWithoutVersionNonexistant() {
+		
+		$farm = self::constructMediaWikiFarm( 'c.testfarm-multiversion-with-file-variable-without-version.example.org' );
 		$this->assertFalse( $farm->checkExistence() );
 	}
 
