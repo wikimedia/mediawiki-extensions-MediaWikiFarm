@@ -4,8 +4,17 @@
  * @group MediaWikiFarm
  * @covers MediaWikiFarm
  */
-class MediaWikiFarmMultiversionInstallationTest extends MediaWikiTestCase {
+class MultiversionInstallationTest extends MediaWikiTestCase {
 	
+	/** @var string Configuration directory for tests. */
+	static $wgMediaWikiFarmConfigDir = '';
+
+	/** @var string Code directory for tests. */
+	static $wgMediaWikiFarmCodeDir = '';
+
+	/** @var string Cache directory for tests. */
+	static $wgMediaWikiFarmCacheDir = '';
+
 	/** @var MediaWikiFarm|null Test object. */
 	protected $farm = null;
 	
@@ -19,11 +28,7 @@ class MediaWikiFarmMultiversionInstallationTest extends MediaWikiTestCase {
 	 */
 	static function constructMediaWikiFarm( $host ) {
 		
-		global $IP;
-		
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
-		$farm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, false, 'index.php' );
+		$farm = new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, 'index.php' );
 		
 		return $farm;
 	}
@@ -36,6 +41,11 @@ class MediaWikiFarmMultiversionInstallationTest extends MediaWikiTestCase {
 		global $IP;
 
 		$dirIP = basename( $IP );
+
+		# Set test configuration parameters
+		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
+		self::$wgMediaWikiFarmCodeDir = dirname( $IP );
+		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';
 
 		# Create versions.php: the list of existing values for variable '$WIKIID' with their associated versions
 		$versionsFile = <<<PHP
@@ -71,175 +81,6 @@ PHP;
 	}
 	
 	/**
-	 * Test a successful initialisation of MediaWikiFarm with a correct configuration file farms.php.
-	 *
-	 * @covers MediaWikiFarm::__construct
-	 * @covers MediaWikiFarm::selectFarm
-	 * @covers MediaWikiFarm::getEntryPoint
-	 * @covers MediaWikiFarm::getFarmConfiguration
-	 */
-	function testSuccessfulConstruction() {
-		
-		$this->assertEquals( 'a.testfarm-multiversion.example.org', $this->farm->getVariable( '$SERVER' ) );
-
-		$this->assertEquals( 'index.php', $this->farm->getEntryPoint( 'index.php' ) );
-
-		$farmConfig = array(
-			'server' => '(?P<wiki>[a-z])\.testfarm-multiversion\.example\.org',
-			'variables' => array(
-				array( 'variable' => 'wiki', ),
-			),
-			'suffix' => 'testfarm',
-			'wikiID' => '$wikitestfarm',
-			'versions' => 'versions.php',
-			'config' => array(
-				array( 'file' => 'settings.yml',
-				       'key' => 'default',
-				),
-				array( 'file' => 'LocalSettings.php',
-				       'exec' => true,
-				),
-			),
-		);
-		$this->assertEquals( $farmConfig, $this->farm->getFarmConfiguration() );
-	}
-	
-	/**
-	 * Test when there is no configuration file farms.yml/json/php.
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage No configuration file found
-	 */
-	function testFailedConstruction() {
-		
-		$wgMediaWikiFarmConfigDirBadTest = dirname( __FILE__ ) . '/data';
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirBadTest, null, false );
-	}
-	
-	/**
-	 * Test bad arguments in constructor.
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Missing host name in constructor
-	 */
-	function testFailedConstruction2() {
-		
-		$wgMediaWikiFarmConfigDirBadTest = dirname( __FILE__ ) . '/data/config';
-		$farm = new MediaWikiFarm( 0, $wgMediaWikiFarmConfigDirBadTest );
-	}
-	
-	/**
-	 * Test bad arguments in constructor.
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Invalid directory for the farm configuration
-	 */
-	function testFailedConstruction3() {
-		
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', 0 );
-	}
-	
-	/**
-	 * Test bad arguments in constructor.
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Invalid directory for the farm configuration
-	 */
-	function testFailedConstruction4() {
-		
-		$wgMediaWikiFarmConfigDirBadTest = dirname( __FILE__ ) . '/data/config/farms.php';
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirBadTest );
-	}
-	
-	/**
-	 * Test bad arguments in constructor.
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Code directory must be null or a directory
-	 */
-	function testFailedConstruction5() {
-		
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirTest, 0 );
-	}
-	
-	/**
-	 * Test bad arguments in constructor.
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Code directory must be null or a directory
-	 */
-	function testFailedConstruction6() {
-		
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmConfigDirTest . '/farms.php' );
-	}
-	
-	/**
-	 * Test bad arguments in constructor.
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Cache directory must be false, null, or a directory
-	 */
-	function testFailedConstruction7() {
-		
-		global $IP;
-		
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, 0 );
-	}
-	
-	/**
-	 * Test bad arguments in constructor.
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Entry point must be a string
-	 */
-	function testFailedConstruction8() {
-		
-		global $IP;
-		
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, false, 0 );
-	}
-	
-	/**
-	 * Test creation of cache directory.
-	 */
-	function testCacheDirectoryCreation() {
-		
-		global $IP;
-		
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$wgMediaWikiFarmCodeDirTest = dirname( $IP );
-		$wgMediaWikiFarmCacheDirTest = dirname( __FILE__ ) . '/data/cache';
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarmConfigDirTest, $wgMediaWikiFarmCodeDirTest, $wgMediaWikiFarmCacheDirTest );
-		
-		$this->assertEquals( $wgMediaWikiFarmCacheDirTest . '/testfarm-multiversion', $farm->getCacheDir() );
-		$this->assertTrue( is_dir( $wgMediaWikiFarmCacheDirTest ) );
-		$this->assertTrue( is_dir( $wgMediaWikiFarmCacheDirTest . '/testfarm-multiversion' ) );
-	}
-	
-	/**
-	 * Test the basic object properties (code, cache, and farm directories).
-	 */
-	function testCheckBasicObjectProperties() {
-		
-		global $IP;
-		
-		/** Check code directory. */
-		$this->assertEquals( dirname( $IP ), $this->farm->getCodeDir() );
-		
-		/** Check cache directory. */
-		$this->assertFalse( $this->farm->getCacheDir() );
-		
-		/** Check executable file [farm]/src/main.php. */
-		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $this->farm->getConfigFile() );
-	}
-	
-	/**
 	 * Test the variable read for the URL is correct.
 	 */
 	function testURLVariables() {
@@ -254,37 +95,6 @@ PHP;
 				'$CODE' => '',
 			),
 			$this->farm->getVariables() );
-	}
-	
-	/**
-	 * Test a normal redirect.
-	 */
-	function testNormalRedirect() {
-		
-		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-redirect.example.org' );
-		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
-	}
-	
-	/**
-	 * Test an infinite redirect.
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage Infinite or too long redirect detected
-	 */
-	function testInfiniteRedirect() {
-		
-		$farm = self::constructMediaWikiFarm( 'a.testfarm-infinite-redirect.example.org' );
-	}
-	
-	/**
-	 * Test a missing farm.
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage No farm corresponding to this host
-	 */
-	function testMissingFarm() {
-		
-		$farm = self::constructMediaWikiFarm( 'a.testfarm-missing.example.org' );
 	}
 
 	/**
@@ -470,11 +280,11 @@ PHP;
 	}
 
 	/**
-	 * Remove 'data/cache' cache directory.
+	 * Remove cache directory.
 	 */
 	protected function tearDown() {
 		
-		wfRecursiveRemoveDir( dirname( __FILE__ ) . '/data/cache' );
+		wfRecursiveRemoveDir( self::$wgMediaWikiFarmCacheDir );
 		
 		parent::tearDown();
 	}
@@ -484,7 +294,7 @@ PHP;
 	 */
 	static function tearDownAfterClass() {
 		
-		unlink( dirname( __FILE__ ) . '/data/config/versions.php' );
-		unlink( dirname( __FILE__ ) . '/data/config/varwikiversions.php' );
+		unlink( self::$wgMediaWikiFarmConfigDir . '/versions.php' );
+		unlink( self::$wgMediaWikiFarmConfigDir . '/varwikiversions.php' );
 	}
 }

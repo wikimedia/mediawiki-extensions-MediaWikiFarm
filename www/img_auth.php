@@ -24,4 +24,6 @@ require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
 // @codingStandardsIgnoreEnd
 
 # Redirect to the requested version
-require MediaWikiFarm::load( 'img_auth.php' );
+if( MediaWikiFarm::load( 'img_auth.php' ) == 200 ) {
+	require 'img_auth.php';
+}

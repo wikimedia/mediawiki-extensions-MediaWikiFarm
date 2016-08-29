@@ -155,6 +155,7 @@ class FunctionsTest extends MediaWikiTestCase {
 					1 => 11,
 					2 => 12,
 				),
+				null,
 				array(
 					'b' => false,
 					'a' => true,

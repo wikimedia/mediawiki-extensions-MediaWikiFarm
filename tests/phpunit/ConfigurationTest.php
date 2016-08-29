@@ -36,7 +36,8 @@ class ConfigurationTest extends MediaWikiTestCase {
 		
 		parent::setUp();
 		
-		$this->farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion.example.org', null, false, true );
+		$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
+		$this->farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDir, null, false, 'index.php', true );
 	}
 
 	/**
@@ -54,6 +55,7 @@ class ConfigurationTest extends MediaWikiTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::arrayMerge
 	 */
 	function testHighlevelConfiguration() {
 
@@ -75,6 +77,13 @@ class ConfigurationTest extends MediaWikiTestCase {
 				'wgUseLocalExtensionSmartLinks' => true,
 				'wgUseLocalExtensionChangeTabs' => false,
 				'wgServer' => 'https://a.testfarm-monoversion.example.org',
+				'wgSkipSkins' => array(
+					0 => 'MySkin',
+					1 => 'Chick',
+				),
+				'wgActionPaths' => array(
+					'edit' => '/edit/$1',
+				),
 			),
 			'arrays' => array(
 				'wgGroupPermissions' => array(
@@ -87,6 +96,9 @@ class ConfigurationTest extends MediaWikiTestCase {
 						'overfancypermission' => false,
 					),
 				),
+				'wgFileExtensions' => array(
+					0 => 'pdf',
+				),
 			),
 			'skins' => array(),
 			'extensions' => array(),
@@ -95,6 +107,7 @@ class ConfigurationTest extends MediaWikiTestCase {
 			),
 			'general' => array(),
 		);
+
 		$this->assertTrue( $this->farm->checkExistence() );
 
 		$this->assertTrue( $this->farm->populateSettings() );
@@ -109,7 +122,40 @@ class ConfigurationTest extends MediaWikiTestCase {
 	}
 
 	/**
-	 * Remove 'data/cache' cache directory.
+	 * Test a successful reading of a YAML file.
+	 *
+	 * @covers MediaWikiFarm::loadMediaWikiConfig
+	 * @covers MediaWikiFarm::getMediaWikiConfig
+	 * @covers MediaWikiFarm::extractSkinsAndExtensions
+	 * @covers MediaWikiFarm::detectLoadingMechanism
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::checkExistence
+	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::populatewgConf
+	 * @uses MediaWikiFarm::checkHostVariables
+	 * @uses MediaWikiFarm::setVersion
+	 * @uses MediaWikiFarm::setOtherVariables
+	 * @uses MediaWikiFarm::setVariable
+	 * @uses MediaWikiFarm::replaceVariables
+	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::cacheFile
+	 * @uses MediaWikiFarm::arrayMerge
+	 * @uses MediaWikiFarm::SiteConfigurationSiteParamsCallback
+	 */
+	function testLoadMediaWikiConfig() {
+
+		$this->assertTrue( $this->farm->checkExistence() );
+
+		//$this->assertTrue( $this->farm->populateSettings() );
+
+		$this->farm->loadMediaWikiConfig();
+
+		$this->assertEquals( 200000, $GLOBALS['wgMemCachedTimeout'] );
+	}
+
+	/**
+	 * Remove cache directory.
 	 */
 	protected function tearDown() {
 

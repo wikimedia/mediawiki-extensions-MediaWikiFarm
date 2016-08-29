@@ -33,9 +33,6 @@ class MediaWikiFarm {
 	 * Properties
 	 * ---------- */
 
-	/** @var MediaWikiFarm|null Singleton. */
-	private static $self = null;
-
 	/** @var string Entry point script. */
 	private $entryPoint = '';
 
@@ -211,36 +208,37 @@ class MediaWikiFarm {
 	 */
 	static function load( $entryPoint = '' ) {
 
-		global $wgMediaWikiFarm;
+		global $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 
 		try {
 			# Initialise object
-			$wgMediaWikiFarm = self::getInstance( $entryPoint );
+			if( is_null( $wgMediaWikiFarm ) ) {
+				$wgMediaWikiFarm = new self( null, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
+			}
 
 			# Check existence
 			$exists = $wgMediaWikiFarm->checkExistence();
 		}
 		catch( Exception $e ) {
 
-			if( PHP_SAPI == 'cli' || PHP_SAPI == 'phpdbg' )
-				exit( 1 );
-
-			$httpProto = $_SERVER['SERVER_PROTOCOL'] ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
-			header( "$httpProto 500 Internal Server Error" );
-			exit;
+			if( !headers_sent() ) {
+				$httpProto = array_key_exists( 'SERVER_PROTOCOL', $_SERVER ) && $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.1' ? 'HTTP/1.1' : 'HTTP/1.0'; // @codeCoverageIgnore
+				header( "$httpProto 500 Internal Server Error" ); // @codeCoverageIgnore
+			}
+			return 500;
 		}
 
 		if( !$exists ) {
 
-			if( PHP_SAPI == 'cli' || PHP_SAPI == 'phpdbg' )
-				exit( 1 );
-
-			# Display an informational page when the requested wiki doesn’t exist, only when a page was requested, but not a resource, to avoid waste resources
-			$httpProto = $_SERVER['SERVER_PROTOCOL'] ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
-			header( "$httpProto 404 Not Found" );
-			if( $entryPoint == 'index.php' && array_key_exists( '$HTTP404', $wgMediaWikiFarm->variables ) && is_file( $wgMediaWikiFarm->variables['$HTTP404'] ) )
+			# Display an informational page when the requested wiki doesn’t exist, only when a page was requested, not a resource, to avoid waste resources
+			if( !headers_sent() ) {
+				$httpProto = array_key_exists( 'SERVER_PROTOCOL', $_SERVER ) && $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.1' ? 'HTTP/1.1' : 'HTTP/1.0'; // @codeCoverageIgnore
+				header( "$httpProto 404 Not Found" ); // @codeCoverageIgnore
+			}
+			if( $entryPoint == 'index.php' && array_key_exists( '$HTTP404', $wgMediaWikiFarm->variables ) ) {//&& is_file( $wgMediaWikiFarm->variables['$HTTP404'] ) ) {
 				include $wgMediaWikiFarm->variables['$HTTP404'];
-			exit;
+			}
+			return 404;
 		}
 
 		# Go to version directory
@@ -251,45 +249,11 @@ class MediaWikiFarm {
 		#define( 'MW_CONFIG_CALLBACK', 'MediaWikiFarm::loadConfig' );
 
 		# Define config file to avoid creating a stub LocalSettings.php
-		if( !defined( 'MW_CONFIG_FILE' ) )
-			define( 'MW_CONFIG_FILE', $wgMediaWikiFarm->getConfigFile() );
-
-		return $entryPoint;
-	}
-
-	/**
-	 * Create or return the unique object of type MediaWikiFarm for this request.
-	 *
-	 * An implicit (global) parameter for this function is the host: either $_SERVER['HTTP_HOST'] or $_SERVER['SERVER_NAME'] must be defined.
-	 *
-	 * @param string $entryPoint Entry point script.
-	 * @return MediaWikiFarm Singleton.
-	 * @throws MWFConfigurationException When there is no $_SERVER['HTTP_HOST'] nor $_SERVER['SERVER_NAME'] or issue with main configuration file.
-	 */
-	static function getInstance( $entryPoint = '' ) {
-
-		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
-
-		# Object was already created
-		if( self::$self )
-			return self::$self;
-
-		# Detect the current host
-		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
-		# Rationale: nginx put the regex of the server name in SERVER_NAME; HTTP_HOST seems to be always clean from this side,
-		#            and it will be checked against available hosts in constructor
-		if( array_key_exists( 'HTTP_HOST', $_SERVER ) ) {
-			$host = $_SERVER['HTTP_HOST'];
-		} elseif( array_key_exists( 'SERVER_NAME', $_SERVER ) ) {
-			$host = $_SERVER['SERVER_NAME'];
-		} else {
-			throw new MWFConfigurationException( 'Undefined host' );
+		if( !defined( 'MW_CONFIG_FILE' ) ) {
+			define( 'MW_CONFIG_FILE', $wgMediaWikiFarm->getConfigFile() ); // @codeCoverageIgnore
 		}
 
-		# Create the object for this host
-		self::$self = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
-
-		return self::$self;
+		return 200;
 	}
 
 
@@ -357,25 +321,18 @@ class MediaWikiFarm {
 			$this->getMediaWikiConfig();
 		}
 
-		if( $this->newEngine ) {
+		# Set general parameters as global variables
+		foreach( $this->configuration[$this->newEngine] as $setting => $value ) {
 
-			# Set general parameters as global variables
-			foreach( $this->configuration['settings'] as $setting => $value ) {
+			$GLOBALS[$setting] = $value;
+		}
 
-				$GLOBALS[$setting] = $value;
-			}
+		if( $this->newEngine == 'settings' ) {
 
 			# Merge general array parameters into global variables
 			foreach( $this->configuration['arrays'] as $setting => $value ) {
 
 				$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
-			}
-		}
-		else {
-			# Set general parameters as global variables
-			foreach( $this->configuration['general'] as $setting => $value ) {
-
-				$GLOBALS[$setting] = $value;
 			}
 		}
 	}
@@ -493,16 +450,18 @@ class MediaWikiFarm {
 	 */
 	static function loadConfig() {
 
+		global $wgMediaWikiFarm;
+
 		# Load general MediaWiki configuration
-		MediaWikiFarm::getInstance()->loadMediaWikiConfig();
+		$wgMediaWikiFarm->loadMediaWikiConfig();
 
 		# Load skins with the wfLoadSkin mechanism
-		MediaWikiFarm::getInstance()->loadSkinsConfig();
+		$wgMediaWikiFarm->loadSkinsConfig();
 
 		# Load extensions with the wfLoadExtension mechanism
-		MediaWikiFarm::getInstance()->loadExtensionsConfig();
+		$wgMediaWikiFarm->loadExtensionsConfig();
 
-		foreach( MediaWikiFarm::getInstance()->configuration['execFiles'] as $execFile ) {
+		foreach( $wgMediaWikiFarm->configuration['execFiles'] as $execFile ) {
 
 			@include $execFile;
 		}
@@ -521,20 +480,31 @@ class MediaWikiFarm {
 	 * farm depending of the host (when there are multiple farms). In case of error (unreadable
 	 * directory or file, or unrecognized host), an InvalidArgumentException is thrown.
 	 *
-	 * @param string $host Requested host.
+	 * @param string|null $host Requested host.
 	 * @param string $configDir Configuration directory.
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
-	 * @param string|false|null $cacheDir Cache directory; if false, the cache is disabled.
+	 * @param string|false $cacheDir Cache directory; if false, the cache is disabled.
 	 * @param string $entryPoint Entry point script.
 	 * @param bool $newEngine Use the new configuration compiler engine (development-only, temporary parameter).
 	 * @return MediaWikiFarm
 	 * @throws MWFConfigurationException When no farms.yml/php/json is found.
 	 * @throws InvalidArgumentException When wrong input arguments are passed.
 	 */
-	function __construct( $host, $configDir, $codeDir = null, $cacheDir = null, $entryPoint = '', $newEngine = false ) {
+	function __construct( $host, $configDir, $codeDir = null, $cacheDir = false, $entryPoint = '', $newEngine = false ) {
 
-		# Default value for $cacheDir
-		if( is_null( $cacheDir ) ) $cacheDir = '/tmp/mw-cache';
+		# Default value for host
+		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
+		# Rationale: nginx put the regex of the server name in SERVER_NAME; HTTP_HOST seems to be always clean from this side,
+		#            and it will be checked against available hosts in constructor
+		if( is_null( $host ) ) {
+			if( array_key_exists( 'HTTP_HOST', $_SERVER ) && $_SERVER['HTTP_HOST'] ) {
+				$host = $_SERVER['HTTP_HOST'];
+			} elseif( array_key_exists( 'SERVER_NAME', $_SERVER ) && $_SERVER['SERVER_NAME'] ) {
+				$host = $_SERVER['SERVER_NAME'];
+			} else {
+				throw new InvalidArgumentException( 'Undefined host' );
+			}
+		}
 
 		# Check parameters
 		if( !is_string( $host ) ) {
@@ -547,7 +517,7 @@ class MediaWikiFarm {
 			throw new InvalidArgumentException( 'Code directory must be null or a directory' );
 		}
 		if( !is_string( $cacheDir ) && $cacheDir !== false ) {
-			throw new InvalidArgumentException( 'Cache directory must be false, null, or a directory' );
+			throw new InvalidArgumentException( 'Cache directory must be false or a directory' );
 		}
 		if( !is_string( $entryPoint ) ) {
 			throw new InvalidArgumentException( 'Entry point must be a string' );
@@ -559,7 +529,7 @@ class MediaWikiFarm {
 		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
 		$this->cacheDir = $cacheDir;
-		$this->newEngine = $newEngine;
+		$this->newEngine = $newEngine ? 'settings' : 'general';
 
 		# Create cache directory
 		if( $this->cacheDir && !is_dir( $this->cacheDir ) ) {
@@ -892,7 +862,7 @@ class MediaWikiFarm {
 		# Check modification time of original config files
 		$oldness = 0;
 		foreach( $this->farmConfig['config'] as $configFile ) {
-			if( !is_string( $configFile['file'] ) ) continue;
+			if( !is_array( $configFile ) || !is_string( $configFile['file'] ) ) continue;
 			$oldness = max( $oldness, @filemtime( $this->configDir . '/' . $this->replaceVariables( $configFile['file'] ) ) );
 		}
 
@@ -910,7 +880,7 @@ class MediaWikiFarm {
 			# Get specific configuration for this wiki
 			# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
 			# ineffective and there would be inconsistencies in this process
-			$this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array( 'data' => $this->variables['$DATA'] ) );
+			$this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array() );
 
 			# For the permissions array, fix a small strangeness: when an existing default permission
 			# is true, it is not possible to make it false in the specific configuration
@@ -1126,7 +1096,6 @@ class MediaWikiFarm {
 
 				foreach( $theseSettings as $setting => $values ) {
 
-					#if( $this->getVariable('$wiki') == 'a' ){var_dump($theseSettings);}
 					# Depending if it is an array diff or not, create and initialise the variables
 					if( substr( $setting, 0, 1 ) == '+' ) {
 						if( !array_key_exists( substr($setting,1), $prioritiesArray ) ) {
@@ -1152,7 +1121,7 @@ class MediaWikiFarm {
 						}
 						if( array_key_exists( '+'.$wikiID, $values ) && is_array( $values['+'.$wikiID] ) ) {
 							$thisSetting = self::arrayMerge( $thisSetting, $values['+'.$wikiID] );
-							$thisPriority = 5;
+							$thisPriority = 3;
 						}
 					}
 
@@ -1167,9 +1136,9 @@ class MediaWikiFarm {
 								# NB: for strict equivalence with wgConf there should be here a `break`, but by consistency
 								# (last value kept) and given the case should not appear, there is no.
 							}
-							elseif( array_key_exists( '+'.$tak, $values ) && is_array( $values['+'.$tag] ) ) {
+							elseif( array_key_exists( '+'.$tag, $values ) && is_array( $values['+'.$tag] ) ) {
 								$thisSetting = self::arrayMerge( $thisSetting, $values['+'.$tag] );
-								$thisPriority = 4;
+								$thisPriority = 3;
 							}
 						}
 					}
@@ -1185,7 +1154,7 @@ class MediaWikiFarm {
 							continue;
 						}
 						if( array_key_exists( '+'.$suffix, $values ) && is_array( $values['+'.$suffix] ) ) {
-							$thisSetting = self::arrayMerge( $thisSetting, $value['+'.$suffix] );
+							$thisSetting = self::arrayMerge( $thisSetting, $values['+'.$suffix] );
 							$thisPriority = 3;
 						}
 					}
@@ -1255,11 +1224,7 @@ class MediaWikiFarm {
 	 */
 	function extractSkinsAndExtensions() {
 
-		if( $this->newEngine ) {
-			$settings = &$this->configuration['settings'];
-		} else {
-			$settings = &$this->configuration['general'];
-		}
+		$settings = &$this->configuration[$this->newEngine];
 
 		# Search for skin and extension activation
 		foreach( $settings as $setting => $value ) {
@@ -1605,14 +1570,17 @@ class MediaWikiFarm {
 	 * @mediawikifarm-idempotent
 	 * @SuppressWarning(PHPMD.StaticAccess)
 	 *
-	 * @param array $array1.
 	 * @return array
 	 */
-	static function arrayMerge( $array1/* ... */ ) {
+	static function arrayMerge( /* ... */ ) {
 		$out = array();
 		$argsCount = func_num_args();
 		for ( $i = 0; $i < $argsCount; $i++ ) {
-			foreach ( func_get_arg( $i ) as $key => $value ) {
+			$array = func_get_arg( $i );
+			if ( is_null( $array ) ) {
+				$array = array();
+			}
+			foreach ( $array as $key => $value ) {
 				if( array_key_exists( $key, $out ) && is_string( $key ) && is_array( $out[$key] ) && is_array( $value ) ) {
 					$out[$key] = self::arrayMerge( $out[$key], $value );
 				} elseif( !is_numeric( $key ) ) {

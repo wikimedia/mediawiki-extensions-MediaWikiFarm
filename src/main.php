@@ -25,7 +25,7 @@ if( !isset( $wgVersion ) ) {
 
 
 # Load general MediaWiki configuration
-MediaWikiFarm::getInstance()->loadMediaWikiConfig();
+$wgMediaWikiFarm->loadMediaWikiConfig();
 
 
 /*

@@ -24,4 +24,6 @@ require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
 // @codingStandardsIgnoreEnd
 
 # Redirect to the requested version
-require MediaWikiFarm::load( 'api.php' );
+if( MediaWikiFarm::load( 'api.php' ) == 200 ) {
+	require 'api.php';
+}

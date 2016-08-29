@@ -7,7 +7,9 @@
 if( !defined( 'MEDIAWIKI' ) ) exit;
 
 # Include the code.
-require_once MediaWikiFarm::getInstance()->getConfigFile();
+if( class_exists( 'MediaWikiFarm' ) && $wgMediaWikiFarm instanceof MediaWikiFarm ) {
+	require_once $wgMediaWikiFarm->getConfigFile();
+}
 
 # Do not add other configuration here, but instead in the config files
 # read by MediaWikiFarm -- even for global settings.

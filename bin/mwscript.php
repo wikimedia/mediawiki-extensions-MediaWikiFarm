@@ -150,7 +150,9 @@ require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
 
 
 # Initialise the requested version
-MediaWikiFarm::load( $mwfScript );
+if( MediaWikiFarm::load( $mwfScript ) != 200 ) {
+	exit( 1 );
+}
 
 
 # Display parameters
