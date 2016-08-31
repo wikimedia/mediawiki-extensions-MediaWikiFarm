@@ -375,6 +375,8 @@ class MediaWikiFarm {
 			wfLoadExtension( 'MediaWikiFarm', $this->codeDir ? $this->farmDir . '/extension.json' : null );
 		}
 		else {
+			// Ignore this code coverage because tests are probably run on MediaWiki 1.25+
+			// @codeCoverageIgnoreStart
 			$GLOBALS['wgExtensionCredits']['other'][] = array(
 				'path' => $this->farmDir . '/MediaWikiFarm.php',
 				'name' => 'MediaWikiFarm',
@@ -382,13 +384,14 @@ class MediaWikiFarm {
 				'author' => 'Seb35',
 				'url' => 'https://www.mediawiki.org/wiki/Extension:MediaWikiFarm',
 				'descriptionmsg' => 'mediawikifarm-desc',
-				'license-name' => 'GPL-3.0+'
+				'license-name' => 'GPL-3.0+',
 			);
 
 			$GLOBALS['wgAutoloadClasses']['MediaWikiFarm'] = 'src/MediaWikiFarm.php';
 			$GLOBALS['wgAutoloadClasses']['MWFConfigurationException'] = 'src/MediaWikiFarm.php';
 			$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = array( 'i18n' );
 			$GLOBALS['wgHooks']['UnitTestsList'] = array( 'MediaWikiFarm::onUnitTestsList' );
+			// @codeCoverageIgnoreEnd
 		}
 
 		# Load extensions with the wfLoadExtension mechanism
@@ -442,6 +445,8 @@ class MediaWikiFarm {
 	 * exported to global scope).
 	 *
 	 * NB: this loading mechanism (constant MW_CONFIG_CALLBACK) exists since MediaWiki 1.15.
+	 *
+	 * @codeCoverageIgnore
 	 *
 	 * @return void
 	 */

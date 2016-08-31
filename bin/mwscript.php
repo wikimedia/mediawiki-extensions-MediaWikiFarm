@@ -1,11 +1,12 @@
 <?php
 /**
  * Entry point for CLI scripts in the context of a monoversion or multiversion MediaWiki farm.
- * 
+ *
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  */
+// @codeCoverageIgnoreStart
 
 # Protect against web entry
 if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) exit;
@@ -182,3 +183,4 @@ require $argv[0];
 
 # Update version after maintenance/update.php (the only case where another version is given before execution)
 $wgMediaWikiFarm->updateVersionAfterMaintenance();
+// @codeCoverageIgnoreEnd
