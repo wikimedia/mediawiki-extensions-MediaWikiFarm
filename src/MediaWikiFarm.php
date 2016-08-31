@@ -322,18 +322,15 @@ class MediaWikiFarm {
 		}
 
 		# Set general parameters as global variables
-		foreach( $this->configuration[$this->newEngine] as $setting => $value ) {
+		foreach( $this->configuration['settings'] as $setting => $value ) {
 
 			$GLOBALS[$setting] = $value;
 		}
 
-		if( $this->newEngine == 'settings' ) {
+		# Merge general array parameters into global variables
+		foreach( $this->configuration['arrays'] as $setting => $value ) {
 
-			# Merge general array parameters into global variables
-			foreach( $this->configuration['arrays'] as $setting => $value ) {
-
-				$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
-			}
+			$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
 		}
 	}
 
@@ -485,12 +482,11 @@ class MediaWikiFarm {
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
 	 * @param string|false $cacheDir Cache directory; if false, the cache is disabled.
 	 * @param string $entryPoint Entry point script.
-	 * @param bool $newEngine Use the new configuration compiler engine (development-only, temporary parameter).
 	 * @return MediaWikiFarm
 	 * @throws MWFConfigurationException When no farms.yml/php/json is found.
 	 * @throws InvalidArgumentException When wrong input arguments are passed.
 	 */
-	function __construct( $host, $configDir, $codeDir = null, $cacheDir = false, $entryPoint = '', $newEngine = false ) {
+	function __construct( $host, $configDir, $codeDir = null, $cacheDir = false, $entryPoint = '' ) {
 
 		# Default value for host
 		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
@@ -529,7 +525,6 @@ class MediaWikiFarm {
 		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
 		$this->cacheDir = $cacheDir;
-		$this->newEngine = $newEngine ? 'settings' : 'general';
 
 		# Create cache directory
 		if( $this->cacheDir && !is_dir( $this->cacheDir ) ) {
@@ -847,12 +842,12 @@ class MediaWikiFarm {
 	 */
 	function getMediaWikiConfig() {
 
-		global $wgConf;
+		//global $wgConf;
 
 		# In MediaWiki 1.16, $wgConf is not created by default
-		if( is_null( $wgConf ) ) {
-			$wgConf = new SiteConfiguration();
-		}
+		//if( is_null( $wgConf ) ) {
+		//	$wgConf = new SiteConfiguration();
+		//}
 
 		$myWiki = $this->variables['$WIKIID'];
 		$mySuffix = $this->variables['$SUFFIX'];
@@ -873,20 +868,20 @@ class MediaWikiFarm {
 		else {
 
 			# Populate wgConf
-			if( !$this->populatewgConf() ) {
-				return false;
-			}
+			//if( !$this->populatewgConf() ) {
+			//	return false;
+			//}
 
 			# Get specific configuration for this wiki
 			# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
 			# ineffective and there would be inconsistencies in this process
-			$this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array() );
+			//$this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array() );
 
 			# For the permissions array, fix a small strangeness: when an existing default permission
 			# is true, it is not possible to make it false in the specific configuration
-			if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) )
+			//if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) )
 
-				$this->configuration['general']['wgGroupPermissions'] = self::arrayMerge( $this->configuration['general']['wgGroupPermissions'], $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ) );
+			//	$this->configuration['general']['wgGroupPermissions'] = self::arrayMerge( $this->configuration['general']['wgGroupPermissions'], $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ) );
 
 			# Get specific configuration for this wiki
 			if( !$this->populateSettings() ) {
@@ -900,7 +895,7 @@ class MediaWikiFarm {
 			$this->cacheFile( $this->configuration, $cacheFile );
 		}
 
-		$wgConf->siteParamsCallback = array( $this, 'SiteConfigurationSiteParamsCallback' );
+		//$wgConf->siteParamsCallback = array( $this, 'SiteConfigurationSiteParamsCallback' );
 	}
 
 	/**
@@ -908,6 +903,7 @@ class MediaWikiFarm {
 	 *
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+	 * @codeCoverageIgnore
 	 *
 	 * @return bool Success.
 	 */
@@ -1199,6 +1195,7 @@ class MediaWikiFarm {
 	 * It is not ideal since other parameters from other suffixes are not known.
 	 *
 	 * @mediawikifarm-const
+	 * @codeCoverageIgnore
 	 *
 	 * @param SiteConfiguration $wgConf SiteConfiguration object.
 	 * @param string $dbName Database name.
@@ -1224,7 +1221,7 @@ class MediaWikiFarm {
 	 */
 	function extractSkinsAndExtensions() {
 
-		$settings = &$this->configuration[$this->newEngine];
+		$settings = &$this->configuration['settings'];
 
 		# Search for skin and extension activation
 		foreach( $settings as $setting => $value ) {
@@ -1251,9 +1248,6 @@ class MediaWikiFarm {
 				if( !is_null( $loadingMechanism ) ) {
 					$this->configuration['skins'][$name] = $loadingMechanism;
 					$settings['wgUseSkin'.$name][$setting] = true;
-				}
-				elseif( !preg_match( '/^Local/', $name ) ) {
-					$settings[$setting] = false;
 				}
 			}
 		}
@@ -1518,6 +1512,9 @@ class MediaWikiFarm {
 		# Create temporary file
 		$tmpFile = $prefixedFile . '.tmp';
 		if( preg_match( '/\.php$/', $filename ) ) {
+			if( !is_dir( dirname( $tmpFile ) ) ) {
+				mkdir( dirname( $tmpFile ) );
+			}
 			if( file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $array, true ).';' ) ) {
 				rename( $tmpFile, $prefixedFile );
 			}

@@ -633,6 +633,6 @@ PHP;
 
 		unlink( self::$wgMediaWikiFarmConfigDir . '/versions.php' );
 		unlink( self::$wgMediaWikiFarmConfigDir . '/varwikiversions.php' );
-		unlink( dirname( dirname( dirname( __FILE__ ) ) ) . '/www/phpunitHTTP404.php' );
+		unlink( 'phpunitHTTP404.php' );
 	}
 }
