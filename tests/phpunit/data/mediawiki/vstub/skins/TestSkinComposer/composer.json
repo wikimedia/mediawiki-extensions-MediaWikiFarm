@@ -1,0 +1,15 @@
+{
+	"name": "mediawiki-skins/test-skin-composer",
+	"description": "Stub skin for testing",
+	"keywords": ["mediawiki"],
+	"authors": [
+		{
+			"name": "Seb35",
+			"homepage": "https://www.seb35.fr"
+		}
+	],
+	"license": "GPL-3.0+",
+	"require": {
+		"php": ">=5.2"
+	}
+}

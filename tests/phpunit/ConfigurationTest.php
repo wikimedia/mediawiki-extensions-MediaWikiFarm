@@ -1,5 +1,8 @@
 <?php
 
+require_once 'MediaWikiFarmTestCase.php';
+
+/**
 /**
  * Installation-independant methods tests.
  *
@@ -8,7 +11,7 @@
  *
  * @group MediaWikiFarm
  */
-class ConfigurationTest extends MediaWikiTestCase {
+class ConfigurationTest extends MediaWikiFarmTestCase {
 
 	/** @var MediaWikiFarm|null Test object. */
 	protected $farm = null;
@@ -23,21 +26,17 @@ class ConfigurationTest extends MediaWikiTestCase {
 	 */
 	static function constructMediaWikiFarm( $host ) {
 
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$farm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDirTest, null, false );
-
-		return $farm;
+		return new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, null, false );
 	}
 
 	/**
 	 * Set up the default MediaWikiFarm object with a sample correct configuration file.
 	 */
 	protected function setUp() {
-		
+
 		parent::setUp();
-		
-		$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
-		$this->farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDir, null, false, 'index.php', true );
+
+		$this->farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, false, 'index.php' );
 	}
 
 	/**
@@ -132,7 +131,7 @@ class ConfigurationTest extends MediaWikiTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::populatewgConf
+	 * @ uses MediaWikiFarm::populatewgConf
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
 	 * @uses MediaWikiFarm::setOtherVariables
@@ -152,15 +151,5 @@ class ConfigurationTest extends MediaWikiTestCase {
 		$this->farm->loadMediaWikiConfig();
 
 		$this->assertEquals( 200000, $GLOBALS['wgMemCachedTimeout'] );
-	}
-
-	/**
-	 * Remove cache directory.
-	 */
-	protected function tearDown() {
-
-		wfRecursiveRemoveDir( dirname( __FILE__ ) . '/data/cache' );
-
-		parent::tearDown();
 	}
 }

@@ -1,5 +1,8 @@
 <?php
 
+require_once 'MediaWikiFarmTestCase.php';
+
+/**
 /**
  * Installation-independant methods tests.
  *
@@ -8,7 +11,7 @@
  *
  * @group MediaWikiFarm
  */
-class InstallationIndependantTest extends MediaWikiTestCase {
+class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 	/** @var MediaWikiFarm|null Test object. */
 	protected $farm = null;
@@ -26,10 +29,7 @@ class InstallationIndependantTest extends MediaWikiTestCase {
 	 */
 	static function constructMediaWikiFarm( $host ) {
 
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$farm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDirTest, null, false );
-
-		return $farm;
+		return new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, null, false );
 	}
 
 	/**
@@ -295,10 +295,9 @@ class InstallationIndependantTest extends MediaWikiTestCase {
 	 */
 	function testNoCache() {
 
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirTest, null, false );
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, false );
 
-		$farm->readFile( 'testreading.json', $wgMediaWikiFarmConfigDirTest );
+		$farm->readFile( 'testreading.json', self::$wgMediaWikiFarmConfigDir );
 
 		$this->assertFalse( $farm->getCacheDir() );
 	}
@@ -313,15 +312,13 @@ class InstallationIndependantTest extends MediaWikiTestCase {
 	 */
 	function testCacheFile() {
 
-		$wgMediaWikiFarmConfigDirTest = dirname( __FILE__ ) . '/data/config';
-		$wgMediaWikiFarmCacheDirTest = dirname( __FILE__ ) . '/data/cache';
-		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmConfigDirTest, null, $wgMediaWikiFarmCacheDirTest );
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir );
 
-		$farm->readFile( 'testreading.json', $wgMediaWikiFarmConfigDirTest );
+		$farm->readFile( 'testreading.json', self::$wgMediaWikiFarmConfigDir );
 
-		$this->assertTrue( is_file( $wgMediaWikiFarmCacheDirTest . '/testfarm-monoversion/testreading.json.php' ) );
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/testreading.json.php' ) );
 
-		$result = $farm->readFile( 'testreading.json', $wgMediaWikiFarmConfigDirTest );
+		$result = $farm->readFile( 'testreading.json', self::$wgMediaWikiFarmConfigDir );
 
 		$this->assertEquals(
 			array(
@@ -377,15 +374,5 @@ class InstallationIndependantTest extends MediaWikiTestCase {
 	function assertPostConditions() {
 
 		$this->assertEquals( $this->control, $this->farm, 'Methods tested in InstallationIndependantTest are supposed to be constant.' );
-	}
-
-	/**
-	 * Remove 'data/cache' cache directory.
-	 */
-	protected function tearDown() {
-
-		wfRecursiveRemoveDir( dirname( __FILE__ ) . '/data/cache' );
-
-		parent::tearDown();
 	}
 }

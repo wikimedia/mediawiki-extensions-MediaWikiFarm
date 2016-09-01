@@ -204,16 +204,27 @@ class MediaWikiFarm {
 	 * like `www/index.php`).
 	 *
 	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
+	 * @param MediaWikiFarm|string|null $wgMediaWikiFarm Host name (string) or MediaWikiFarm object or null to create object.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
-	static function load( $entryPoint = '' ) {
+	static function load( $entryPoint = '', $wgMediaWikiFarm = null ) {
 
-		global $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
+		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 
 		try {
 			# Initialise object
-			if( is_null( $wgMediaWikiFarm ) ) {
-				$wgMediaWikiFarm = new self( null, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
+			if( is_null( $wgMediaWikiFarm ) && array_key_exists( 'wgMediaWikiFarm', $GLOBALS ) && $GLOBALS['wgMediaWikiFarm'] instanceof MediaWikiFarm ) {
+				$wgMediaWikiFarm = &$GLOBALS['wgMediaWikiFarm'];
+			}
+			elseif( is_string( $wgMediaWikiFarm ) || is_null( $wgMediaWikiFarm ) ) {
+				$GLOBALS['wgMediaWikiFarm'] = new self( $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
+				$wgMediaWikiFarm = &$GLOBALS['wgMediaWikiFarm'];
+			}
+			elseif( $wgMediaWikiFarm instanceof MediaWikiFarm ) {
+				# nop - for testing without bother with globals
+			}
+			else {
+				throw new InvalidArgumentException( 'Bad parameter in MediaWikiFarm::load' );
 			}
 
 			# Check existence
@@ -1246,13 +1257,14 @@ class MediaWikiFarm {
 				$loadingMechanism = $this->detectLoadingMechanism( 'extension', $name );
 				if( !is_null( $loadingMechanism ) ) {
 					$this->configuration['extensions'][$name] = $loadingMechanism;
-					$settings['wgUseExtension'.$name][$setting] = true;
+					$settings['wgUseExtension'.$name] = true;
+					continue;
 				}
 
 				$loadingMechanism = $this->detectLoadingMechanism( 'skin', $name );
 				if( !is_null( $loadingMechanism ) ) {
 					$this->configuration['skins'][$name] = $loadingMechanism;
-					$settings['wgUseSkin'.$name][$setting] = true;
+					$settings['wgUseSkin'.$name] = true;
 				}
 			}
 		}
@@ -1357,8 +1369,14 @@ class MediaWikiFarm {
 
 		$dir = dirname( dirname( __FILE__ ) ) . '/tests/phpunit/';
 
-		$files[] = $dir . 'MediaWikiFarmMonoversionInstallationTest.php';
-		$files[] = $dir . 'MediaWikiFarmMultiversionInstallationTest.php';
+		$files[] = $dir . 'ConfigurationTest.php';
+		$files[] = $dir . 'ConstructionTest.php';
+		$files[] = $dir . 'FunctionsTest.php';
+		$files[] = $dir . 'InstallationIndependantTest.php';
+		$files[] = $dir . 'LoadingTest.php';
+		$files[] = $dir . 'MonoversionInstallationTest.php';
+		$files[] = $dir . 'MultiversionInstallationTest.php';
+		$files[] = $dir . 'ScriptTest.php';
 
 		return true;
 	}

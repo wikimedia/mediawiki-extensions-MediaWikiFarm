@@ -1,0 +1,15 @@
+{
+	"name": "mediawiki-extensions/test-extension-composer",
+	"description": "Stub extension for testing",
+	"keywords": ["mediawiki"],
+	"authors": [
+		{
+			"name": "Seb35",
+			"homepage": "https://www.seb35.fr"
+		}
+	],
+	"license": "GPL-3.0+",
+	"require": {
+		"php": ">=5.2"
+	}
+}

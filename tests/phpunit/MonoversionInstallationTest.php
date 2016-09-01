@@ -1,20 +1,17 @@
 <?php
 
+require_once 'MediaWikiFarmTestCase.php';
+
+/**
 /**
  * @group MediaWikiFarm
  * @covers MediaWikiFarm
  */
-class MonoversionInstallationTest extends MediaWikiTestCase {
-	
-	/** @var string Configuration directory for tests. */
-	static $wgMediaWikiFarmConfigDir = '';
-
-	/** @var string Cache directory for tests. */
-	static $wgMediaWikiFarmCacheDir = '';
+class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 
 	/** @var MediaWikiFarm|null Test object. */
 	protected $farm = null;
-	
+
 	/**
 	 * Construct a default MediaWikiFarm object with a sample correct configuration file.
 	 *
@@ -29,32 +26,7 @@ class MonoversionInstallationTest extends MediaWikiTestCase {
 		
 		return $farm;
 	}
-	
-	/**
-	 * Set up versions files with the current MediaWiki installation.
-	 */
-	static function setUpBeforeClass() {
 
-		global $IP;
-
-		$dirIP = basename( $IP );
-
-		# Set test configuration parameters
-		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
-		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';
-
-		# Create varwikiversions.php: the list of existing values for variable '$wiki' with their associated versions
-		$versionsFile = <<<PHP
-<?php
-
-return array(
-	'a' => '$dirIP',
-);
-
-PHP;
-		file_put_contents( dirname( __FILE__ ) . '/data/config/varwikiversions.php', $versionsFile );
-	}
-	
 	/**
 	 * Set up the default MediaWikiFarm object with a sample correct configuration file.
 	 */
@@ -233,23 +205,5 @@ PHP;
 		
 		$this->farm->checkExistence();
 		$this->assertTrue( $this->farm->checkHostVariables() );
-	}
-
-	/**
-	 * Remove cache directory.
-	 */
-	protected function tearDown() {
-		
-		wfRecursiveRemoveDir( self::$wgMediaWikiFarmCacheDir );
-		
-		parent::tearDown();
-	}
-	
-	/**
-	 * Remove 'data/config/versions.php' config file.
-	 */
-	static function tearDownAfterClass() {
-		
-		unlink( self::$wgMediaWikiFarmConfigDir . '/varwikiversions.php' );
 	}
 }

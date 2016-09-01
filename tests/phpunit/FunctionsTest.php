@@ -1,5 +1,7 @@
 <?php
 
+require_once 'MediaWikiFarmTestCase.php';
+
 /**
  * Functions tests.
  *
@@ -8,12 +10,14 @@
  *
  * @group MediaWikiFarm
  */
-class FunctionsTest extends MediaWikiTestCase {
+class FunctionsTest extends MediaWikiFarmTestCase {
 
 	/**
 	 * Symbol for MediaWikiFarm_readYAML, which is normally loaded just-in-time in the main class.
 	 */
 	static function setUpBeforeClass() {
+
+		parent::setUpBeforeClass();
 
 		require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/Yaml.php';
 	}
@@ -86,14 +90,12 @@ class FunctionsTest extends MediaWikiTestCase {
 	 */
 	function testOnUnitTestsListHook() {	
 
+		$testFiles = glob( dirname( __FILE__ ) . '/*Test.php' );
+
 		$array = array();
 		MediaWikiFarm::onUnitTestsList( $array );
-		$this->assertEquals(
-			array(
-				dirname( __FILE__ ) . '/MediaWikiFarmMonoversionInstallationTest.php',
-				dirname( __FILE__ ) . '/MediaWikiFarmMultiversionInstallationTest.php',
-			),
-			$array );
+
+		$this->assertEquals( $testFiles, $array );
 	}
 
 	/**

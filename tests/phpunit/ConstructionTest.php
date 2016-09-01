@@ -1,58 +1,12 @@
 <?php
 
+require_once 'MediaWikiFarmTestCase.php';
+
+/**
 /**
  * @group MediaWikiFarm
  */
-class ConstructionTest extends MediaWikiTestCase {
-
-	/** @var string Configuration directory for tests. */
-	static $wgMediaWikiFarmConfigDir = '';
-
-	/** @var string Code directory for tests. */
-	static $wgMediaWikiFarmCodeDir = '';
-
-	/** @var string Cache directory for tests. */
-	static $wgMediaWikiFarmCacheDir = '';
-
-	/**
-	 * Set up versions files with the current MediaWiki installation.
-	 */
-	static function setUpBeforeClass() {
-
-		global $IP;
-
-		$dirIP = basename( $IP );
-
-		# Set test configuration parameters
-		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
-		self::$wgMediaWikiFarmCodeDir = dirname( $IP );
-		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';
-
-		# Create versions.php: the list of existing values for variable '$WIKIID' with their associated versions
-		$versionsFile = <<<PHP
-<?php
-
-return array(
-	'atestfarm' => '$dirIP',
-);
-
-PHP;
-		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/versions.php', $versionsFile );
-
-		# Create varwikiversions.php: the list of existing values for variable '$wiki' with their associated versions
-		$versionsFile = <<<PHP
-<?php
-
-return array(
-	'a' => '$dirIP',
-);
-
-PHP;
-		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/varwikiversions.php', $versionsFile );
-
-		# Move http404.php to [farm]/www
-		copy( self::$wgMediaWikiFarmConfigDir . '/http404.php', 'phpunitHTTP404.php' );
-	}
+class ConstructionTest extends MediaWikiFarmTestCase {
 
 	/**
 	 * Test a successful initialisation of multiversion MediaWikiFarm with a correct configuration file farms.php.
@@ -321,8 +275,8 @@ PHP;
 	 */
 	function testFailedConstruction9() {
 
-		$_SERVER['HTTP_HOST'] = null;
-		$_SERVER['SERVER_NAME'] = null;
+		$this->backupAndUnsetGlobalSubvariable( '_SERVER', 'HTTP_HOST' );
+		$this->backupAndUnsetGlobalSubvariable( '_SERVER', 'SERVER_NAME' );
 
 		$farm = new MediaWikiFarm(
 				null,
@@ -343,8 +297,8 @@ PHP;
 	 */
 	function testSuccessfulConstructionWithGlobalVariable() {
 
-		$_SERVER['HTTP_HOST'] = 'a.testfarm-multiversion.example.org';
-		$_SERVER['SERVER_NAME'] = null;
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', 'a.testfarm-multiversion.example.org' );
+		$this->backupAndUnsetGlobalSubvariable( '_SERVER', 'SERVER_NAME' );
 
 		$farm = new MediaWikiFarm(
 				null,
@@ -367,8 +321,8 @@ PHP;
 	 */
 	function testSuccessfulConstructionWithGlobalVariable2() {
 
-		$_SERVER['HTTP_HOST'] = null;
-		$_SERVER['SERVER_NAME'] = 'a.testfarm-multiversion.example.org';
+		$this->backupAndUnsetGlobalSubvariable( '_SERVER', 'HTTP_HOST' );
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'SERVER_NAME', 'a.testfarm-multiversion.example.org' );
 
 		$farm = new MediaWikiFarm(
 				null,
@@ -540,13 +494,12 @@ PHP;
 	 */
 	function testLoadingCorrect() {
 
-		global $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', self::$wgMediaWikiFarmCodeDir );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', 'a.testfarm-multiversion.example.org' );
 
-		$wgMediaWikiFarm = null;
-		$wgMediaWikiFarmConfigDir = self::$wgMediaWikiFarmConfigDir;
-		$wgMediaWikiFarmCodeDir = self::$wgMediaWikiFarmCodeDir;
-		$wgMediaWikiFarmCacheDir = false;
-		$_SERVER['HTTP_HOST'] = 'a.testfarm-multiversion.example.org';
 		$curdir = getcwd();
 
 		chdir( dirname( $curdir ) );
@@ -554,9 +507,9 @@ PHP;
 		$code = MediaWikiFarm::load( 'index.php' );
 
 		$this->assertEquals( 200, $code );
-		$this->assertEquals( 'a.testfarm-multiversion.example.org', $wgMediaWikiFarm->getVariable( '$SERVER' ) );
+		$this->assertEquals( 'a.testfarm-multiversion.example.org', $GLOBALS['wgMediaWikiFarm']->getVariable( '$SERVER' ) );
 		$this->assertEquals( $curdir, getcwd() );
-		$this->assertEquals( $wgMediaWikiFarmCodeDir . '/' . $wgMediaWikiFarm->getVariable( '$VERSION' ), getcwd() );
+		$this->assertEquals( $GLOBALS['wgMediaWikiFarmCodeDir'] . '/' . $GLOBALS['wgMediaWikiFarm']->getVariable( '$VERSION' ), getcwd() );
 
 		chdir( $curdir );
 	}
@@ -576,20 +529,18 @@ PHP;
 	 */
 	function testLoadingNonExistant() {
 
-		global $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $wgMediaWikiFarmHTTP404Executed;
-
-		$wgMediaWikiFarm = null;
-		$wgMediaWikiFarmConfigDir = self::$wgMediaWikiFarmConfigDir;
-		$wgMediaWikiFarmCodeDir = null;
-		$wgMediaWikiFarmCacheDir = false;
-		$_SERVER['HTTP_HOST'] = null;
-		$_SERVER['SERVER_NAME'] = 'c.testfarm-monoversion-with-file-variable-without-version.example.org';
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', null );
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'SERVER_NAME', 'c.testfarm-monoversion-with-file-variable-without-version.example.org' );
+		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarmHTTP404Executed' );
 
 		$code = MediaWikiFarm::load( 'index.php' );
 
 		$this->assertEquals( 404, $code );
-
-		$this->assertTrue( $wgMediaWikiFarmHTTP404Executed );
+		$this->assertTrue( $GLOBALS['wgMediaWikiFarmHTTP404Executed'] );
 	}
 
 	/**
@@ -603,36 +554,14 @@ PHP;
 	 */
 	function testLoadingError() {
 
-		global $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
-
-		$wgMediaWikiFarm = null;
-		$wgMediaWikiFarmConfigDir = self::$wgMediaWikiFarmConfigDir;
-		$wgMediaWikiFarmCodeDir = null;
-		$wgMediaWikiFarmCacheDir = false;
-		$_SERVER['HTTP_HOST'] = 'a.testfarm-missing.example.org';
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', 'a.testfarm-missing.example.org' );
 
 		$code = MediaWikiFarm::load( 'index.php' );
 
 		$this->assertEquals( 500, $code );
-	}
-
-	/**
-	 * Remove cache directory.
-	 */
-	protected function tearDown() {
-
-		wfRecursiveRemoveDir( self::$wgMediaWikiFarmCacheDir );
-
-		parent::tearDown();
-	}
-
-	/**
-	 * Remove 'data/config/versions.php' config file.
-	 */
-	static function tearDownAfterClass() {
-
-		unlink( self::$wgMediaWikiFarmConfigDir . '/versions.php' );
-		unlink( self::$wgMediaWikiFarmConfigDir . '/varwikiversions.php' );
-		unlink( 'phpunitHTTP404.php' );
 	}
 }

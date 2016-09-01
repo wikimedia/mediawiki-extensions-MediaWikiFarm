@@ -258,4 +258,20 @@ return array(
 			),
 		),
 	),
+
+	'testfarm-multiversion-test-extensions' => array(
+
+		'server' => '(?P<wiki>[a-z])\.testfarm-multiversion-test-extensions\.example\.org',
+		'variables' => array(
+			array( 'variable' => 'wiki', ),
+		),
+		'suffix' => 'testextensionsfarm',
+		'wikiID' => '$wikitestextensionsfarm',
+		'versions' => 'testextensionsfarmversions.php',
+		'config' => array(
+			array( 'file' => 'extensionssettings.php',
+			       'key' => '*',
+			),
+		),
+	),
 );

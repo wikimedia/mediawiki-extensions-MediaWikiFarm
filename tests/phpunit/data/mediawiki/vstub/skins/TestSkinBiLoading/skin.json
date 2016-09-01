@@ -1,0 +1,14 @@
+{
+	"name": "TestSkinWfLoadSkin",
+	"version": "1.0.0",
+	"author": [
+		"Seb35"
+	],
+	"description": "Stub skin for testing",
+	"license-name": "GPL-3.0+",
+	"type": "other",
+	"requires": {
+		"MediaWiki": ">= 1.25.0"
+	},
+	"manifest_version": 1
+}
