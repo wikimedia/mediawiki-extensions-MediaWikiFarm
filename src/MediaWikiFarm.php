@@ -5,6 +5,9 @@
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
+ *
+ * DEVELOPERS: given its nature, this extension must work with all MediaWiki versions and
+ *             PHP 5.2+, so please do not use "new" syntaxes (namespaces, arrays with [], etc.).
  */
 
 /**
@@ -204,28 +207,16 @@ class MediaWikiFarm {
 	 * like `www/index.php`).
 	 *
 	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
-	 * @param MediaWikiFarm|string|null $wgMediaWikiFarm Host name (string) or MediaWikiFarm object or null to create object.
+	 * @param string|null $host Host name (string) or null to use the global variables HTTP_HOST or SERVER_NAME.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
-	static function load( $entryPoint = '', $wgMediaWikiFarm = null ) {
+	static function load( $entryPoint = '', $host = null ) {
 
-		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
+		global $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 
 		try {
 			# Initialise object
-			if( is_null( $wgMediaWikiFarm ) && array_key_exists( 'wgMediaWikiFarm', $GLOBALS ) && $GLOBALS['wgMediaWikiFarm'] instanceof MediaWikiFarm ) {
-				$wgMediaWikiFarm = &$GLOBALS['wgMediaWikiFarm'];
-			}
-			elseif( is_string( $wgMediaWikiFarm ) || is_null( $wgMediaWikiFarm ) ) {
-				$GLOBALS['wgMediaWikiFarm'] = new self( $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
-				$wgMediaWikiFarm = &$GLOBALS['wgMediaWikiFarm'];
-			}
-			elseif( $wgMediaWikiFarm instanceof MediaWikiFarm ) {
-				# nop - for testing without bother with globals
-			}
-			else {
-				throw new InvalidArgumentException( 'Bad parameter in MediaWikiFarm::load' );
-			}
+			$wgMediaWikiFarm = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
 
 			# Check existence
 			$exists = $wgMediaWikiFarm->checkExistence();
@@ -246,7 +237,7 @@ class MediaWikiFarm {
 				$httpProto = array_key_exists( 'SERVER_PROTOCOL', $_SERVER ) && $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.1' ? 'HTTP/1.1' : 'HTTP/1.0'; // @codeCoverageIgnore
 				header( "$httpProto 404 Not Found" ); // @codeCoverageIgnore
 			}
-			if( $entryPoint == 'index.php' && array_key_exists( '$HTTP404', $wgMediaWikiFarm->variables ) ) {//&& is_file( $wgMediaWikiFarm->variables['$HTTP404'] ) ) {
+			if( $entryPoint == 'index.php' && array_key_exists( '$HTTP404', $wgMediaWikiFarm->variables ) && is_file( $wgMediaWikiFarm->variables['$HTTP404'] ) ) {
 				include $wgMediaWikiFarm->variables['$HTTP404'];
 			}
 			return 404;
@@ -773,9 +764,6 @@ class MediaWikiFarm {
 			$this->variables['$VERSION'] = '';
 			$this->variables['$CODE'] = $IP;
 		}
-		else {
-			throw new LogicException( 'Wrong combinaison of $this->codeDir and $this->variables[\'$VERSION\'].' );
-		}
 
 		return true;
 	}
@@ -811,8 +799,9 @@ class MediaWikiFarm {
 		if( strrchr( $this->variables['$DEPLOYMENTS'], '.' ) != '.php' ) $this->variables['$DEPLOYMENTS'] .= '.php';
 		$deployments = $this->readFile( $this->variables['$DEPLOYMENTS'], $this->configDir );
 		if( $deployments === false ) $deployments = array();
-		elseif( array_key_exists( $this->variables['$WIKIID'], $deployments ) && $deployments[$this->variables['$WIKIID']] == $version )
+		elseif( array_key_exists( $this->variables['$WIKIID'], $deployments ) && $deployments[$this->variables['$WIKIID']] == $version ) {
 			return;
+		}
 
 		# Update the deployment file
 		$deployments[$this->variables['$WIKIID']] = $version;
@@ -884,9 +873,7 @@ class MediaWikiFarm {
 		else {
 
 			# Populate wgConf
-			//if( !$this->populatewgConf() ) {
-			//	return false;
-			//}
+			//$this->populatewgConf();
 
 			# Get specific configuration for this wiki
 			# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
@@ -900,9 +887,7 @@ class MediaWikiFarm {
 			//	$this->configuration['general']['wgGroupPermissions'] = self::arrayMerge( $this->configuration['general']['wgGroupPermissions'], $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ) );
 
 			# Get specific configuration for this wiki
-			if( !$this->populateSettings() ) {
-				return false;
-			}
+			$this->populateSettings();
 
 			# Extract from the general configuration skin and extension configuration
 			$this->extractSkinsAndExtensions();
@@ -1076,7 +1061,7 @@ class MediaWikiFarm {
 			# Other key
 			else {
 
-				$tags = array(); # @todo: data sources not implemented, but code to selection parameters from a tag is below
+				//$tags = array(); # @todo: data sources not implemented, but code to selection parameters from a tag is below
 
 				$defaultKey = '';
 				$classicKey = '';
@@ -1096,14 +1081,13 @@ class MediaWikiFarm {
 				$wikiID = $wikiIDKey ? $matches[1] : $this->variables['$WIKIID'];
 				$suffixKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $classicKey ).'$/', $this->variables['$SUFFIX'], $matches );
 				$suffix = $suffixKey ? $matches[1] : $this->variables['$SUFFIX'];
-				$tagKey = array();
+				/*$tagKey = array();
 				foreach( $tags as $tag ) {
 					$tagKey[$tag] = ($classicKey == $tag);
-				}
+				}*/
 				if( $defaultKey ) {
-					$wikiIDDefaultKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $defaultKey ).'$/', $this->variables['$WIKIID'], $matches );
 					$suffixDefaultKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $defaultKey ).'$/', $this->variables['$SUFFIX'], $matches );
-					$tagDefaultKey = in_array( $defaultKey, $tags );
+					//$tagDefaultKey = in_array( $defaultKey, $tags );
 				}
 
 				foreach( $theseSettings as $setting => $values ) {
@@ -1138,7 +1122,7 @@ class MediaWikiFarm {
 					}
 
 					# Set value if there are labels corresponding to given tags
-					$setted = false;
+					/*$setted = false;
 					foreach( $tags as $tag ) {
 						if( $tagKey[$tag] && $thisPriority <= 4 ) {
 							if( array_key_exists( $tag, $values ) ) {
@@ -1156,7 +1140,7 @@ class MediaWikiFarm {
 					}
 					if( $setted ) {
 						continue;
-					}
+					}*/
 
 					# Set value if there is a label corresponding to suffix
 					if( $suffixKey && $thisPriority <= 3 ) {
@@ -1178,10 +1162,8 @@ class MediaWikiFarm {
 						if( $defaultKey ) {
 							if( $suffixDefaultKey ) {
 								$thisPriority = 3;
-							} elseif( $tagDefaultKey ) {
-								$thisPriority = 4;
-							} elseif( $wikiIDDefaultKey ) {
-								$thisPriority = 5;
+							/*} elseif( $tagDefaultKey ) {
+								$thisPriority = 4;*/
 							}
 						}
 						continue;
@@ -1562,22 +1544,6 @@ class MediaWikiFarm {
 	}
 
 	/**
-	 * Helper function used in extractSkinsAndExtensions.
-	 *
-	 * Isolate this function is needed for compatibility with PHP 5.2.
-	 *
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 *
-	 * @param string $a String to be regex-escaped.
-	 * @return string Escaped string.
-	 */
-	static function protectRegex( $a ) {
-
-		return preg_quote( $a, '/' );
-	}
-
-	/**
 	 * Merge multiple arrays together.
 	 * On encountering duplicate keys, merge the two, but ONLY if they're arrays.
 	 * PHP's array_merge_recursive() merges ANY duplicate values into arrays,
@@ -1603,7 +1569,7 @@ class MediaWikiFarm {
 			foreach ( $array as $key => $value ) {
 				if( array_key_exists( $key, $out ) && is_string( $key ) && is_array( $out[$key] ) && is_array( $value ) ) {
 					$out[$key] = self::arrayMerge( $out[$key], $value );
-				} elseif( !is_numeric( $key ) ) {
+				} elseif( !array_key_exists( $key, $out ) || !is_numeric( $key ) ) {
 					$out[$key] = $value;
 				} elseif( is_numeric( $key ) ) {
 					$out[] = $value;

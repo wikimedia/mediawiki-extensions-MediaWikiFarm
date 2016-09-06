@@ -29,4 +29,7 @@ if( $wgMediaWikiFarmScript->status == 200 ) {
 	# Post-execution
 	$wgMediaWikiFarmScript->restInPeace();
 }
+else {
+	exit( $wgMediaWikiFarmScript->status );
+}
 // @codeCoverageIgnoreEnd

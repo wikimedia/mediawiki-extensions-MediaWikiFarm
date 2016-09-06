@@ -315,17 +315,18 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir );
 
 		$farm->readFile( 'testreading.json', self::$wgMediaWikiFarmConfigDir );
-
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/testreading.json.php' ) );
 
 		$result = $farm->readFile( 'testreading.json', self::$wgMediaWikiFarmConfigDir );
-
 		$this->assertEquals(
 			array(
 				'element1',
 				array( 'element2' => 'element3' ),
 			),
 			$result );
+	
+		$farm->readFile( 'subdir/testreading2.json', self::$wgMediaWikiFarmConfigDir );
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/subdir/testreading2.json.php' ) );
 	}
 
 	/**

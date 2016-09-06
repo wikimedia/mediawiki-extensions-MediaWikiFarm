@@ -36,7 +36,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		parent::setUp();
 
-		$this->farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, false, 'index.php' );
+		$this->farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir, 'index.php' );
 	}
 
 	/**
@@ -54,6 +54,9 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::cacheFile
+	 * @uses MediaWikiFarm::extractSkinsAndExtensions
+	 * @uses MediaWikiFarm::detectLoadingMechanism
 	 * @uses MediaWikiFarm::arrayMerge
 	 */
 	function testHighlevelConfiguration() {
@@ -149,7 +152,12 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		//$this->assertTrue( $this->farm->populateSettings() );
 
 		$this->farm->loadMediaWikiConfig();
+		$this->assertEquals( 200000, $GLOBALS['wgMemCachedTimeout'] );
 
+		# Re-load to use config cache
+		$this->farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir, 'index.php' );
+		$this->assertTrue( $this->farm->checkExistence() );
+		$this->farm->getMediaWikiConfig();
 		$this->assertEquals( 200000, $GLOBALS['wgMemCachedTimeout'] );
 	}
 }

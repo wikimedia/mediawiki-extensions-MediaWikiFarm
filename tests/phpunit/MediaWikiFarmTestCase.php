@@ -54,6 +54,8 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 				'wgExtensionFunctions',
 				'wgHooks',
 				'wgParamDefinitions',
+				'factory',
+				'wgParser',
 			)
 		);
 	}
@@ -177,6 +179,20 @@ PHP;
 
 		$this->backupGlobalSubvariable( $key, $subkey );
 		$GLOBALS[$key][$subkey] = $value;
+	}
+
+	/**
+	 * Backup global variables.
+	 *
+	 * @param string[] $keys Variable names.
+	 * @return void
+	 * @throws PHPUnit_Framework_RiskyTestError When a global variable cannot be backuped.
+	 */
+	function backupGlobalVariables( $keys ) {
+
+		foreach( $keys as $key ) {
+			$this->backupGlobalVariable( $key );
+		}
 	}
 
 	/**

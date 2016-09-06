@@ -274,4 +274,67 @@ return array(
 			),
 		),
 	),
+
+	'testfarm-multiversion-with-bad-file-versions' => array(
+
+		'server' => '(?P<wiki>[a-z])\.testfarm-multiversion-with-bad-file-versions\.example\.org',
+		'variables' => array(
+			array( 'variable' => 'wiki',
+			       'file' => 'varwiki.php', ),
+		),
+		'suffix' => 'testfarm',
+		'wikiID' => '$wikitestfarm',
+		'versions' => 'badsyntax.json',
+		'config' => array(
+			array( 'file' => 'settings.php',
+			       'key' => 'default',
+			),
+			array( 'file' => 'LocalSettings.php',
+			       'exec' => true,
+			),
+		),
+	),
+
+	'testfarm-multiversion-with-file-versions-other-keys' => array(
+
+		'server' => '(?P<wiki>[a-z])\.(?P<family>[a-z])\.testfarm-multiversion-with-file-versions-other-keys\.example\.org',
+		'variables' => array(
+			array( 'variable' => 'wiki',
+			       'file' => 'varwiki.php', ),
+			array( 'variable' => 'family',
+			       'file' => 'varwiki.php', ),
+		),
+		'suffix' => '$familyfamilytestfarm',
+		'wikiID' => '$wiki$familyfamilytestfarm',
+		'versions' => 'testfamilyfarmversions.php',
+		'config' => array(
+			array( 'file' => 'settings.php',
+			       'key' => 'default',
+			),
+			array( 'file' => 'LocalSettings.php',
+			       'exec' => true,
+			),
+		),
+	),
+
+	'testfarm-multiversion-with-file-versions-with-deployments' => array(
+
+		'server' => '(?P<wiki>[a-z])\.testfarm-multiversion-with-file-versions-with-deployments\.example\.org',
+		'variables' => array(
+			array( 'variable' => 'wiki',
+			       'file' => 'varwiki.php', ),
+		),
+		'suffix' => 'testdeploymentsfarm',
+		'wikiID' => '$wikitestdeploymentsfarm',
+		'versions' => 'testdeploymentsfarmversions.php',
+		'deployments' => 'deployments.php',
+		'config' => array(
+			array( 'file' => 'settings.php',
+			       'key' => 'default',
+			),
+			array( 'file' => 'LocalSettings.php',
+			       'exec' => true,
+			),
+		),
+	),
 );

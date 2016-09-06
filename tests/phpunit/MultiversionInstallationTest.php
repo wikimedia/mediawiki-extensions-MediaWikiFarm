@@ -11,19 +11,39 @@ class MultiversionInstallationTest extends MediaWikiFarmTestCase {
 	
 	/** @var MediaWikiFarm|null Test object. */
 	protected $farm = null;
-	
+
+	/**
+	 * Set up MediaWikiFarm parameters and versions files with the current MediaWiki installation.
+	 */
+	static function setUpBeforeClass() {
+
+		parent::setUpBeforeClass();
+
+		# Create versions.php: the list of existing values for variable '$WIKIID' with their associated versions
+		$versionsFile = <<<PHP
+<?php
+
+return array(
+	'atestdeploymentsfarm' => 'vstub',
+);
+
+PHP;
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
+	}
+
 	/**
 	 * Construct a default MediaWikiFarm object with a sample correct configuration file.
 	 *
 	 * Use the current MediaWiki installation to simulate a multiversion installation.
 	 *
 	 * @param string $host Host name.
+	 * @param string $entryPoint Entry point, else 'index.php'.
 	 * @return MediaWikiFarm
 	 */
-	static function constructMediaWikiFarm( $host ) {
-		
-		$farm = new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, 'index.php' );
-		
+	static function constructMediaWikiFarm( $host, $entryPoint = 'index.php' ) {
+
+		$farm = new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, $entryPoint );
+
 		return $farm;
 	}
 
@@ -199,8 +219,32 @@ class MultiversionInstallationTest extends MediaWikiFarmTestCase {
 	 */
 	function testVariableFileWithVersionNonexistant() {
 		
-		$farm = self::constructMediaWikiFarm( 'b.testfarm-multiversion-with-file-variable-with-version.example.org' );
+		$farm = self::constructMediaWikiFarm( 'c.testfarm-multiversion.example.org' );
 		$this->assertFalse( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test families and default versions for families.
+	 */
+	function testFamilyFarm() {
+		
+		$farm = new MediaWikiFarm( 'a.a.testfarm-multiversion-with-file-versions-other-keys.example.org', self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php' );
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( 'afamilytestfarm', $farm->getVariable( '$SUFFIX' ) );
+		$this->assertEquals( 'aafamilytestfarm', $farm->getVariable( '$WIKIID' ) );
+		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
+
+		$farm = new MediaWikiFarm( 'b.a.testfarm-multiversion-with-file-versions-other-keys.example.org', self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php' );
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( 'afamilytestfarm', $farm->getVariable( '$SUFFIX' ) );
+		$this->assertEquals( 'bafamilytestfarm', $farm->getVariable( '$WIKIID' ) );
+		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
+
+		$farm = new MediaWikiFarm( 'a.b.testfarm-multiversion-with-file-versions-other-keys.example.org', self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php' );
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( 'bfamilytestfarm', $farm->getVariable( '$SUFFIX' ) );
+		$this->assertEquals( 'abfamilytestfarm', $farm->getVariable( '$WIKIID' ) );
+		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
 	}
 
 	/**
@@ -212,6 +256,96 @@ class MultiversionInstallationTest extends MediaWikiFarmTestCase {
 		
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-undefined-variable.example.org' );
 		$this->assertTrue( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test a badly-formatted 'versions' file.
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage Missing or badly formatted file 'badsyntax.json' containing the versions for wikis.
+	 */
+	function testBadlyFormattedVersionsFile() {
+		
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-bad-file-versions.example.org' );
+		$farm->checkExistence();
+	}
+
+	/**
+	 * Test the feature 'deployments' with deployed versions.
+	 */
+	function testDeploymedVersions() {
+
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php' );
+
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
+
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php' );
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
+	}
+
+	/**
+	 * Test the feature 'deployments' with deployed versions.
+	 *
+	 * @depends testDeploymedVersions
+	 */
+	function testDeploymedVersions2() {
+
+		# Create versions.php: the list of existing values for variable '$WIKIID' with their associated versions
+		$versionsFile = <<<PHP
+<?php
+
+return array(
+	'atestdeploymentsfarm' => 'vstub2',
+);
+
+PHP;
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
+
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php' );
+
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
+
+	}
+
+	/**
+	 * Test the feature 'deployments' with deployed versions.
+	 *
+	 * @depends testDeploymedVersions2
+	 */
+	function testDeploymedVersions3() {
+
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'maintenance/update.php' );
+		$farm->updateVersionAfterMaintenance();
+
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( 'vstub2', $farm->getVariable( '$VERSION' ) );
+
+		$farm->updateVersionAfterMaintenance();
+		$this->assertEquals( 'vstub2', $farm->getVariable( '$VERSION' ) );
+
+		# Mainly for code coverage to check the file is not re-written with the very same data
+		$farm->updateVersionAfterMaintenance();
+		$this->assertEquals( 'vstub2', $farm->getVariable( '$VERSION' ) );
+	}
+
+	/**
+	 * Test the feature 'deployments' with deployed versions.
+	 *
+	 * @depends testDeploymedVersions3
+	 */
+	function testDeploymedVersions4() {
+
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php' );
+
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( 'vstub2', $farm->getVariable( '$VERSION' ) );
 	}
 
 	/**
@@ -234,5 +368,16 @@ class MultiversionInstallationTest extends MediaWikiFarmTestCase {
 		
 		$this->farm->checkExistence();
 		$this->assertTrue( $this->farm->checkHostVariables() );
+	}
+
+	/**
+	 * Remove config files.
+	 */
+	static function tearDownAfterClass() {
+
+		unlink( dirname( __FILE__ ) . '/data/config/deployments.php' );
+		unlink( dirname( __FILE__ ) . '/data/config/testdeploymentsfarmversions.php' );
+
+		parent::tearDownAfterClass();
 	}
 }

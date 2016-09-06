@@ -386,6 +386,65 @@ OUTPUT
 	}
 
 	/**
+	 * Test restInPeace.
+	 *
+	 * @backupGlobals enabled
+	 * @covers MediaWikiFarmScript::restInPeace
+	 * @uses MediaWikiFarmScript::main
+	 * @uses MediaWikiFarmScript::__construct
+	 * @uses MediaWikiFarmScript::getParam
+	 * @uses MediaWikiFarmScript::exportArguments
+	 * @uses MediaWikiFarm::load
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::checkExistence
+	 * @uses MediaWikiFarm::checkHostVariables
+	 * @uses MediaWikiFarm::updateVersionAfterMaintenance
+	 * @uses MediaWikiFarm::updateVersion
+	 * @uses MediaWikiFarm::setVersion
+	 * @uses MediaWikiFarm::setOtherVariables
+	 * @uses MediaWikiFarm::setVariable
+	 * @uses MediaWikiFarm::replaceVariables
+	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::cacheFile
+	 */
+	function testRestInPeace() {
+
+		global $IP;
+
+		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupGlobalVariable( 'argc' );
+		$this->backupGlobalVariable( 'argv' );
+		$this->backupGlobalSubvariable( '_SERVER', 'argc' );
+		$this->backupGlobalSubvariable( '_SERVER', 'argv' );
+
+		$this->expectOutputString( <<<OUTPUT
+
+Wiki:    a.testfarm-monoversion.example.org (wikiID: atestfarm; suffix: testfarm)
+Version: current: $IP
+Script:  maintenance/showJobs.php
+
+
+OUTPUT
+		);
+
+		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3, array( self::$mwscriptPath, '--wiki=a.testfarm-monoversion.example.org', 'showJobs' ) );
+
+		$wgMediaWikiFarmScript->main();
+		$wgMediaWikiFarmScript->restInPeace();
+
+		$this->assertEquals( 200, $wgMediaWikiFarmScript->status );
+
+		# For coverage
+		unset( $GLOBALS['wgMediaWikiFarm'] );
+		$wgMediaWikiFarmScript->restInPeace();
+	}
+
+	/**
 	 * 
 	 *
 	 * @covers MediaWikiFarmScript::

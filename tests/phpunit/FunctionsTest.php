@@ -99,16 +99,6 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
-	 * Test protectRegex
-	 *
-	 * @covers MediaWikiFarm::protectRegex
-	 */
-	function testProtectRegex() {
-
-		$this->assertEquals( '\/\(a\.\\\\', MediaWikiFarm::protectRegex( '/(a.\\' ) );
-	}
-
-	/**
 	 * Test arrayMerge
 	 *
 	 * @covers MediaWikiFarm::arrayMerge
@@ -144,10 +134,10 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 				'a' => true,
 				'b' => false,
 				'c' => false,
-				0 => 11,
-				1 => 12,
-				2 => 121,
-				3 => 13,
+				1 => 11,
+				2 => 12,
+				3 => 121,
+				4 => 13,
 			),
 			MediaWikiFarm::arrayMerge(
 				array(
@@ -170,20 +160,20 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 
 		$this->assertEquals(
 			array(
-				0 => array(
+				1 => array(
 					'1a' => '1A',
 					'1b' => '1B',
 					'1c' => 12,
 					'1d' => null,
 					'1e' => true,
 				),
-				1 => array(
+				2 => array(
 					'1f' => '1F',
 					'1b' => '1BB',
 					'1g' => false,
 					'1e' => false,
 				),
-				2 => 44,
+				4 => 44,
 				'k' => array(
 					'ka' => 'kA',
 					'kb' => array(
