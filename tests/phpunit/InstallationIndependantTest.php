@@ -174,6 +174,9 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		$result = $this->farm->readFile( 'wrongformat.txt', dirname( __FILE__ ) . '/data/config' );
 		$this->assertFalse( $result );
+
+		$result = $this->farm->readFile( 'wrongformat', dirname( __FILE__ ) . '/data/config' );
+		$this->assertFalse( $result );
 	}
 
 	/**
