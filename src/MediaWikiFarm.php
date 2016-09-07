@@ -73,6 +73,9 @@ class MediaWikiFarm {
 		'execFiles' => array(),
 	);
 
+	/** @var array Errors */
+	private $errors = array();
+
 
 
 	/*
@@ -893,7 +896,9 @@ class MediaWikiFarm {
 			$this->extractSkinsAndExtensions();
 
 			# Save this configuration in a PHP file
-			$this->cacheFile( $this->configuration, $cacheFile );
+			if( !count( $this->errors ) ) {
+				$this->cacheFile( $this->configuration, $cacheFile );
+			}
 		}
 
 		//$wgConf->siteParamsCallback = array( $this, 'SiteConfigurationSiteParamsCallback' );
@@ -1386,21 +1391,25 @@ class MediaWikiFarm {
 	function readFile( $filename, $directory = '' ) {
 
 		# Check parameter
-		if( !is_string( $filename ) )
+		if( !is_string( $filename ) ) {
 			return false;
+		}
 
 		# Detect the format
 		$format = strrchr( $filename, '.' );
+		$array = false;
 
 		# Check the file exists
 		$prefixedFile = $directory ? $directory . '/' . $filename : $filename;
-		if( !is_file( $prefixedFile ) )
-			return false;
+		if( !is_file( $prefixedFile ) ) {
+			$format = null;
+		}
 
 		# Format PHP
-		if( $format == '.php' )
+		if( $format == '.php' ) {
 
 			$array = @include $prefixedFile;
+		}
 
 		# Format 'serialisation'
 		elseif( $format == '.ser' ) {
@@ -1416,9 +1425,10 @@ class MediaWikiFarm {
 		}
 
 		# Cached version
-		elseif( is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $filename . '.php' ) && @filemtime( $this->cacheDir . '/' . $filename . '.php' ) >= filemtime( $prefixedFile ) )
+		elseif( is_string( $this->cacheDir ) && is_string( $format ) && is_file( $this->cacheDir . '/' . $filename . '.php' ) && @filemtime( $this->cacheDir . '/' . $filename . '.php' ) >= filemtime( $prefixedFile ) ) {
 
 			return $this->readFile( $filename . '.php', $this->cacheDir );
+		}
 
 		# Format YAML
 		elseif( $format == '.yml' || $format == '.yaml' ) {
@@ -1434,7 +1444,7 @@ class MediaWikiFarm {
 					$array = MediaWikiFarm_readYAML( $prefixedFile );
 				}
 				catch( RuntimeException $e ) {
-					return false;
+					$array = false;
 				}
 			}
 		}
@@ -1448,10 +1458,7 @@ class MediaWikiFarm {
 				$array = array();
 			}
 			else {
-				$array = json_decode( file_get_contents( $prefixedFile ), true );
-				if( is_null( $array ) ) {
-					return false;
-				}
+				$array = json_decode( $content, true );
 			}
 		}
 
@@ -1470,19 +1477,22 @@ class MediaWikiFarm {
 		}
 
 		# Error for any other format
-		else {
+		elseif( !is_null( $format ) ) {
 			return false;
 		}
 
 		# A null value is an empty file or value 'null'
-		if( is_null( $array ) ) {
-			$array = array();
+		if( (is_null( $array ) || $array === false) && is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $filename . '.php' ) ) {
+
+			$this->errors[] = 'Unreadable file ' . $filename;
+
+			return $this->readFile( $filename . '.php', $this->cacheDir );
 		}
 
 		# Regular return for arrays
 		if( is_array( $array ) ) {
 
-			if( $format != '.php' ) {
+			if( $directory != $this->cacheDir && @filemtime( $this->cacheDir . '/' . $filename . '.php' ) < filemtime( $prefixedFile ) ) {
 				$this->cacheFile( $array, $filename.'.php' );
 			}
 

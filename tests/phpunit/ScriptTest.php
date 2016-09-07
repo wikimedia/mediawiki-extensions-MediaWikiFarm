@@ -274,6 +274,7 @@ HELP;
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testMissingHost() {
 
@@ -310,6 +311,7 @@ HELP;
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testMissingScript() {
 
@@ -350,6 +352,7 @@ HELP;
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testSuccessfulLoading() {
 
