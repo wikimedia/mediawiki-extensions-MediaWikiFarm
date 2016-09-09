@@ -37,25 +37,25 @@ class MediaWikiFarm {
 	 * ---------- */
 
 	/** @var string Entry point script. */
-	private $entryPoint = '';
+	protected $entryPoint = '';
 
 	/** @var string Farm code directory. */
-	private $farmDir = '';
+	protected $farmDir = '';
 
 	/** @var string Farm configuration directory. */
-	private $configDir = '';
+	protected $configDir = '';
 
 	/** @var string|null MediaWiki code directory, where each subdirectory is a MediaWiki installation. */
-	private $codeDir = null;
+	protected $codeDir = null;
 
 	/** @var string|false MediaWiki cache directory. */
-	private $cacheDir = '/tmp/mw-cache';
+	protected $cacheDir = '/tmp/mw-cache';
 
 	/** @var array Configuration for this farm. */
-	private $farmConfig = array();
+	protected $farmConfig = array();
 
 	/** @var string[] Variables related to the current request. */
-	private $variables = array(
+	protected $variables = array(
 		'$SERVER' => '',
 		'$SUFFIX' => '',
 		'$WIKIID' => '',
@@ -64,7 +64,7 @@ class MediaWikiFarm {
 	);
 
 	/** @var array Configuration parameters for this wiki. */
-	private $configuration = array(
+	protected $configuration = array(
 		'general' => array(),
 		'settings' => array(),
 		'arrays' => array(),
@@ -74,7 +74,7 @@ class MediaWikiFarm {
 	);
 
 	/** @var array Errors */
-	private $errors = array();
+	protected $errors = array();
 
 
 
@@ -219,7 +219,7 @@ class MediaWikiFarm {
 
 		try {
 			# Initialise object
-			$wgMediaWikiFarm = new self( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
+			$wgMediaWikiFarm = new static( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
 
 			# Check existence
 			$exists = $wgMediaWikiFarm->checkExistence();
@@ -395,7 +395,7 @@ class MediaWikiFarm {
 			$GLOBALS['wgAutoloadClasses']['MediaWikiFarm'] = 'src/MediaWikiFarm.php';
 			$GLOBALS['wgAutoloadClasses']['MWFConfigurationException'] = 'src/MediaWikiFarm.php';
 			$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = array( 'i18n' );
-			$GLOBALS['wgHooks']['UnitTestsList'] = array( 'MediaWikiFarm::onUnitTestsList' );
+			$GLOBALS['wgHooks']['UnitTestsList'][] = array( 'MediaWikiFarm::onUnitTestsList' );
 			// @codeCoverageIgnoreEnd
 		}
 
@@ -792,7 +792,7 @@ class MediaWikiFarm {
 	 * @param string $version The new version, should be the version found in the 'expected version' file.
 	 * @return void
 	 */
-	private function updateVersion( $version ) {
+	protected function updateVersion( $version ) {
 
 		# Check a deployment file is wanted
 		if( !array_key_exists( '$DEPLOYMENTS', $this->variables ) )
@@ -1514,7 +1514,7 @@ class MediaWikiFarm {
 	 * @param string|null $directory Name of the parent directory; null for default cache directory
 	 * @return void
 	 */
-	private function cacheFile( $array, $filename, $directory = null ) {
+	protected function cacheFile( $array, $filename, $directory = null ) {
 
 		if( is_null( $directory ) )
 			$directory = $this->cacheDir;
@@ -1568,13 +1568,16 @@ class MediaWikiFarm {
 	 *
 	 * @return array
 	 */
-	static function arrayMerge( /* ... */ ) {
-		$out = array();
+	static function arrayMerge( $array1 /* ... */ ) {
+		$out = $array1;
+		if ( is_null( $out ) ) {
+			$out = array();
+		}
 		$argsCount = func_num_args();
-		for ( $i = 0; $i < $argsCount; $i++ ) {
+		for ( $i = 1; $i < $argsCount; $i++ ) {
 			$array = func_get_arg( $i );
 			if ( is_null( $array ) ) {
-				$array = array();
+				continue;
 			}
 			foreach ( $array as $key => $value ) {
 				if( array_key_exists( $key, $out ) && is_string( $key ) && is_array( $out[$key] ) && is_array( $value ) ) {

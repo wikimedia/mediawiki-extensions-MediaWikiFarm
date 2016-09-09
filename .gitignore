@@ -20,3 +20,4 @@
 /tests/phpunit/data/config/varwikiversions.php
 /tests/phpunit/data/config/deployments.php
 /tests/phpunit/data/config/testdeploymentsfarmversions.php
+/tests/perfs/results
