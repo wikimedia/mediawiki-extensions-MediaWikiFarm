@@ -16,8 +16,6 @@ MediaWikiFarmTestPerfs::startCounter( 'config' );
 
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php';
 
-MediaWikiFarmTestPerfs::stopCounter( 'loading-execFiles' );
 MediaWikiFarmTestPerfs::stopCounter( 'config' );
 MediaWikiFarmTestPerfs::writeResults();
-
 // @codeCoverageIgnoreEnd

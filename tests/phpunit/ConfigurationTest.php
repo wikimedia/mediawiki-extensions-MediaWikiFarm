@@ -128,8 +128,12 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::loadMediaWikiConfig
 	 * @covers MediaWikiFarm::getMediaWikiConfig
+	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @covers MediaWikiFarm::extractSkinsAndExtensions
 	 * @covers MediaWikiFarm::detectLoadingMechanism
+	 * @covers MediaWikiFarm::createLocalSettings
+	 * @covers MediaWikiFarm::writeArrayAssignment
+	 * @covers MediaWikiFarm::getConfigFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
@@ -143,11 +147,12 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge
-	 * @uses MediaWikiFarm::SiteConfigurationSiteParamsCallback
+	 * @ uses MediaWikiFarm::SiteConfigurationSiteParamsCallback
 	 */
 	function testLoadMediaWikiConfig() {
 
 		$this->assertTrue( $this->farm->checkExistence() );
+		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $this->farm->getConfigFile() );
 
 		//$this->assertTrue( $this->farm->populateSettings() );
 
@@ -159,5 +164,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$this->assertTrue( $this->farm->checkExistence() );
 		$this->farm->getMediaWikiConfig();
 		$this->assertEquals( 200000, $GLOBALS['wgMemCachedTimeout'] );
+
+		$this->assertEquals( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/LocalSettings-testfarm-atestfarm.php', $this->farm->getConfigFile() );
 	}
 }

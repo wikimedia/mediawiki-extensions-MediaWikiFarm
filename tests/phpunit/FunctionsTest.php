@@ -187,6 +187,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 				),
 			),
 			MediaWikiFarm::arrayMerge(
+				null,
 				array(
 					1 => array(
 						'1a' => '1A',

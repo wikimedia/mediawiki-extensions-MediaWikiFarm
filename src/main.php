@@ -13,10 +13,6 @@
 if( !defined( 'MEDIAWIKI' ) ) exit;
 
 
-/*
- * MediaWiki configuration
- */
-
 # Old MediaWiki installations doesn’t load DefaultSettings.php before LocalSettings.php
 if( !isset( $wgVersion ) ) {
 	if( !$IP ) {
@@ -27,13 +23,8 @@ if( !isset( $wgVersion ) ) {
 }
 
 
-# Load general MediaWiki configuration
-$wgMediaWikiFarm->loadMediaWikiConfig();
-
-
-/*
- * Skins configuration
- */
+# Compile MediaWiki configuration
+$wgMediaWikiFarm->getMediaWikiConfig();
 
 # Load skins with the require_once mechanism
 foreach( $wgMediaWikiFarm->getConfiguration( 'skins' ) as $skin => $value ) {
@@ -43,14 +34,6 @@ foreach( $wgMediaWikiFarm->getConfiguration( 'skins' ) as $skin => $value ) {
 	}
 }
 
-# Load skins with the wfLoadSkin mechanism
-$wgMediaWikiFarm->loadSkinsConfig();
-
-
-/*
- * Extensions configuration
- */
-
 # Load extensions with the require_once mechanism
 foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $extension => $value ) {
 
@@ -59,13 +42,10 @@ foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $extension => $va
 	}
 }
 
-# Load extensions with the wfLoadExtension mechanism
-$wgMediaWikiFarm->loadExtensionsConfig();
+# Load general MediaWiki configuration
+$wgMediaWikiFarm->loadMediaWikiConfig();
 
-
-/*
- * Executable configuration
- */
+# Executable configuration
 foreach( $wgMediaWikiFarm->getConfiguration( 'execFiles' ) as $execFile ) {
 
 	@include $execFile;

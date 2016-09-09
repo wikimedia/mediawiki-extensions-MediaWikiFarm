@@ -397,6 +397,89 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
+	 * Test the writing of the file LocalSettings.php.
+	 *
+	 * @covers MediaWikiFarm::createLocalSettings
+	 * @covers MediaWikiFarm::writeArrayAssignment
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::cacheFile
+	 */
+	function testCreateLocalSettings() {
+
+		$configuration = array(
+			'settings' => array(
+				'wgSitename' => 'Sid It',
+				'wgMemCachedServers' => array( '127.0.0.1:11211' ),
+			),
+			'arrays' => array(
+				'wgExtraNamespaces' => array( 100 => 'Bibliography' ),
+				'wgNamespaceAliases' => array( 'Bibliography' => 100 ),
+				'wgFileExtensions' => array( 'djvu' ),
+				'wgVirtualRestConfig' => array(
+					'modules' => array(
+						'parsoid' => array(
+							'domain' => 'localhost',
+							'prefix' => 'localhost',
+						),
+					),
+				),
+			),
+			'skins' => array(
+				'Vector' => 'wfLoadSkin',
+				'MonoBook' => 'require_once',
+			),
+			'extensions' => array(
+				'ParserFunctions' => 'wfLoadExtension',
+				'Echo' => 'require_once',
+				'SemanticMediaWiki' => 'composer',
+			),
+			'execFiles' => array(
+				'freeLS.php',
+			),
+		);
+
+		$localSettings = <<<PHP
+<?php
+
+# Pre-config
+
+# Skins loaded with require_once
+require_once "\$IP/skins/MonoBook/MonoBook.php";
+
+# Extensions loaded with require_once
+require_once "\$IP/extensions/Echo/Echo.php";
+
+# General settings
+\$wgSitename = 'Sid It';
+\$wgMemCachedServers = array (
+  0 => '127.0.0.1:11211',
+);
+\$wgExtraNamespaces[100] = 'Bibliography';
+\$wgNamespaceAliases['Bibliography'] = 100;
+\$wgFileExtensions[] = 'djvu';
+\$wgVirtualRestConfig['modules']['parsoid']['domain'] = 'localhost';
+\$wgVirtualRestConfig['modules']['parsoid']['prefix'] = 'localhost';
+
+# Skins
+wfLoadSkin( 'Vector' );
+
+# Extensions
+wfLoadExtension( 'MediaWikiFarm' );
+wfLoadExtension( 'ParserFunctions' );
+
+# Included files
+include 'freeLS.php';
+
+# Post-config
+
+PHP;
+
+		$this->assertEquals( $localSettings, $this->farm->createLocalSettings( $configuration, "# Pre-config\n", "# Post-config\n" ) );
+	}
+
+	/**
 	 * Assert that object did not change during test.
 	 *
 	 * Methods tested here are supposed to be constant: the internal properties should not change.

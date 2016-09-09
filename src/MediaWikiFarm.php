@@ -316,7 +316,11 @@ class MediaWikiFarm {
 	}
 
 	/**
-	 * This function loads MediaWiki configuration (parameters) in global variables.
+	 * This function loads MediaWiki configuration.
+	 *
+	 * Parameters are written in global variables, and skins and extensions are
+	 * loaded with wfLoadSkin/Extension.
+	 * WARNING: it does not load skins and extensions which require the require_once mechanism, it’s not possible given it is not the global scope.
 	 *
 	 * @return void
 	 */
@@ -337,20 +341,6 @@ class MediaWikiFarm {
 
 			$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
 		}
-	}
-
-	/**
-	 * This function load the skins configuration (wfLoadSkin loading mechanism and parameters) in global variables.
-	 *
-	 * WARNING: it doesn’t load the skins with the require_once mechanism (it is not possible in
-	 * a function because variables would inherit the non-global scope); such skins must be loaded
-	 * in the global scope.
-	 *
-	 * @mediawikifarm-const
-	 *
-	 * @return void
-	 */
-	function loadSkinsConfig() {
 
 		# Load skins with the wfLoadSkin mechanism
 		foreach( $this->configuration['skins'] as $skin => $value ) {
@@ -360,20 +350,6 @@ class MediaWikiFarm {
 				wfLoadSkin( $skin );
 			}
 		}
-	}
-
-	/**
-	 * This function load the extensions configuration (wfLoadSkin loading mechanism and parameters) in global variables.
-	 *
-	 * WARNING: it doesn’t load the extensions with the require_once mechanism (it is not possible in
-	 * a function because variables would inherit the non-global scope); such extensions must be loaded
-	 * in the global scope.
-	 *
-	 * @mediawikifarm-const
-	 *
-	 * @return void
-	 */
-	function loadExtensionsConfig() {
 
 		# Register this extension MediaWikiFarm to appear in Special:Version
 		if( function_exists( 'wfLoadExtension' ) ) {
@@ -429,15 +405,22 @@ class MediaWikiFarm {
 	 * existence and loading of configuration) are located in the same directory in the
 	 * case mono- and multi-version installations are mixed. Without it, this class
 	 * could be defined by two different files, and PHP doesn’t like it.
+	 * Additionally, it returns either the "template" LocalSettings.php (src/main.php)
+	 * or the cached per-wiki LocalSettings.php depending if the cache is fresh.
 	 *
 	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
 	 *
 	 * @return string File where is loaded the configuration.
 	 */
 	function getConfigFile() {
 
-		return $this->farmDir . '/src/main.php';
+		if( !$this->isLocalSettingsFresh() ) {
+			return $this->farmDir . '/src/main.php';
+		}
+
+		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
+		else $localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		return $this->cacheDir . '/' . $localSettingsFile;
 	}
 
 	/**
@@ -830,6 +813,32 @@ class MediaWikiFarm {
 	}*/
 
 	/**
+	 * Is the cache configuration file LocalSettings.php for the requested wiki fresh?
+	 *
+	 * @mediawikifarm-const
+	 *
+	 * @return bool The cached configuration file LocalSettings.php for the requested wiki is fresh.
+	 */
+	function isLocalSettingsFresh() {
+
+		if( $this->cacheDir === false ) {
+			return false;
+		}
+
+		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
+		else $localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+
+		# Check modification time of original config files
+		$oldness = 0;
+		foreach( $this->farmConfig['config'] as $configFile ) {
+			if( !is_array( $configFile ) || !is_string( $configFile['file'] ) ) continue;
+			$oldness = max( $oldness, @filemtime( $this->configDir . '/' . $this->replaceVariables( $configFile['file'] ) ) );
+		}
+		
+		return is_file( $this->cacheDir . '/' . $localSettingsFile ) && @filemtime( $this->cacheDir . '/' . $localSettingsFile ) >= $oldness;
+	}
+
+	/**
 	 * Get or compute the configuration (MediaWiki, skins, extensions) for a wiki.
 	 *
 	 * This function uses a caching mechanism in order to avoid recomputing each time the
@@ -846,7 +855,7 @@ class MediaWikiFarm {
 	 * @SuppressWarnings(PHPMD.StaticAccess)
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 *
-	 * @return array Global parameter variables and loading mechanisms for skins and extensions.
+	 * @return void.
 	 */
 	function getMediaWikiConfig() {
 
@@ -857,48 +866,40 @@ class MediaWikiFarm {
 		//	$wgConf = new SiteConfiguration();
 		//}
 
-		$myWiki = $this->variables['$WIKIID'];
-		$mySuffix = $this->variables['$SUFFIX'];
+		if( $this->isLocalSettingsFresh() ) {
+			return;
+		}
+
+		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
+		else $localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+
 		if( $this->variables['$VERSION'] ) $cacheFile = $this->replaceVariables( 'config-$VERSION-$SUFFIX-$WIKIID.php' );
 		else $cacheFile = $this->replaceVariables( 'config-$SUFFIX-$WIKIID.php' );
 
-		# Check modification time of original config files
-		$oldness = 0;
-		foreach( $this->farmConfig['config'] as $configFile ) {
-			if( !is_array( $configFile ) || !is_string( $configFile['file'] ) ) continue;
-			$oldness = max( $oldness, @filemtime( $this->configDir . '/' . $this->replaceVariables( $configFile['file'] ) ) );
-		}
+		# Populate wgConf
+		//$this->populatewgConf();
 
-		# Use cache file or recompile the config
-		if( is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $cacheFile ) && @filemtime( $this->cacheDir . '/' . $cacheFile ) >= $oldness )
-			$this->configuration = $this->readFile( $cacheFile, $this->cacheDir );
+		# Get specific configuration for this wiki
+		# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
+		# ineffective and there would be inconsistencies in this process
+		//$this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array() );
 
-		else {
+		# For the permissions array, fix a small strangeness: when an existing default permission
+		# is true, it is not possible to make it false in the specific configuration
+		//if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) ) {
+		//	$this->configuration['general']['wgGroupPermissions'] = self::arrayMerge( $this->configuration['general']['wgGroupPermissions'], $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ) );
+		//}
 
-			# Populate wgConf
-			//$this->populatewgConf();
+		# Get specific configuration for this wiki
+		$this->populateSettings();
 
-			# Get specific configuration for this wiki
-			# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
-			# ineffective and there would be inconsistencies in this process
-			//$this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array() );
+		# Extract from the general configuration skin and extension configuration
+		$this->extractSkinsAndExtensions();
 
-			# For the permissions array, fix a small strangeness: when an existing default permission
-			# is true, it is not possible to make it false in the specific configuration
-			//if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) )
-
-			//	$this->configuration['general']['wgGroupPermissions'] = self::arrayMerge( $this->configuration['general']['wgGroupPermissions'], $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ) );
-
-			# Get specific configuration for this wiki
-			$this->populateSettings();
-
-			# Extract from the general configuration skin and extension configuration
-			$this->extractSkinsAndExtensions();
-
-			# Save this configuration in a PHP file
-			if( !count( $this->errors ) ) {
-				$this->cacheFile( $this->configuration, $cacheFile );
-			}
+		# Save this configuration in a PHP file
+		if( is_string( $this->cacheDir ) && !count( $this->errors ) ) {
+			$this->cacheFile( $this->configuration, $cacheFile );
+			file_put_contents( $this->cacheDir . '/' . $localSettingsFile, $this->createLocalSettings( $this->configuration ) );
 		}
 
 		//$wgConf->siteParamsCallback = array( $this, 'SiteConfigurationSiteParamsCallback' );
@@ -1272,18 +1273,108 @@ class MediaWikiFarm {
 			return null;
 
 		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
-		if( function_exists( 'wfLoad'.ucfirst($type) ) && is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) )
+		if( function_exists( 'wfLoad'.ucfirst($type) ) && is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) ) {
 			return 'wfLoad'.ucfirst($type);
+		}
 
 		# A MyExtension.php file is in the directory -> assume it is the loading mechanism
-		elseif( is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$name.'.php' ) )
+		elseif( is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$name.'.php' ) ) {
 			return 'require_once';
+		}
 
 		# A composer.json file is in the directory -> assume it is the loading mechanism if previous mechanisms didn’t succeed
-		elseif( is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/composer.json' ) )
+		elseif( is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/composer.json' ) ) {
 			return 'composer';
+		}
 
 		return null;
+	}
+
+	/**
+	 * Create a LocalSettings.php.
+	 *
+	 * A previous mechanism tested in this extension was to load each category of
+	 * parameters separately (general settings, arrays, skins, extensions) given the
+	 * cached file [cache]/[farm]/config-VERSION-SUFFIX-WIKIID.php, but comparison with
+	 * a classical LocalSettings.php was proven to be quicker. Additionally debug will
+	 * be easier since a LocalSettings.php is easier to read than a 2D array.
+	 *
+	 * @param array $configuration Array with the schema defined for $this->configuration.
+	 * @param string $preconfig PHP code to be added at the top of the file.
+	 * @param string $postconfig PHP code to be added at the end of the file.
+	 * @return string Content of the file LocalSettings.php.
+	 */
+	function createLocalSettings( $configuration, $preconfig = '', $postconfig = '' ) {
+
+		$localSettings = "<?php\n";
+
+		if( $preconfig ) {
+			$localSettings .= "\n" . $preconfig;
+		}
+
+		# Skins loaded with require_once
+		$require_once = false;
+		foreach( $configuration['skins'] as $skin => $loading ) {
+			if( $loading == 'require_once' ) {
+				if( !$require_once ) {
+					$require_once = true;
+					$localSettings .= "\n# Skins loaded with require_once\n";
+				}
+				$localSettings .= "require_once \"\$IP/skins/$skin/$skin.php\";\n";
+			}
+		}
+
+		# Extensions loaded with require_once
+		$require_once = false;
+		foreach( $configuration['extensions'] as $extension => $loading ) {
+			if( $loading == 'require_once' ) {
+				if( !$require_once ) {
+					$require_once = true;
+					$localSettings .= "\n# Extensions loaded with require_once\n";
+				}
+				$localSettings .= "require_once \"\$IP/extensions/$extension/$extension.php\";\n";
+			}
+		}
+
+		# General settings
+		$localSettings .= "\n# General settings\n";
+		foreach( $configuration['settings'] as $setting => $value ) {
+			$localSettings .= "\$$setting = " . var_export( $value, true ) . ";\n";
+		}
+		foreach( $configuration['arrays'] as $setting => $value ) {
+			$localSettings .= self::writeArrayAssignment( $value, "\$$setting" );
+		}
+
+		# Skins loaded with wfLoadSkin
+		$localSettings .= "\n# Skins\n";
+		foreach( $configuration['skins'] as $skin => $loading ) {
+			if( $loading == 'wfLoadSkin' ) {
+				$localSettings .= "wfLoadSkin( '$skin' );\n";
+			}
+		}
+
+		# Extensions loaded with wfLoadExtension
+		$localSettings .= "\n# Extensions\n";
+		if( function_exists( 'wfLoadExtension' ) ) {
+			$localSettings .= "wfLoadExtension( 'MediaWikiFarm'" . ($this->codeDir ? ', ' . var_export( $this->farmDir . '/extension.json', true ) : '') ." );\n";
+		}
+		foreach( $configuration['extensions'] as $extension => $loading ) {
+			if( $loading == 'wfLoadExtension' ) {
+				$localSettings .= "wfLoadExtension( '$extension' );\n";
+			}
+		}
+
+		# Included files
+		$localSettings .= "\n# Included files\n";
+		foreach( $configuration['execFiles'] as $execFile ) {
+			$localSettings .= "include '$execFile';\n";
+		}
+
+		if( $postconfig ) {
+			$localSettings .= "\n" . $postconfig;
+		}
+
+		return $localSettings;
 	}
 
 	/**
@@ -1591,5 +1682,38 @@ class MediaWikiFarm {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Write an 'array diff' (when only a subarray is modified) in plain PHP.
+	 * 
+	 * Note that, given PHP lists and dictionaries use the same syntax, this function
+	 * try to recognise a list when the array diff has exactly the keys 0, 1, 2, 3,…
+	 * but there could be false positives.
+	 * 
+	 * @mediawikifarm-const
+	 * @mediawikifarm-idempotent
+	 * @SuppressWarning(PHPMD.StaticAccess)
+	 *
+	 * @param array $array The 'array diff' (part of an array to be modified).
+	 * @param string $prefix The beginning of the plain PHP, should be something like '$myArray'.
+	 * @return string The plain PHP for this array assignment.
+	 */
+	static function writeArrayAssignment( $array, $prefix ) {
+
+		$result = '';
+		$isList = (count( array_diff( array_keys( $array ), range( 0, count( $array ) ) ) ) == 0);
+		foreach( $array as $key => $value ) {
+			$newkey = '[' . var_export( $key, true ) . ']';
+			if( $isList ) {
+				$result .= $prefix . '[] = ' . var_export( $value, true ) . ";\n";
+			} elseif( is_array( $value ) ) {
+				$result .= self::writeArrayAssignment( $value, $prefix . $newkey );
+			} else {
+				$result .= $prefix . $newkey . ' = ' . var_export( $value, true ) . ";\n";
+			}
+		}
+
+		return $result;
 	}
 }

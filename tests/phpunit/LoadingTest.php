@@ -44,8 +44,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::extractSkinsAndExtensions
 	 * @covers MediaWikiFarm::detectLoadingMechanism
 	 * @covers MediaWikiFarm::loadMediaWikiConfig
-	 * @covers MediaWikiFarm::loadExtensionsConfig
-	 * @covers MediaWikiFarm::loadSkinsConfig
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
@@ -59,6 +57,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getMediaWikiConfig
 	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge
@@ -124,8 +123,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( $result['skins'], $wgMediaWikiFarm->getConfiguration( 'skins' ) );
 
 		$wgMediaWikiFarm->loadMediaWikiConfig();
-		$wgMediaWikiFarm->loadExtensionsConfig();
-		$wgMediaWikiFarm->loadSkinsConfig();
 
 		$trueGlobals = array();
 		foreach( $GLOBALS as $key => $value ) {
@@ -165,6 +162,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getMediaWikiConfig
 	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge

@@ -10,7 +10,6 @@
 
 # Include library
 // @codingStandardsIgnoreStart MediaWiki.Usage.DirUsage.FunctionFound
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestPerfs.php';
 // @codingStandardsIgnoreEnd
 
@@ -54,6 +53,7 @@ switch( MediaWikiFarmTestPerfs::getEntryPointProfile( 'index.php' ) ) {
 		$wgMediaWikiFarmMetadata = include_once dirname( __FILE__ ) . '/results/metadata.php';
 
 		chdir( $wgMediaWikiFarmMetadata['IP'] );
+		define( 'MW_CONFIG_FILE', $wgMediaWikiFarmMetadata['MW_CONFIG_FILE'] );
 		require 'index.php';
 }
 // @codeCoverageIgnoreEnd

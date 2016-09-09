@@ -1,8 +1,12 @@
 <?php
 
+// @codeCoverageIgnoreStart
 if( $_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1' ) {
 	exit;
 }
+
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
+// @codeCoverageIgnoreEnd
 
 class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 
@@ -15,7 +19,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	/** @var float Entry point (bis). */
 	protected static $entryPoint2 = '';
 
-	/** @var float Entry point (bis). */
+	/** @var float Profile (0=farm, 1=classical installation). */
 	protected static $profile = 0;
 
 	/**
@@ -76,14 +80,19 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 
 		global $IP;
 
+		$profile = self::$profile;
 		$entryPoint = self::$entryPoint2;
 
-		if( !is_file( dirname( __FILE__ ) . "/results/measures-$entryPoint.php" ) ) {
-			file_put_contents( dirname( __FILE__ ) . "/results/measures-$entryPoint.php", "<?php return array( 0 => array(), 1 => array() );\n" );
+		if( !is_file( dirname( __FILE__ ) . "/results/measures-$entryPoint.php" ) && $profile == 0 ) {
+
+			$server = $GLOBALS['wgMediaWikiFarm']->getVariable( '$SERVER' );
+			$localSettingsFile = $GLOBALS['wgMediaWikiFarm']->getConfigFile();
+
+			file_put_contents( dirname( __FILE__ ) . '/results/metadata.php', "<?php return array( 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile' );\n" );
+			file_put_contents( dirname( __FILE__ ) . "/results/measures-$entryPoint.php", "<?php return array( 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile', 0 => array(), 1 => array() );\n" );
 		}
 
 		# Load existing state
-		$profile = self::$profile;
 		$measures = include dirname( __FILE__ ) . "/results/measures-$entryPoint.php";
 
 		# Update with current measure
@@ -91,67 +100,6 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 
 		# Write results
 		file_put_contents( dirname( __FILE__ ) . "/results/measures-$entryPoint.php", '<?php return ' . var_export( $measures, true ) . ";\n" );
-
-		if( !is_file( dirname( __FILE__ ) . '/results/metadata.php' ) && $profile == 0 ) {
-			$server = $GLOBALS['wgMediaWikiFarm']->getVariable( '$SERVER' );
-			file_put_contents( dirname( __FILE__ ) . '/results/metadata.php', "<?php return array( 'IP' => '$IP', 'server' => '$server' );\n" );
-
-			$localSettings = "<?php\n";
-			$localSettings .= "\n# Start counter\nMediaWikiFarmTestPerfs::startCounter( 'config' );\n";
-			$localSettings .= "\n# General settings\n";
-			foreach( $GLOBALS['wgMediaWikiFarm']->getConfiguration( 'settings' ) as $setting => $value ) {
-				$localSettings .= "\$$setting = " . var_export( $value, true ) . ";\n";
-			}
-			foreach( $GLOBALS['wgMediaWikiFarm']->getConfiguration( 'arrays' ) as $setting => $value ) {
-				$localSettings .= self::writeArrayAssignment( $value, "\$$setting" );
-			}
-			$localSettings .= "\n# Skins\n";
-			foreach( $GLOBALS['wgMediaWikiFarm']->getConfiguration( 'skins' ) as $skin => $loading ) {
-				if( $loading == 'wfLoadSkin' ) {
-					$localSettings .= "wfLoadSkin( '$skin' );\n";
-				}
-				elseif( $loading == 'require_once' ) {
-					$localSettings .= "require_once \"\$IP/skins/$skin/$skin.php\";\n";
-				}
-			}
-			$localSettings .= "\n# Extensions\n";
-			foreach( $GLOBALS['wgMediaWikiFarm']->getConfiguration( 'extensions' ) as $extension => $loading ) {
-				if( $loading == 'wfLoadExtension' ) {
-					$localSettings .= "wfLoadExtension( '$extension' );\n";
-				}
-				elseif( $loading == 'require_once' ) {
-					$localSettings .= "require_once \"\$IP/extensions/$extension/$extension.php\";\n";
-				}
-			}
-			$localSettings .= "\n# Included files\n";
-			foreach( $GLOBALS['wgMediaWikiFarm']->getConfiguration( 'execFiles' ) as $execFile ) {
-				$localSettings .= "include '$execFile';\n";
-			}
-			$localSettings .= "\n# Stop counter\nMediaWikiFarmTestPerfs::stopCounter( 'config' );\nMediaWikiFarmTestPerfs::writeResults();\n";
-			file_put_contents( dirname( __FILE__ ) . '/results/LocalSettings.php', $localSettings );
-
-			#if( !is_file( $IP . '/LocalSettings.php' ) ) {
-			copy( dirname( __FILE__ ) . '/results/LocalSettings.php', $IP . '/LocalSettings.php' );
-			#}
-		}
-	}
-
-	static function writeArrayAssignment( $array, $prefix ) {
-
-		$result = '';
-		$isList = (count( array_diff( array_keys( $array ), range( 0, count( $array ) ) ) ) == 0);
-		foreach( $array as $key => $value ) {
-			$newkey = '[' . var_export( $key, true ) . ']';
-			if( $isList ) {
-				$result .= $prefix . '[] = ' . var_export( $value, true ) . ";\n";
-			} elseif( is_array( $value ) ) {
-				$result .= self::writeArrayAssignment( $value, $prefix . $newkey );
-			} else {
-				$result .= $prefix . $newkey . ' = ' . var_export( $value, true ) . ";\n";
-			}
-		}
-
-		return $result;
 	}
 
 
@@ -167,53 +115,51 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * launch the original file.
 	 *
 	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
 	 *
 	 * @return string File where is loaded the configuration.
 	 */
 	function getConfigFile() {
 
-		return $this->farmDir . '/tests/perfs/main.php';
+		if( !$this->isLocalSettingsFresh() ) {
+			return $this->farmDir . '/tests/perfs/main.php';
+		}
+
+		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
+		else $localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		return $this->cacheDir . '/' . $localSettingsFile;
 	}
 
-	function loadMediaWikiConfig() {
+	/**
+	 * Create a LocalSettings.php.
+	 *
+	 * This function is very similar to its parent but adds counters in the file.
+	 *
+	 * @param array $configuration Array with the schema defined for $this->configuration.
+	 * @param string $preconfig PHP code to be added at the top of the file.
+	 * @param string $postconfig PHP code to be added at the end of the file.
+	 * @return string Content of the file LocalSettings.php.
+	 */
+	function createLocalSettings( $configuration, $preconfig = '', $postconfig = '' ) {
+
+		return parent::createLocalSettings( $configuration,
+			"# Start counter\nif( class_exists( 'MediaWikiFarmTestPerfs' ) ) {\n\tMediaWikiFarmTestPerfs::startCounter( 'config' );\n}\n",
+			"# Stop counter\nif( class_exists( 'MediaWikiFarmTestPerfs' ) ) {\n\tMediaWikiFarmTestPerfs::stopCounter( 'config' );\n\tMediaWikiFarmTestPerfs::writeResults();\n}\n"
+		);
+	}
+
+	/**
+	 * Get or compute the configuration (MediaWiki, skins, extensions) for a wiki.
+	 *
+	 * This function is very similar to its parent but is performance-spied.
+	 *
+	 * @return void.
+	 */
+	function getMediaWikiConfig() {
 
 		MediaWikiFarmTestPerfs::startCounter( 'compilation' );
 
-		parent::loadMediaWikiConfig();
-
-		MediaWikiFarmTestPerfs::stopCounter( 'compilation' );
-		MediaWikiFarmTestPerfs::startCounter( 'loading-require_once-skins' );
-	}
-
-	function loadSkinsConfig() {
-
-		MediaWikiFarmTestPerfs::stopCounter( 'loading-require_once-skins' );
-		MediaWikiFarmTestPerfs::startCounter( 'loading-wfLoadSkins' );
-
-		parent::loadSkinsConfig();
-
-		MediaWikiFarmTestPerfs::stopCounter( 'loading-wfLoadSkins' );
-		MediaWikiFarmTestPerfs::startCounter( 'loading-require_once-extensions' );
-	}
-
-	function loadExtensionsConfig() {
-
-		MediaWikiFarmTestPerfs::stopCounter( 'loading-require_once-extensions' );
-		MediaWikiFarmTestPerfs::startCounter( 'loading-wfLoadExtensions' );
-
-		parent::loadExtensionsConfig();
-
-		MediaWikiFarmTestPerfs::stopCounter( 'loading-wfLoadExtensions' );
-		MediaWikiFarmTestPerfs::startCounter( 'loading-execFiles' );
-	}
-
-	function getMediaWikiConfig() {
-
-		MediaWikiFarmTestPerfs::startCounter( 'loading-getMediaWikiConfig' );
-
 		parent::getMediaWikiConfig();
 
-		MediaWikiFarmTestPerfs::stopCounter( 'loading-getMediaWikiConfig' );
+		MediaWikiFarmTestPerfs::stopCounter( 'compilation' );
 	}
 }

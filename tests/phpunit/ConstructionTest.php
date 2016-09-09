@@ -369,6 +369,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getCodeDir
 	 * @covers MediaWikiFarm::getCacheDir
 	 * @covers MediaWikiFarm::getConfigFile
+	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::cacheFile
 	 */
@@ -399,6 +400,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getCodeDir
 	 * @covers MediaWikiFarm::getCacheDir
 	 * @covers MediaWikiFarm::getConfigFile
+	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::cacheFile
 	 */
