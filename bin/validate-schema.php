@@ -44,7 +44,9 @@ foreach( array( 'config/farms.yml', 'config/farms.json', 'config/farms.php' ) as
 
 	if( $validator->isValid() ) {
 		echo "The supplied JSON validates against the schema.\n";
-		@unlink( $filename.'.json' );
+		if( is_file( $filename . '.json' ) ) {
+			unlink( $filename . '.json' );
+		}
 	} else {
 		echo "JSON does not validate. Violations:\n";
 		foreach( $validator->getErrors() as $error ) {

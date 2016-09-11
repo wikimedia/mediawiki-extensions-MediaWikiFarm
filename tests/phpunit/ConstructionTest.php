@@ -17,7 +17,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getFarmConfiguration
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testSuccessfulConstructionMultiversion() {
 		
@@ -62,7 +61,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getFarmConfiguration
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testSuccessfulConstructionMonoversion() {
 
@@ -296,7 +294,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testSuccessfulConstructionWithGlobalVariable() {
 
@@ -321,7 +318,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testSuccessfulConstructionWithGlobalVariable2() {
 
@@ -371,7 +367,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getConfigFile
 	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testCheckBasicObjectPropertiesMultiversion() {
 
@@ -402,7 +397,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getConfigFile
 	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testCheckBasicObjectPropertiesMonoversion() {
 
@@ -430,7 +424,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testNormalRedirect() {
 
@@ -450,7 +443,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Infinite or too long redirect detected
@@ -471,7 +463,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No farm corresponding to this host
@@ -494,7 +485,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
@@ -535,7 +525,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVariable
@@ -565,7 +554,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 */
 	function testLoadingError() {
 

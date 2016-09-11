@@ -59,7 +59,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::populateSettings
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
@@ -164,7 +163,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::populateSettings
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable

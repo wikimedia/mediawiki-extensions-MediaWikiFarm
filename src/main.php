@@ -48,6 +48,10 @@ $wgMediaWikiFarm->loadMediaWikiConfig();
 # Executable configuration
 foreach( $wgMediaWikiFarm->getConfiguration( 'execFiles' ) as $execFile ) {
 
-	@include $execFile;
+	if( !is_file( $execFile ) ) {
+		continue;
+	}
+
+	include $execFile;
 }
 // @codeCoverageIgnoreEnd

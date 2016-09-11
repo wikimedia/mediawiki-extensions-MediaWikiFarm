@@ -318,9 +318,22 @@ class MediaWikiFarm {
 	/**
 	 * This function loads MediaWiki configuration.
 	 *
-	 * Parameters are written in global variables, and skins and extensions are
-	 * loaded with wfLoadSkin/Extension.
-	 * WARNING: it does not load skins and extensions which require the require_once mechanism, it’s not possible given it is not the global scope.
+	 * Parameters are written in global variables, skins and extensions are loaded with
+	 * the MediaWiki functions wfLoadSkin/wfLoadExtension (introduced in MediaWiki 1.25), and
+	 * plain PHP executables files are executed at the end.
+	 *
+	 * This function can be called either by the file src/main.php or by MediaWiki through the
+	 * constant MW_CONFIG_CALLBACK (introduced in MediaWiki 1.15).
+	 *
+	 * WARNING: it does not load skins and extensions which require the require_once mechanism.
+	 * Rationale: it is not possible given it is not the global scope, you have to use another
+	 * mechanism if you need to load extensions/skins with require_once. The nearest path found
+	 * to still load global variables (there is no issue for functions and classes, they are
+	 * always in the global scopes) was to use extract( $GLOBALS, EXTR_REFS ) but newly-created
+	 * variables can not be detected and hence exported to global scope (and it is the main use
+	 * case: extensions declaring new parameters as global variables); the only case where it
+	 * would work is if the extension declares their global variables with
+	 * $GLOBALS['wgMyExtensionMyParameter'], but it is quite rare.
 	 *
 	 * @return void
 	 */
@@ -383,6 +396,16 @@ class MediaWikiFarm {
 				wfLoadExtension( $extension );
 			}
 		}
+
+		# Execute PHP files
+		foreach( $this->configuration['execFiles'] as $execFile ) {
+
+			if( !is_file( $execFile ) ) {
+				continue;
+			}
+
+			include $execFile;
+		}
 	}
 
 	/**
@@ -421,40 +444,6 @@ class MediaWikiFarm {
 		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
 		else $localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
 		return $this->cacheDir . '/' . $localSettingsFile;
-	}
-
-	/**
-	 * Load the whole configuration in the case MW_CONFIG_CALLBACK is registered (experimental).
-	 *
-	 * This is about the same thing as the file src/main.php, but given it is not possible
-	 * to "execute require_once in a global scope", the extensions/skins loaded with
-	 * require_once are not called (existing global variables could be introduced with
-	 * extract( $GLOBALS, EXTR_REFS ) but newly-created variables can not be detected and
-	 * exported to global scope).
-	 *
-	 * NB: this loading mechanism (constant MW_CONFIG_CALLBACK) exists since MediaWiki 1.15.
-	 *
-	 * @codeCoverageIgnore
-	 *
-	 * @return void
-	 */
-	static function loadConfig() {
-
-		global $wgMediaWikiFarm;
-
-		# Load general MediaWiki configuration
-		$wgMediaWikiFarm->loadMediaWikiConfig();
-
-		# Load skins with the wfLoadSkin mechanism
-		$wgMediaWikiFarm->loadSkinsConfig();
-
-		# Load extensions with the wfLoadExtension mechanism
-		$wgMediaWikiFarm->loadExtensionsConfig();
-
-		foreach( $wgMediaWikiFarm->configuration['execFiles'] as $execFile ) {
-
-			@include $execFile;
-		}
 	}
 
 
@@ -825,17 +814,19 @@ class MediaWikiFarm {
 			return false;
 		}
 
-		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
-		else $localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
+		else $localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
 
 		# Check modification time of original config files
 		$oldness = 0;
 		foreach( $this->farmConfig['config'] as $configFile ) {
 			if( !is_array( $configFile ) || !is_string( $configFile['file'] ) ) continue;
-			$oldness = max( $oldness, @filemtime( $this->configDir . '/' . $this->replaceVariables( $configFile['file'] ) ) );
+			$file = $this->configDir . '/' . $this->replaceVariables( $configFile['file'] );
+			if( !is_file( $file ) ) continue;
+			$oldness = max( $oldness, filemtime( $file ) );
 		}
 		
-		return is_file( $this->cacheDir . '/' . $localSettingsFile ) && @filemtime( $this->cacheDir . '/' . $localSettingsFile ) >= $oldness;
+		return is_file( $localSettingsFile ) && (filemtime( $localSettingsFile ) >= $oldness);
 	}
 
 	/**
@@ -1492,6 +1483,7 @@ class MediaWikiFarm {
 
 		# Check the file exists
 		$prefixedFile = $directory ? $directory . '/' . $filename : $filename;
+		$cachedFile = $this->cacheDir !== false ? $this->cacheDir . '/' . $filename . '.php' : false;
 		if( !is_file( $prefixedFile ) ) {
 			$format = null;
 		}
@@ -1499,7 +1491,7 @@ class MediaWikiFarm {
 		# Format PHP
 		if( $format == '.php' ) {
 
-			$array = @include $prefixedFile;
+			$array = include $prefixedFile;
 		}
 
 		# Format 'serialisation'
@@ -1511,12 +1503,12 @@ class MediaWikiFarm {
 				$array = array();
 			}
 			else {
-				$array = @unserialize( $content );
+				$array = unserialize( $content );
 			}
 		}
 
 		# Cached version
-		elseif( is_string( $this->cacheDir ) && is_string( $format ) && is_file( $this->cacheDir . '/' . $filename . '.php' ) && @filemtime( $this->cacheDir . '/' . $filename . '.php' ) >= filemtime( $prefixedFile ) ) {
+		elseif( $cachedFile && is_string( $format ) && is_file( $cachedFile ) && filemtime( $cachedFile ) >= filemtime( $prefixedFile ) ) {
 
 			return $this->readFile( $filename . '.php', $this->cacheDir );
 		}
@@ -1573,7 +1565,7 @@ class MediaWikiFarm {
 		}
 
 		# A null value is an empty file or value 'null'
-		if( (is_null( $array ) || $array === false) && is_string( $this->cacheDir ) && is_file( $this->cacheDir . '/' . $filename . '.php' ) ) {
+		if( (is_null( $array ) || $array === false) && $cachedFile && is_file( $cachedFile ) ) {
 
 			$this->errors[] = 'Unreadable file ' . $filename;
 
@@ -1583,7 +1575,7 @@ class MediaWikiFarm {
 		# Regular return for arrays
 		if( is_array( $array ) ) {
 
-			if( $directory != $this->cacheDir && @filemtime( $this->cacheDir . '/' . $filename . '.php' ) < filemtime( $prefixedFile ) ) {
+			if( $cachedFile && $directory != $this->cacheDir && (!is_file( $cachedFile ) || (filemtime( $cachedFile ) < filemtime( $prefixedFile ))) ) {
 				$this->cacheFile( $array, $filename.'.php' );
 			}
 
@@ -1610,8 +1602,7 @@ class MediaWikiFarm {
 		if( is_null( $directory ) )
 			$directory = $this->cacheDir;
 
-		if( !is_string( $directory ) || !is_dir( $directory ) )
-			return;
+		if( !is_string( $directory ) || !is_dir( $directory ) ) return;
 
 		$prefixedFile = $directory . '/' . $filename;
 
