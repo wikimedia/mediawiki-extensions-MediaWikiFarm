@@ -4,7 +4,9 @@
  */
 
 # Protect against web entry
-if( !defined( 'MEDIAWIKI' ) ) exit;
+if( !defined( 'MEDIAWIKI' ) ) {
+	exit;
+}
 
 # Include the code.
 if( class_exists( 'MediaWikiFarm' ) && $wgMediaWikiFarm instanceof MediaWikiFarm ) {

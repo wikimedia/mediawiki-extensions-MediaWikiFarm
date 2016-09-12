@@ -14,9 +14,10 @@ $wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
 
 # Arguments
 $host = $argv[1];
-$sampleSize = count( $argv ) > 2 ? intval($argv[2]) : 100;
+$sampleSize = count( $argv ) > 2 ? intval( $argv[2] ) : 100;
 $profiles = 2;
 
+// @codingStandardsIgnoreStart MediaWiki.NamingConventions.PrefixedGlobalFunctions.wfPrefix
 function rmdirr( $dir, $deleteDir = true ) {
 	if( !is_dir( $dir ) ) {
 		return;
@@ -33,6 +34,7 @@ function rmdirr( $dir, $deleteDir = true ) {
 		rmdir( $dir );
 	}
 }
+// @codingStandardsIgnoreEnd MediaWiki.NamingConventions.PrefixedGlobalFunctions.wfPrefix
 rmdirr( $wgMediaWikiFarmCacheDir );
 rmdirr( 'results', false );
 if( is_string( $wgMediaWikiFarmCacheDir ) && is_dir( $wgMediaWikiFarmCacheDir ) ) {
@@ -54,8 +56,8 @@ for( $i=0; $i<$sampleSize; $i++ ) {
 echo "\n";
 
 $statistics = include dirname( __FILE__ ) . '/results/measures-index.php.php';
-echo "sample size(farm) = " . count($statistics[0]) . "\n";
-echo "sample size(classical) = " . count($statistics[1]) . "\n";
+echo "sample size(farm) = " . count( $statistics[0] ) . "\n";
+echo "sample size(classical) = " . count( $statistics[1] ) . "\n";
 
 $mean = array();
 foreach( $statistics as $profile => $statisticsProfile ) {
@@ -80,15 +82,15 @@ foreach( $statistics as $profile => $statisticsProfile ) {
 echo "bootstrap    config     total     total     config      total compilation\n";
 echo "     mean      mean      mean      mean       mean       mean        unit\n";
 echo "     farm      farm classical      farm difference difference        farm\n";
-echo '    '.number_format($mean[0]['bootstrap'],3).' ';
-echo '    '.number_format($mean[0]['config'],3).' ';
-echo '    '.number_format($mean[1]['config'],3).' ';
-echo '    '.number_format($mean[0]['bootstrap']+$mean[0]['config'],3).' ';
-echo '     '.number_format($mean[0]['config']-$mean[1]['config'],3).' ';
-echo '     '.number_format($mean[0]['bootstrap']+$mean[0]['config']-$mean[1]['config'],3).' ';
-echo '      '.number_format($mean[0]['compilation']*count($statistics[0]),3).' ';
-echo "\n\n";
-var_dump($mean);
+echo '    '.number_format( $mean[0]['bootstrap'], 3 ).' ';
+echo '    '.number_format( $mean[0]['config'], 3 ).' ';
+echo '    '.number_format( $mean[1]['config'], 3 ).' ';
+echo '    '.number_format( $mean[0]['bootstrap'] + $mean[0]['config'], 3 ).' ';
+echo '     '.number_format( $mean[0]['config'] - $mean[1]['config'], 3 ).' ';
+echo '     '.number_format( $mean[0]['bootstrap'] + $mean[0]['config'] - $mean[1]['config'], 3 ).' ';
+echo '      '.number_format( $mean[0]['compilation'] * count( $statistics[0] ), 3 ).' ';
+echo "\n\nAll results =\n";
+var_dump( $mean );
 
 unlink( dirname( __FILE__ ) . '/results/profile-index.php.php' );
 unlink( dirname( __FILE__ ) . '/results/metadata.php' );

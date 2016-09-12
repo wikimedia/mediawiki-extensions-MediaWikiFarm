@@ -10,16 +10,16 @@ require_once 'MediaWikiFarmTestCase.php';
 class MediaWikiFarmScriptTest extends MediaWikiFarmTestCase {
 
 	/** @var string Path to [farm]/bin/mwscript.php. */
-	static $mwscriptPath = '';
+	public static $mwscriptPath = '';
 
 	/** @var string Short help displayed in case of error. */
-	static $shortHelp = '';
+	public static $shortHelp = '';
 
 	/** @var string Long help displayed when requested. */
-	static $longHelp = '';
+	public static $longHelp = '';
 
 	/**
-	 * Symbol for MediaWikiFarm_readYAML, which is normally loaded just-in-time in the main class.
+	 * Set up some "constants" to be used accross the tests.
 	 */
 	static function setUpBeforeClass() {
 
@@ -171,32 +171,34 @@ HELP;
 	 */
 	function testGetParam() {
 
-		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 5, array( self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org', 'showJobs', '--test', 'abc' ) );
+		$parameters = array( self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org', 'showJobs', '--test', 'abc' );
+
+		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 5, $parameters );
 
 		$valueParamWiki = $wgMediaWikiFarmScript->getParam( 'wiki', false );
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $valueParamWiki );
 		$this->assertEquals( 5, $wgMediaWikiFarmScript->argc );
-		$this->assertEquals( array( self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org', 'showJobs', '--test', 'abc' ), $wgMediaWikiFarmScript->argv );
+		$this->assertEquals( $parameters, $wgMediaWikiFarmScript->argv );
 
 		$valueParamTest = $wgMediaWikiFarmScript->getParam( 'test', false );
 		$this->assertEquals( 'abc', $valueParamTest );
 		$this->assertEquals( 5, $wgMediaWikiFarmScript->argc );
-		$this->assertEquals( array( self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org', 'showJobs', '--test', 'abc' ), $wgMediaWikiFarmScript->argv );
+		$this->assertEquals( $parameters, $wgMediaWikiFarmScript->argv );
 
 		$valueParamScript = $wgMediaWikiFarmScript->getParam( 2, false );
 		$this->assertEquals( 'showJobs', $valueParamScript );
 		$this->assertEquals( 5, $wgMediaWikiFarmScript->argc );
-		$this->assertEquals( array( self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org', 'showJobs', '--test', 'abc' ), $wgMediaWikiFarmScript->argv );
+		$this->assertEquals( $parameters, $wgMediaWikiFarmScript->argv );
 
 		$valueParamOutOfBounds = $wgMediaWikiFarmScript->getParam( 5, false );
 		$this->assertNull( $valueParamOutOfBounds );
 		$this->assertEquals( 5, $wgMediaWikiFarmScript->argc );
-		$this->assertEquals( array( self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org', 'showJobs', '--test', 'abc' ), $wgMediaWikiFarmScript->argv );
+		$this->assertEquals( $parameters, $wgMediaWikiFarmScript->argv );
 
 		$valueParammwscript = $wgMediaWikiFarmScript->getParam( 0 );
 		$this->assertEquals( self::$mwscriptPath, $valueParammwscript );
 		$this->assertEquals( 4, $wgMediaWikiFarmScript->argc );
-		$this->assertEquals( array( '--wiki=a.testfarm-multiversion.example.org', 'showJobs', '--test', 'abc' ), $wgMediaWikiFarmScript->argv );
+		$this->assertEquals( array_slice( $parameters, 1 ), $wgMediaWikiFarmScript->argv );
 	}
 
 	/**
@@ -282,7 +284,9 @@ HELP;
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
 
-		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3, array( self::$mwscriptPath, '--wiki=c.testfarm-monoversion-with-file-variable-without-version.example.org', 'showJobs' ) );
+		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3,
+			array( self::$mwscriptPath, '--wiki=c.testfarm-monoversion-with-file-variable-without-version.example.org', 'showJobs' )
+		);
 
 		$wgMediaWikiFarmScript->main();
 
@@ -442,15 +446,4 @@ OUTPUT
 		unset( $GLOBALS['wgMediaWikiFarm'] );
 		$wgMediaWikiFarmScript->restInPeace();
 	}
-
-	/**
-	 * 
-	 *
-	 * @covers MediaWikiFarmScript::
-	 * @uses MediaWikiFarmScript::__construct
-	 *
-	function test() {
-
-	}
-	/**/
 }

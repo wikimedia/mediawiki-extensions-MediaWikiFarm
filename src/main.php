@@ -10,8 +10,9 @@
 
 # Protect against web entry
 // NB: to run MediaWiki 1.1, comment this
-if( !defined( 'MEDIAWIKI' ) ) exit;
-
+if( !defined( 'MEDIAWIKI' ) ) {
+	exit;
+}
 
 # Old MediaWiki installations doesn’t load DefaultSettings.php before LocalSettings.php
 if( !isset( $wgVersion ) ) {
@@ -21,7 +22,6 @@ if( !isset( $wgVersion ) ) {
 	// NB: to run MediaWiki 1.1, comment this
 	require_once "$IP/includes/DefaultSettings.php";
 }
-
 
 # Compile MediaWiki configuration
 $wgMediaWikiFarm->getMediaWikiConfig();

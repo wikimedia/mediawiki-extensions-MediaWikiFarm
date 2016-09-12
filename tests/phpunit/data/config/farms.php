@@ -15,6 +15,13 @@ return array(
 			array( 'file' => 'settings.php',
 			       'key' => 'default',
 			),
+			array( 'file' => 'localsettings.php',
+			       'key' => '*testfarm',
+			       'default' => 'testfarm',
+			),
+			array( 'file' => 'globalsettings.php',
+			       'key' => '*',
+			),
 			array( 'file' => 'LocalSettings.php',
 			       'exec' => true,
 			),
@@ -242,7 +249,7 @@ return array(
 	),
 
 	'testfarm-infinite-redirect' => array(
-		
+
 		'server' => '(?P<wiki>[a-z])\.testfarm-infinite-redirect\.example\.org',
 		'redirect' => '$wiki.testfarm-infinite-redirect.example.org',
 	),
@@ -271,6 +278,9 @@ return array(
 		'config' => array(
 			array( 'file' => 'extensionssettings.php',
 			       'key' => '*',
+			),
+			array( 'file' => 'missingfile.php',
+			       'exec' => true,
 			),
 		),
 	),
@@ -327,7 +337,7 @@ return array(
 		'suffix' => 'testdeploymentsfarm',
 		'wikiID' => '$wikitestdeploymentsfarm',
 		'versions' => 'testdeploymentsfarmversions.php',
-		'deployments' => 'deployments.php',
+		'deployments' => 'deployments',
 		'config' => array(
 			array( 'file' => 'settings.php',
 			       'key' => 'default',

@@ -14,15 +14,15 @@ $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 $wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
 
 # Check the entry point is installed in a multiversion MediaWiki farm or in the classical MediaWiki extensions directory
-if( is_file( dirname( $wgMediaWikiFarmCodeDir ) . '/includes/DefaultSettings.php' ) ) exit;
+if( is_file( dirname( $wgMediaWikiFarmCodeDir ) . '/includes/DefaultSettings.php' ) ) {
+	exit;
+}
 
 # Override default MediaWikiFarm configuration
 @include_once dirname( dirname( __FILE__ ) ) . '/config/MediaWikiFarmDirectories.php';
 
 # Include library
-// @codingStandardsIgnoreStart MediaWiki.Usage.DirUsage.FunctionFound
 require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
-// @codingStandardsIgnoreEnd
 
 # Redirect to the requested version
 if( MediaWikiFarm::load( 'img_auth.php' ) == 200 ) {

@@ -8,14 +8,17 @@
 
 
 # Protect against web entry
-if( PHP_SAPI !== 'cli' ) exit;
+if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
+	exit;
+}
 
 require_once "vendor/autoload.php";
 
 foreach( array( 'config/farms.yml', 'config/farms.json', 'config/farms.php' ) as $filename ) {
 
-	if( !is_file( $filename ) )
+	if( !is_file( $filename ) ) {
 		continue;
+	}
 
 	echo "\n$filename:\n";
 	if( preg_match( '/\.yml$/', $filename ) ) {
@@ -25,11 +28,11 @@ foreach( array( 'config/farms.yml', 'config/farms.json', 'config/farms.php' ) as
 		file_put_contents( 'config/farms.yml.json', $dataJSON );
 		$data = json_decode( $dataJSON );
 	}
-	else if( preg_match( '/\.json$/', $filename ) ) {
+	elseif( preg_match( '/\.json$/', $filename ) ) {
 
 		$data = json_decode( file_get_contents( $filename ) );
 	}
-	else if( preg_match( '/\.php$/', $filename ) ) {
+	elseif( preg_match( '/\.php$/', $filename ) ) {
 
 		$dataArray = include $filename;
 		$dataJSON = preg_replace( '/    /', "\t", json_encode( $dataArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) . "\n";

@@ -3,24 +3,18 @@
 require_once 'MediaWikiFarmTestCase.php';
 
 /**
-/**
  * Tests about extensions+skins loading.
  *
  * @group MediaWikiFarm
  */
 class LoadingTest extends MediaWikiFarmTestCase {
 
-	/** @var MediaWikiFarm|null Test object. */
-	protected $farm = null;
-
 	/**
 	 * Set up the default MediaWikiFarm object with a sample correct configuration file.
 	 */
 	protected function setUp() {
-		
+
 		parent::setUp();
-		
-		$this->farm = new MediaWikiFarm( 'a.testfarm-multiversion-test-extensions.example.org', self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, 'index.php' );
 
 		if( class_exists( 'ExtensionRegistry' ) ) {
 			ExtensionRegistry::getInstance()->loadFromQueue();
@@ -116,12 +110,11 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( 200, $exists );
 		$this->assertEquals( 'vstub', $wgMediaWikiFarm->getVariable( '$VERSION' ) );
 
-		$wgMediaWikiFarm->getMediaWikiConfig();
+		$wgMediaWikiFarm->loadMediaWikiConfig();
 		$this->assertEquals( $result['settings'], $wgMediaWikiFarm->getConfiguration( 'settings' ) );
 		$this->assertEquals( $result['extensions'], $wgMediaWikiFarm->getConfiguration( 'extensions' ) );
 		$this->assertEquals( $result['skins'], $wgMediaWikiFarm->getConfiguration( 'skins' ) );
 
-		$wgMediaWikiFarm->loadMediaWikiConfig();
 
 		$trueGlobals = array();
 		foreach( $GLOBALS as $key => $value ) {

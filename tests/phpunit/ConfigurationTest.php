@@ -3,7 +3,6 @@
 require_once 'MediaWikiFarmTestCase.php';
 
 /**
-/**
  * Installation-independant methods tests.
  *
  * These tests operate on constant methods, i.e. which do not modify the internal state of the
@@ -13,34 +12,8 @@ require_once 'MediaWikiFarmTestCase.php';
  */
 class ConfigurationTest extends MediaWikiFarmTestCase {
 
-	/** @var MediaWikiFarm|null Test object. */
-	protected $farm = null;
-
 	/**
-	 * Construct a default MediaWikiFarm object with a sample correct configuration file.
-	 *
-	 * Use the current MediaWiki installation to simulate a multiversion installation.
-	 *
-	 * @param string $host Host name.
-	 * @return MediaWikiFarm
-	 */
-	static function constructMediaWikiFarm( $host ) {
-
-		return new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, null, false );
-	}
-
-	/**
-	 * Set up the default MediaWikiFarm object with a sample correct configuration file.
-	 */
-	protected function setUp() {
-
-		parent::setUp();
-
-		$this->farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir, 'index.php' );
-	}
-
-	/**
-	 * Test a successful reading of a YAML file.
+	 * Test compiling a configuration.
 	 *
 	 * @covers MediaWikiFarm::populateSettings
 	 * @covers MediaWikiFarm::getConfiguration
@@ -110,23 +83,26 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 			'general' => array(),
 		);
 
-		$this->assertTrue( $this->farm->checkExistence() );
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org',
+		                           self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir, 'index.php'
+			);
 
-		$this->assertTrue( $this->farm->populateSettings() );
+		$this->assertTrue( $farm->checkExistence() );
 
-		$this->assertEquals( $result['settings'], $this->farm->getConfiguration( 'settings' ) );
-		$this->assertEquals( $result['arrays'], $this->farm->getConfiguration( 'arrays' ) );
-		$this->assertEquals( $result['skins'], $this->farm->getConfiguration( 'skins' ) );
-		$this->assertEquals( $result['extensions'], $this->farm->getConfiguration( 'extensions' ) );
-		$this->assertEquals( $result['execFiles'], $this->farm->getConfiguration( 'execFiles' ) );
-		$this->assertEquals( $result['general'], $this->farm->getConfiguration( 'general' ) );
-		$this->assertEquals( $result, $this->farm->getConfiguration() );
+		$this->assertTrue( $farm->populateSettings() );
+
+		$this->assertEquals( $result['settings'], $farm->getConfiguration( 'settings' ) );
+		$this->assertEquals( $result['arrays'], $farm->getConfiguration( 'arrays' ) );
+		$this->assertEquals( $result['skins'], $farm->getConfiguration( 'skins' ) );
+		$this->assertEquals( $result['extensions'], $farm->getConfiguration( 'extensions' ) );
+		$this->assertEquals( $result['execFiles'], $farm->getConfiguration( 'execFiles' ) );
+		$this->assertEquals( $result['general'], $farm->getConfiguration( 'general' ) );
+		$this->assertEquals( $result, $farm->getConfiguration() );
 	}
 
 	/**
-	 * Test a successful reading of a YAML file.
+	 * Test loading a compiled configuration into global scope (multiversion case).
 	 *
-	 * @covers MediaWikiFarm::loadMediaWikiConfig
 	 * @covers MediaWikiFarm::getMediaWikiConfig
 	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @covers MediaWikiFarm::extractSkinsAndExtensions
@@ -139,6 +115,65 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::populateSettings
 	 * @ uses MediaWikiFarm::populatewgConf
+	 * @uses MediaWikiFarm::getConfiguration
+	 * @uses MediaWikiFarm::checkHostVariables
+	 * @uses MediaWikiFarm::setVersion
+	 * @uses MediaWikiFarm::updateVersion
+	 * @uses MediaWikiFarm::setOtherVariables
+	 * @uses MediaWikiFarm::setVariable
+	 * @uses MediaWikiFarm::replaceVariables
+	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::cacheFile
+	 * @uses MediaWikiFarm::arrayMerge
+	 * @uses MediaWikiFarm::isMediaWiki
+	 * @ uses MediaWikiFarm::SiteConfigurationSiteParamsCallback
+	 */
+	function testLoadMediaWikiConfigMultiversion() {
+
+		$farm = new MediaWikiFarm( 'b.testfarm-multiversion-test-extensions.example.org',
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', self::$wgMediaWikiFarmCacheDir, 'index.php'
+			);
+
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $farm->getConfigFile() );
+
+		# First load
+		$farm->getMediaWikiConfig();
+		$config = $farm->getConfiguration( 'settings' );
+		$this->assertTrue( $config['wgUsePathInfo'] );
+
+		# Re-load to use config cache
+		$farm = new MediaWikiFarm( 'b.testfarm-multiversion-test-extensions.example.org',
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', self::$wgMediaWikiFarmCacheDir, 'index.php'
+			);
+		$this->assertTrue( $farm->checkExistence() );
+		$farm->getMediaWikiConfig( true );
+		$config = $farm->getConfiguration( 'settings' );
+		$this->assertTrue( $config['wgUsePathInfo'] );
+
+		$this->assertEquals(
+			self::$wgMediaWikiFarmCacheDir . '/testfarm-multiversion-test-extensions'
+				. '/LocalSettings-vstub-testextensionsfarm-btestextensionsfarm.php',
+			$farm->getConfigFile()
+		);
+	}
+
+	/**
+	 * Test loading a compiled configuration into global scope (monoversion case).
+	 *
+	 * @covers MediaWikiFarm::getMediaWikiConfig
+	 * @covers MediaWikiFarm::isLocalSettingsFresh
+	 * @covers MediaWikiFarm::extractSkinsAndExtensions
+	 * @covers MediaWikiFarm::detectLoadingMechanism
+	 * @covers MediaWikiFarm::createLocalSettings
+	 * @covers MediaWikiFarm::writeArrayAssignment
+	 * @covers MediaWikiFarm::getConfigFile
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::checkExistence
+	 * @uses MediaWikiFarm::populateSettings
+	 * @ uses MediaWikiFarm::populatewgConf
+	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
 	 * @uses MediaWikiFarm::setOtherVariables
@@ -149,22 +184,26 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @ uses MediaWikiFarm::SiteConfigurationSiteParamsCallback
 	 */
-	function testLoadMediaWikiConfig() {
+	function testLoadMediaWikiConfigMonoversion() {
 
-		$this->assertTrue( $this->farm->checkExistence() );
-		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $this->farm->getConfigFile() );
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir, 'index.php' );
 
-		//$this->assertTrue( $this->farm->populateSettings() );
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $farm->getConfigFile() );
 
-		$this->farm->loadMediaWikiConfig();
-		$this->assertEquals( 200000, $GLOBALS['wgMemCachedTimeout'] );
+		# First load
+		$farm->getMediaWikiConfig();
+		$config = $farm->getConfiguration( 'settings' );
+		$this->assertEquals( 200000, $config['wgMemCachedTimeout'] );
 
 		# Re-load to use config cache
-		$this->farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir, 'index.php' );
-		$this->assertTrue( $this->farm->checkExistence() );
-		$this->farm->getMediaWikiConfig();
-		$this->assertEquals( 200000, $GLOBALS['wgMemCachedTimeout'] );
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir, 'index.php' );
+		$this->assertTrue( $farm->checkExistence() );
+		$farm->getMediaWikiConfig(); # This is for code coverage
+		$farm->getMediaWikiConfig( true );
+		$config = $farm->getConfiguration( 'settings' );
+		$this->assertEquals( 200000, $config['wgMemCachedTimeout'] );
 
-		$this->assertEquals( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/LocalSettings-testfarm-atestfarm.php', $this->farm->getConfigFile() );
+		$this->assertEquals( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/LocalSettings-testfarm-atestfarm.php', $farm->getConfigFile() );
 	}
 }

@@ -9,7 +9,9 @@
 // @codeCoverageIgnoreStart
 
 # Protect against web entry
-if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) exit;
+if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
+	exit;
+}
 
 # Load classes
 require_once dirname( dirname( __FILE__ ) ) . '/src/Script.php';

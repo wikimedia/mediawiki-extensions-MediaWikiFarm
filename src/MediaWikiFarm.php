@@ -247,11 +247,12 @@ class MediaWikiFarm {
 		}
 
 		# Go to version directory
-		if( getcwd() != $wgMediaWikiFarm->variables['$CODE'] )
+		if( getcwd() != $wgMediaWikiFarm->variables['$CODE'] ) {
 			chdir( $wgMediaWikiFarm->variables['$CODE'] );
+		}
 
 		# Define config callback to avoid creating a stub LocalSettings.php (experimental)
-		#define( 'MW_CONFIG_CALLBACK', 'MediaWikiFarm::loadConfig' );
+		// define( 'MW_CONFIG_CALLBACK', 'MediaWikiFarm::loadConfig' );
 
 		# Define config file to avoid creating a stub LocalSettings.php
 		if( !defined( 'MW_CONFIG_FILE' ) ) {
@@ -308,9 +309,9 @@ class MediaWikiFarm {
 		$this->setOtherVariables();
 
 		# Set available suffixes and wikis
-		// This is not useful since nobody else use available suffixes and wikis
-		// For now, remove loading of one config file to improve a bit performance
-		//$this->setWgConf();
+		# This is not useful since nobody else use available suffixes and wikis
+		# For now, remove loading of one config file to improve a bit performance
+		// $this->setWgConf();
 
 		return true;
 	}
@@ -415,8 +416,9 @@ class MediaWikiFarm {
 	 */
 	function updateVersionAfterMaintenance() {
 
-		if( !$this->variables['$VERSION'] )
+		if( !$this->variables['$VERSION'] ) {
 			return;
+		}
 
 		$this->updateVersion( $this->variables['$VERSION'] );
 	}
@@ -441,8 +443,12 @@ class MediaWikiFarm {
 			return $this->farmDir . '/src/main.php';
 		}
 
-		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
-		else $localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		if( $this->variables['$VERSION'] ) {
+			$localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
+		} else {
+			$localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		}
+
 		return $this->cacheDir . '/' . $localSettingsFile;
 	}
 
@@ -491,7 +497,7 @@ class MediaWikiFarm {
 		if( !is_string( $configDir ) || !is_dir( $configDir ) ) {
 			throw new InvalidArgumentException( 'Invalid directory for the farm configuration' );
 		}
-		if( !is_null( $codeDir ) && (!is_string( $codeDir ) || !is_dir( $codeDir )) ) {
+		if( !is_null( $codeDir ) && ( !is_string( $codeDir ) || !is_dir( $codeDir ) ) ) {
 			throw new InvalidArgumentException( 'Code directory must be null or a directory' );
 		}
 		if( !is_string( $cacheDir ) && $cacheDir !== false ) {
@@ -561,23 +567,28 @@ class MediaWikiFarm {
 
 		# Read the farms configuration
 		if( !$farms ) {
+			// @codingStandardsIgnoreStart
 			if( $farms = $this->readFile( 'farms.yml', $this->configDir ) );
 			elseif( $farms = $this->readFile( 'farms.php', $this->configDir ) );
 			elseif( $farms = $this->readFile( 'farms.json', $this->configDir ) );
-			else return array( 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => false, 'redirects' => $redirects );
+			else {
+				return array( 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => false, 'redirects' => $redirects );
+			}
+			// @codingStandardsIgnoreEnd
 		}
 
 		# For each proposed farm, check if the host matches
 		foreach( $farms as $farm => $config ) {
 
-			if( !preg_match( '/^' . $config['server'] . '$/i', $host, $matches ) )
+			if( !preg_match( '/^' . $config['server'] . '$/i', $host, $matches ) ) {
 				continue;
+			}
 
 			# Initialise variables from the host
 			$variables = array();
 			foreach( $matches as $key => $value ) {
 				if( is_string( $key ) ) {
-					$variables['$'.$key] = $value;
+					$variables[ '$' . strtolower( $key ) ] = $value;
 				}
 			}
 
@@ -595,14 +606,17 @@ class MediaWikiFarm {
 	/**
 	 * Check the variables in the host name to verify the wiki exists.
 	 *
+	 * If the wiki exists and a version is found, the version is written in $this->variables['$VERSION'].
+	 *
 	 * This function generates strange code coverage, some lines (e.g. $this->variables['$VERSION']) are indicated as covered,
 	 * but its parent “if” is not.
 	 *
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 *
-	 * @return string|null|false If an existing version is found in files, returns a string; if no version is found, returns null; if the host is missing in existence files, returns false.
-	 * @throws MWFConfigurationException When the farm configuration doesn’t define 'variables' or when a file defining the existing values for a variable is missing or badly formatted.
+	 * @return bool The wiki exists.
+	 * @throws MWFConfigurationException When the farm configuration doesn’t define 'variables' or when a file defining the
+	 *         existing values for a variable is missing or badly formatted.
 	 * @throws InvalidArgumentException
 	 */
 	function checkHostVariables() {
@@ -622,10 +636,10 @@ class MediaWikiFarm {
 			$key = $variable['variable'];
 
 			# If the variable doesn’t exist, continue
-			if( !array_key_exists( '$'.strtolower($key), $this->variables ) ) {
+			if( !array_key_exists( '$' . strtolower( $key ), $this->variables ) ) {
 				continue;
 			}
-			$value = $this->variables['$'.strtolower($key)];
+			$value = $this->variables[ '$' . strtolower( $key ) ];
 
 			# If every values are correct, continue
 			if( !array_key_exists( 'file', $variable ) || !is_string( $variable['file'] ) ) {
@@ -635,7 +649,9 @@ class MediaWikiFarm {
 			# Really check if the variable is in the listing file
 			$choices = $this->readFile( $this->replaceVariables( $variable['file'] ), $this->configDir );
 			if( $choices === false ) {
-				throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $variable['file'] . '\' defining existing values for variable \'' . $key . '\'' );
+				throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $variable['file'] .
+					'\' defining existing values for variable \'' . $key . '\''
+				);
 			}
 
 			# Check if the array is a simple list of wiki identifiers without version information…
@@ -651,7 +667,7 @@ class MediaWikiFarm {
 					return false;
 				}
 
-				if( is_string( $this->codeDir ) && self::isMediaWiki( $this->codeDir . '/' . ((string) $choices[$value]) ) ) {
+				if( is_string( $this->codeDir ) && self::isMediaWiki( $this->codeDir . '/' . ( (string) $choices[$value] ) ) ) {
 
 					$this->variables['$VERSION'] = (string) $choices[$value];
 				}
@@ -682,16 +698,19 @@ class MediaWikiFarm {
 		global $IP;
 
 		# Special case for the update: new (uncached) version must be used
-		$cache = ($this->entryPoint != 'maintenance/update.php');
+		$cache = ( $this->entryPoint != 'maintenance/update.php' );
 
 		# Read cache file
 		$deployments = array();
 		$this->setVariable( 'deployments' );
 		if( array_key_exists( '$DEPLOYMENTS', $this->variables ) && $cache ) {
-			if( strrchr( $this->variables['$DEPLOYMENTS'], '.' ) != '.php' ) $this->variable['$DEPLOYMENTS'] .= '.php';
+			if( strrchr( $this->variables['$DEPLOYMENTS'], '.' ) != '.php' ) {
+				$this->variables['$DEPLOYMENTS'] .= '.php';
+			}
 			$deployments = $this->readFile( $this->variables['$DEPLOYMENTS'], $this->configDir );
-			if( !is_array( $deployments ) )
+			if( !is_array( $deployments ) ) {
 				$deployments = array();
+			}
 		}
 
 		# Multiversion mode – use cached file
@@ -704,8 +723,9 @@ class MediaWikiFarm {
 
 			# Cache the version
 			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
-			if( $cache )
+			if( $cache ) {
 				$this->updateVersion( $this->variables['$VERSION'] );
+			}
 		}
 		# Multiversion mode – version is given in a ‘versions’ file
 		elseif( is_string( $this->codeDir ) && is_null( $this->variables['$VERSION'] ) ) {
@@ -713,25 +733,31 @@ class MediaWikiFarm {
 			$this->setVariable( 'versions' );
 			$versions = $this->readFile( $this->variables['$VERSIONS'], $this->configDir );
 			if( !is_array( $versions ) ) {
-				throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $this->variables['$VERSIONS'] . '\' containing the versions for wikis.' );
+				throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $this->variables['$VERSIONS'] .
+					'\' containing the versions for wikis.'
+				);
 			}
 
 			# Search wiki in a hierarchical manner
-			if( array_key_exists( $this->variables['$WIKIID'], $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$WIKIID']] ) )
+			if( array_key_exists( $this->variables['$WIKIID'], $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$WIKIID']] ) ) {
 				$this->variables['$VERSION'] = $versions[$this->variables['$WIKIID']];
-
-			elseif( array_key_exists( $this->variables['$SUFFIX'], $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$SUFFIX']] ) )
+			}
+			elseif( array_key_exists( $this->variables['$SUFFIX'], $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$SUFFIX']] ) ) {
 				$this->variables['$VERSION'] = $versions[$this->variables['$SUFFIX']];
-
-			elseif( array_key_exists( 'default', $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions['default'] ) )
+			}
+			elseif( array_key_exists( 'default', $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions['default'] ) ) {
 				$this->variables['$VERSION'] = $versions['default'];
+			}
 
-			else return false;
+			else {
+				return false;
+			}
 
 			# Cache the version
 			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
-			if( $cache )
+			if( $cache ) {
 				$this->updateVersion( $this->variables['$VERSION'] );
+			}
 		}
 		# Monoversion mode
 		elseif( is_null( $this->codeDir ) ) {
@@ -767,14 +793,18 @@ class MediaWikiFarm {
 	protected function updateVersion( $version ) {
 
 		# Check a deployment file is wanted
-		if( !array_key_exists( '$DEPLOYMENTS', $this->variables ) )
+		if( !array_key_exists( '$DEPLOYMENTS', $this->variables ) ) {
 			return;
+		}
 
 		# Read current deployments
-		if( strrchr( $this->variables['$DEPLOYMENTS'], '.' ) != '.php' ) $this->variables['$DEPLOYMENTS'] .= '.php';
+		if( strrchr( $this->variables['$DEPLOYMENTS'], '.' ) != '.php' ) {
+			$this->variables['$DEPLOYMENTS'] .= '.php';
+		}
 		$deployments = $this->readFile( $this->variables['$DEPLOYMENTS'], $this->configDir );
-		if( $deployments === false ) $deployments = array();
-		elseif( array_key_exists( $this->variables['$WIKIID'], $deployments ) && $deployments[$this->variables['$WIKIID']] == $version ) {
+		if( $deployments === false ) {
+			$deployments = array();
+		} elseif( array_key_exists( $this->variables['$WIKIID'], $deployments ) && $deployments[$this->variables['$WIKIID']] == $version ) {
 			return;
 		}
 
@@ -786,7 +816,8 @@ class MediaWikiFarm {
 	/**
 	 * Set available suffixes and wikis.
 	 *
-	 * @todo Still hacky: before setting parameters in stone in farms.yml, various configurations should be reviewed to select accordingly the rights management modelisation
+	 * @todo Still hacky: before setting parameters in store in farms.yml, various configurations should be reviewed
+	 *       to select accordingly the rights management modelisation
 	 *
 	 * @return void
 	 */
@@ -814,19 +845,26 @@ class MediaWikiFarm {
 			return false;
 		}
 
-		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
-		else $localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		if( $this->variables['$VERSION'] ) {
+			$localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
+		} else {
+			$localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		}
 
 		# Check modification time of original config files
 		$oldness = 0;
 		foreach( $this->farmConfig['config'] as $configFile ) {
-			if( !is_array( $configFile ) || !is_string( $configFile['file'] ) ) continue;
+			if( !is_array( $configFile ) || !is_string( $configFile['file'] ) ) {
+				continue;
+			}
 			$file = $this->configDir . '/' . $this->replaceVariables( $configFile['file'] );
-			if( !is_file( $file ) ) continue;
+			if( !is_file( $file ) ) {
+				continue;
+			}
 			$oldness = max( $oldness, filemtime( $file ) );
 		}
-		
-		return is_file( $localSettingsFile ) && (filemtime( $localSettingsFile ) >= $oldness);
+
+		return is_file( $localSettingsFile ) && ( filemtime( $localSettingsFile ) >= $oldness );
 	}
 
 	/**
@@ -846,40 +884,52 @@ class MediaWikiFarm {
 	 * @SuppressWarnings(PHPMD.StaticAccess)
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 *
+	 * @param bool $force Whether to force loading in $this->configuration even if there is a LocalSettings.php
 	 * @return void.
 	 */
-	function getMediaWikiConfig() {
+	function getMediaWikiConfig( $force = false ) {
 
-		//global $wgConf;
+		// global $wgConf;
 
 		# In MediaWiki 1.16, $wgConf is not created by default
-		//if( is_null( $wgConf ) ) {
-		//	$wgConf = new SiteConfiguration();
-		//}
+		// if( is_null( $wgConf ) ) {
+		// 	$wgConf = new SiteConfiguration();
+		// }
 
-		if( $this->isLocalSettingsFresh() ) {
+		if( !$force && $this->isLocalSettingsFresh() ) {
 			return;
 		}
 
-		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
-		else $localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		if( $this->variables['$VERSION'] ) {
+			$localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
+			$cacheFile = $this->replaceVariables( 'config-$VERSION-$SUFFIX-$WIKIID.php' );
+		}
+		else {
+			$localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+			$cacheFile = $this->replaceVariables( 'config-$SUFFIX-$WIKIID.php' );
+		}
 
-		if( $this->variables['$VERSION'] ) $cacheFile = $this->replaceVariables( 'config-$VERSION-$SUFFIX-$WIKIID.php' );
-		else $cacheFile = $this->replaceVariables( 'config-$SUFFIX-$WIKIID.php' );
+		# Populate from cache
+		if( $this->cacheDir && is_file( $this->cacheDir . '/' . $cacheFile ) ) {
+			$this->configuration = $this->readFile( $cacheFile, $this->cacheDir );
+			return;
+		}
 
 		# Populate wgConf
-		//$this->populatewgConf();
+		// $this->populatewgConf();
 
 		# Get specific configuration for this wiki
 		# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
 		# ineffective and there would be inconsistencies in this process
-		//$this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array() );
+		// $this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array() );
 
 		# For the permissions array, fix a small strangeness: when an existing default permission
 		# is true, it is not possible to make it false in the specific configuration
-		//if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) ) {
-		//	$this->configuration['general']['wgGroupPermissions'] = self::arrayMerge( $this->configuration['general']['wgGroupPermissions'], $wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix ) );
-		//}
+		// if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) ) {
+		// 	$this->configuration['general']['wgGroupPermissions'] = self::arrayMerge( $this->configuration['general']['wgGroupPermissions'],
+		// 		$wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix )
+		// 	);
+		// }
 
 		# Get specific configuration for this wiki
 		$this->populateSettings();
@@ -890,10 +940,12 @@ class MediaWikiFarm {
 		# Save this configuration in a PHP file
 		if( is_string( $this->cacheDir ) && !count( $this->errors ) ) {
 			$this->cacheFile( $this->configuration, $cacheFile );
-			file_put_contents( $this->cacheDir . '/' . $localSettingsFile, $this->createLocalSettings( $this->configuration ) );
+			if( file_put_contents( $localSettingsFile . '.tmp', $this->createLocalSettings( $this->configuration ) ) ) {
+				rename( $localSettingsFile . '.tmp', $localSettingsFile );
+			}
 		}
 
-		//$wgConf->siteParamsCallback = array( $this, 'SiteConfigurationSiteParamsCallback' );
+		// $wgConf->siteParamsCallback = array( $this, 'SiteConfigurationSiteParamsCallback' );
 	}
 
 	/**
@@ -911,7 +963,9 @@ class MediaWikiFarm {
 
 		foreach( $this->farmConfig['config'] as $configFile ) {
 
-			if( !is_array( $configFile ) ) continue;
+			if( !is_array( $configFile ) ) {
+				continue;
+			}
 
 			# Replace variables
 			$configFile = $this->replaceVariables( $configFile );
@@ -966,8 +1020,11 @@ class MediaWikiFarm {
 
 					foreach( $values as $wiki => $val ) {
 
-						if( $wiki == 'default' && $defaultKey ) $wgConf->settings[$setting][$defaultKey] = $val;
-						else $wgConf->settings[$setting][str_replace( '*', $wiki, $classicKey )] = $val;
+						if( $wiki == 'default' && $defaultKey ) {
+							$wgConf->settings[$setting][$defaultKey] = $val;
+						} else {
+							$wgConf->settings[$setting][str_replace( '*', $wiki, $classicKey )] = $val;
+						}
 					}
 				}
 			}
@@ -1043,8 +1100,9 @@ class MediaWikiFarm {
 				foreach( $theseSettings as $setting => $value ) {
 
 					if( substr( $setting, 0, 1 ) == '+' ) {
-						if( !array_key_exists( substr($setting,1), $prioritiesArray ) || $prioritiesArray[substr($setting,1)] <= 1 ) {
-							$settingsArray[substr($setting,1)] = $value;
+						$setting = substr( $setting, 1 );
+						if( !array_key_exists( $setting, $prioritiesArray ) || $prioritiesArray[$setting] <= 1 ) {
+							$settingsArray[$setting] = $value;
 							$prioritiesArray[$setting] = 1;
 						}
 					}
@@ -1058,7 +1116,7 @@ class MediaWikiFarm {
 			# Other key
 			else {
 
-				//$tags = array(); # @todo: data sources not implemented, but code to selection parameters from a tag is below
+				// $tags = array(); # @todo data sources not implemented, but code to selection parameters from a tag is below
 
 				$defaultKey = '';
 				$classicKey = '';
@@ -1084,23 +1142,27 @@ class MediaWikiFarm {
 				}*/
 				if( $defaultKey ) {
 					$suffixDefaultKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $defaultKey ).'$/', $this->variables['$SUFFIX'], $matches );
-					//$tagDefaultKey = in_array( $defaultKey, $tags );
+					// $tagDefaultKey = in_array( $defaultKey, $tags );
 				}
 
 				foreach( $theseSettings as $setting => $values ) {
 
 					# Depending if it is an array diff or not, create and initialise the variables
 					if( substr( $setting, 0, 1 ) == '+' ) {
-						if( !array_key_exists( substr($setting,1), $prioritiesArray ) ) {
-							$settingsArray[substr($setting,1)] = array();
-							$prioritiesArray[substr($setting,1)] = 0;
+						$settingIsArray = true;
+						$setting = substr( $setting, 1 );
+						if( !array_key_exists( $setting, $prioritiesArray ) ) {
+							$settingsArray[$setting] = array();
+							$prioritiesArray[$setting] = 0;
 						}
-						$thisSetting =  &$settingsArray[substr($setting,1)];
-						$thisPriority = &$prioritiesArray[substr($setting,1)];
+						$thisSetting =  &$settingsArray[$setting];
+						$thisPriority = &$prioritiesArray[$setting];
 					} else {
+						$settingIsArray = false;
 						if( !array_key_exists( $setting, $priorities ) ) {
 							$settings[$setting] = null;
-							$priorities[$setting] = 0; }
+							$priorities[$setting] = 0;
+						}
 						$thisSetting =  &$settings[$setting];
 						$thisPriority = &$priorities[$setting];
 					}
@@ -1168,9 +1230,9 @@ class MediaWikiFarm {
 
 					# Nothing was selected, clean up
 					if( $thisPriority == 0 ) {
-						if( substr( $setting, 0, 1 ) == '+' ) {
-							unset( $settingsArray[substr($setting,1)] );
-							unset( $prioritiesArray[substr($setting,1)] );
+						if( $settingIsArray ) {
+							unset( $settingsArray[$setting] );
+							unset( $prioritiesArray[$setting] );
 						} else {
 							unset( $settings[$setting] );
 							unset( $priorities[$setting] );
@@ -1198,8 +1260,9 @@ class MediaWikiFarm {
 	 */
 	function SiteConfigurationSiteParamsCallback( $wgConf, $wikiID ) {
 
-		if( substr( $wikiID, strlen( $wikiID ) - strlen( $this->variables['$SUFFIX'] ) ) != $this->variables['$SUFFIX'] )
+		if( substr( $wikiID, strlen( $wikiID ) - strlen( $this->variables['$SUFFIX'] ) ) != $this->variables['$SUFFIX'] ) {
 			return null;
+		}
 
 		return array(
 			'suffix' => $this->variables['$SUFFIX'],
@@ -1226,8 +1289,11 @@ class MediaWikiFarm {
 				$name = $matches[2];
 				$loadingMechanism = $this->detectLoadingMechanism( $type, $name );
 
-				if( is_null( $loadingMechanism ) ) $settings[$setting] = false;
-				else $this->configuration[$type.'s'][$name] = $loadingMechanism;
+				if( is_null( $loadingMechanism ) ) {
+					$settings[$setting] = false;
+				} else {
+					$this->configuration[$type.'s'][$name] = $loadingMechanism;
+				}
 			}
 			elseif( preg_match( '/^wgUse(.+)$/', $setting, $matches ) && $value === true ) {
 
@@ -1260,12 +1326,13 @@ class MediaWikiFarm {
 	 */
 	function detectLoadingMechanism( $type, $name ) {
 
-		if( !is_dir( $this->variables['$CODE'].'/'.$type.'s/'.$name ) )
+		if( !is_dir( $this->variables['$CODE'].'/'.$type.'s/'.$name ) ) {
 			return null;
+		}
 
 		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
-		if( function_exists( 'wfLoad'.ucfirst($type) ) && is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) ) {
-			return 'wfLoad'.ucfirst($type);
+		if( function_exists( 'wfLoad' . ucfirst( $type ) ) && is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) ) {
+			return 'wfLoad' . ucfirst( $type );
 		}
 
 		# A MyExtension.php file is in the directory -> assume it is the loading mechanism
@@ -1347,7 +1414,7 @@ class MediaWikiFarm {
 		# Extensions loaded with wfLoadExtension
 		$localSettings .= "\n# Extensions\n";
 		if( function_exists( 'wfLoadExtension' ) ) {
-			$localSettings .= "wfLoadExtension( 'MediaWikiFarm'" . ($this->codeDir ? ', ' . var_export( $this->farmDir . '/extension.json', true ) : '') ." );\n";
+			$localSettings .= "wfLoadExtension( 'MediaWikiFarm'" . ( $this->codeDir ? ', ' . var_export( $this->farmDir . '/extension.json', true ) : '' ) ." );\n";
 		}
 		foreach( $configuration['extensions'] as $extension => $loading ) {
 			if( $loading == 'wfLoadExtension' ) {
@@ -1393,7 +1460,7 @@ class MediaWikiFarm {
 			return;
 		}
 
-		$this->variables['$'.strtoupper($name)] = $this->replaceVariables( $this->farmConfig[$name] );
+		$this->variables[ '$' . strtoupper( $name ) ] = $this->replaceVariables( $this->farmConfig[$name] );
 	}
 
 	/**
@@ -1524,7 +1591,7 @@ class MediaWikiFarm {
 				require_once dirname( __FILE__ ) . '/Yaml.php';
 
 				try {
-					$array = MediaWikiFarm_readYAML( $prefixedFile );
+					$array = wfMediaWikiFarm_readYAML( $prefixedFile );
 				}
 				catch( RuntimeException $e ) {
 					$array = false;
@@ -1565,7 +1632,7 @@ class MediaWikiFarm {
 		}
 
 		# A null value is an empty file or value 'null'
-		if( (is_null( $array ) || $array === false) && $cachedFile && is_file( $cachedFile ) ) {
+		if( ( is_null( $array ) || $array === false ) && $cachedFile && is_file( $cachedFile ) ) {
 
 			$this->errors[] = 'Unreadable file ' . $filename;
 
@@ -1575,7 +1642,7 @@ class MediaWikiFarm {
 		# Regular return for arrays
 		if( is_array( $array ) ) {
 
-			if( $cachedFile && $directory != $this->cacheDir && (!is_file( $cachedFile ) || (filemtime( $cachedFile ) < filemtime( $prefixedFile ))) ) {
+			if( $cachedFile && $directory != $this->cacheDir && ( !is_file( $cachedFile ) || ( filemtime( $cachedFile ) < filemtime( $prefixedFile ) ) ) ) {
 				$this->cacheFile( $array, $filename.'.php' );
 			}
 
@@ -1599,10 +1666,9 @@ class MediaWikiFarm {
 	 */
 	protected function cacheFile( $array, $filename, $directory = null ) {
 
-		if( is_null( $directory ) )
+		if( !is_string( $directory ) ) {
 			$directory = $this->cacheDir;
-
-		if( !is_string( $directory ) || !is_dir( $directory ) ) return;
+		}
 
 		$prefixedFile = $directory . '/' . $filename;
 
@@ -1677,11 +1743,11 @@ class MediaWikiFarm {
 
 	/**
 	 * Write an 'array diff' (when only a subarray is modified) in plain PHP.
-	 * 
+	 *
 	 * Note that, given PHP lists and dictionaries use the same syntax, this function
 	 * try to recognise a list when the array diff has exactly the keys 0, 1, 2, 3,…
 	 * but there could be false positives.
-	 * 
+	 *
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 * @SuppressWarning(PHPMD.StaticAccess)
@@ -1693,7 +1759,7 @@ class MediaWikiFarm {
 	static function writeArrayAssignment( $array, $prefix ) {
 
 		$result = '';
-		$isList = (count( array_diff( array_keys( $array ), range( 0, count( $array ) ) ) ) == 0);
+		$isList = ( count( array_diff( array_keys( $array ), range( 0, count( $array ) ) ) ) == 0 );
 		foreach( $array as $key => $value ) {
 			$newkey = '[' . var_export( $key, true ) . ']';
 			if( $isList ) {

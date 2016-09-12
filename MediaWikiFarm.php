@@ -11,7 +11,9 @@
 // @codeCoverageIgnoreStart
 
 # Protect against web entry
-if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) exit;
+if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
+	exit;
+}
 
 # Load MediaWiki configuration
 if( defined( 'MEDIAWIKI' ) ) {

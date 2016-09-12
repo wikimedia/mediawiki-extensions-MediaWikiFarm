@@ -1,10 +1,10 @@
 <?php
 
 return array(
-	
+
 	# Placeholder configuration for a first installation as detailled in the documentation
 	'mywiki' => array(
-		
+
 		'server' => 'mywiki\.example\.org',
 		'suffix' => 'wiki',
 		'wikiID' => 'mywiki',
@@ -18,14 +18,14 @@ return array(
 
 /*
 return array(
-	
+
 	# Configuration similar to the Wikimedia farm
 	'wikimedia' => array(
-		
+
 		'server' => '(?P<lang>[a-z-]+)\.(?<family>[a-z]+)\.org',
-		
+
 		'variables' => array(
-		
+
 			array( 'variable' => 'family',
 			),
 			array( 'variable' => 'lang',
@@ -52,14 +52,14 @@ return array(
 			),
 		),
 	),
-	
+
 	# Configuration for a small wiki farm
 	'com-example' => array(
-		
+
 		'server' => '(?P<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com',
-		
+
 		'variables' => array(
-			
+
 			array( 'variable' => 'client',
 			       'file'     => 'com/example/clients.yml',
 			),
@@ -85,11 +85,11 @@ return array(
 			),
 		),
 	),
-	
+
 	# Aliases
-	
+
 	'com-example-redirect' => array(
-		
+
 		'server' => '(?P<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com',
 		'redirect' => '$client-$wiki.example.com',
 	),

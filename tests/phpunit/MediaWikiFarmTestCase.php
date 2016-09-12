@@ -11,13 +11,13 @@
 abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
 	/** @var string Configuration directory for tests. */
-	static $wgMediaWikiFarmConfigDir = '';
+	public static $wgMediaWikiFarmConfigDir = '';
 
 	/** @var string Code directory for tests. */
-	static $wgMediaWikiFarmCodeDir = '';
+	public static $wgMediaWikiFarmCodeDir = '';
 
 	/** @var string Cache directory for tests. */
-	static $wgMediaWikiFarmCacheDir = '';
+	public static $wgMediaWikiFarmCacheDir = '';
 
 	/** @var array Array with boolean values if a given backuped global previously existed. */
 	public $backupMWFGlobalsExist = array();
@@ -46,7 +46,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 		# changes will report the test as risky). MediaWiki equivalent functions (setMwGlobals)
 		# were introduced in MW 1.21 and always assume the global exists, but in counterpart
 		# they are more elaborated on serialisation heuristics.
-		//$this->backupGlobals = true;
+		// $this->backupGlobals = true;
 
 		$this->backupGlobalsBlacklist = array_merge(
 			$this->backupGlobalsBlacklist,
@@ -212,7 +212,7 @@ PHP;
 		}
 		else {
 			$this->backupMWFGlobalsExist[$key] = true;
-			$this->backupMWFGlobals[$key] = unserialize(serialize($GLOBALS[$key]));
+			$this->backupMWFGlobals[$key] = unserialize( serialize( $GLOBALS[$key] ) );
 		}
 	}
 
@@ -245,7 +245,7 @@ PHP;
 		}
 		else {
 			$this->backupMWFGlobalsExist[$key][$subkey] = true;
-			$this->backupMWFGlobals[$key][$subkey] = unserialize(serialize($GLOBALS[$key][$subkey]));
+			$this->backupMWFGlobals[$key][$subkey] = unserialize( serialize( $GLOBALS[$key][$subkey] ) );
 		}
 	}
 

@@ -45,9 +45,9 @@ class MediaWikiFarmScript {
 
 	/**
 	 * Get a command line parameter.
-	 * 
+	 *
 	 * The parameter can be removed from the list.
-	 * 
+	 *
 	 * @param string|integer $name Parameter name or position (from 0).
 	 * @param bool $shift Remove this parameter from the list?
 	 * @return string|null Value of the parameter.
@@ -63,8 +63,8 @@ class MediaWikiFarmScript {
 
 			for( $posArg = 1; $posArg < $this->argc; $posArg++ ) {
 
-				if( substr( $this->argv[$posArg], 0, strlen($name)+3 ) == '--'.$name.'=' ) {
-					$value = substr( $this->argv[$posArg], strlen($name)+3 );
+				if( substr( $this->argv[$posArg], 0, strlen( $name ) + 3 ) == '--'.$name.'=' ) {
+					$value = substr( $this->argv[$posArg], strlen( $name ) + 3 );
 					$nbArgs = 1;
 					break;
 				}
@@ -78,8 +78,9 @@ class MediaWikiFarmScript {
 
 		# Search a positional parameter
 		elseif( is_int( $name ) ) {
-			if( $name >= $this->argc )
+			if( $name >= $this->argc ) {
 				return null;
+			}
 			$value = $this->argv[$name];
 			$posArg = $name;
 			$nbArgs = 1;
@@ -97,7 +98,7 @@ class MediaWikiFarmScript {
 
 	/**
 	 * Display help and return success or error.
-	 * 
+	 *
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *
@@ -122,7 +123,8 @@ class MediaWikiFarmScript {
 HELP;
 
 		# Regular help
-		if( !$error ) echo <<<HELP
+		if( !$error ) {
+			echo <<<HELP
     | Note simple names as "runJobs" will be converted to "maintenance/runJobs.php".
     |
     | For easier use, you can alias it in your shell:
@@ -131,6 +133,7 @@ HELP;
 
 
 HELP;
+		}
 	}
 
 	/**
@@ -198,7 +201,7 @@ HELP;
 	function main() {
 
 		# Return usage
-		if( $this->argc == 2 && ($this->argv[1] == '-h' || $this->argv[1] == '--help') ) {
+		if( $this->argc == 2 && ( $this->argv[1] == '-h' || $this->argv[1] == '--help' ) ) {
 			$this->usage( false );
 			$this->status = 204;
 			return;

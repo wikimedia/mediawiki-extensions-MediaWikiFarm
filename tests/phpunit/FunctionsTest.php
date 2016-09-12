@@ -13,7 +13,7 @@ require_once 'MediaWikiFarmTestCase.php';
 class FunctionsTest extends MediaWikiFarmTestCase {
 
 	/**
-	 * Symbol for MediaWikiFarm_readYAML, which is normally loaded just-in-time in the main class.
+	 * Symbol for wfMediaWikiFarm_readYAML, which is normally loaded just-in-time in the main class.
 	 */
 	static function setUpBeforeClass() {
 
@@ -28,7 +28,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	 * Note that this test will be probably never get executed because PHPUnit depends
 	 * on this very library; just for completeness; commented out to avoid skippy test.
 	 *
-	 * @covers ::MediaWikiFarm_readYAML
+	 * @covers ::wfMediaWikiFarm_readYAML
 	 *
 	 * @expectedException RuntimeException
 	 * @expectedExceptionMessage Unavailable YAML library, please install it if you want to read YAML files
@@ -41,14 +41,14 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		MediaWikiFarm_readYAML( dirname( __FILE__ ) . '/data/config/testreading.yml' );
+		wfMediaWikiFarm_readYAML( dirname( __FILE__ ) . '/data/config/testreading.yml' );
 	}*/
 
 
 	/**
 	 * Test reading a missing file in the YAML function.
 	 *
-	 * @covers ::MediaWikiFarm_readYAML
+	 * @covers ::wfMediaWikiFarm_readYAML
 	 *
 	 * @expectedException RuntimeException
 	 * @expectedExceptionMessage Missing file
@@ -61,13 +61,13 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		MediaWikiFarm_readYAML( dirname( __FILE__ ) . '/data/config/missingfile.yml' );
+		wfMediaWikiFarm_readYAML( dirname( __FILE__ ) . '/data/config/missingfile.yml' );
 	}
 
 	/**
 	 * Test reading a badly-formatted YAML file in the YAML function.
 	 *
-	 * @covers ::MediaWikiFarm_readYAML
+	 * @covers ::wfMediaWikiFarm_readYAML
 	 *
 	 * @expectedException RuntimeException
 	 * @expectedExceptionMessage Badly-formatted YAML file
@@ -80,7 +80,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		MediaWikiFarm_readYAML( dirname( __FILE__ ) . '/data/config/badsyntax.yaml' );
+		wfMediaWikiFarm_readYAML( dirname( __FILE__ ) . '/data/config/badsyntax.yaml' );
 	}
 
 	/**
@@ -88,7 +88,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::onUnitTestsList
 	 */
-	function testOnUnitTestsListHook() {	
+	function testOnUnitTestsListHook() {
 
 		$testFiles = glob( dirname( __FILE__ ) . '/*Test.php' );
 
@@ -103,7 +103,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::arrayMerge
 	 */
-	function testArrayMerge() {	
+	function testArrayMerge() {
 
 		$this->assertEquals(
 			array(

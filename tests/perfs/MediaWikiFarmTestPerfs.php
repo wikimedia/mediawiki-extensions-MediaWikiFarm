@@ -42,7 +42,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 		self::$entryPoint2 = $entryPoint;
 		self::$profile = include dirname( __FILE__ ) . "/results/profile-$entryPoint.php";
 
-		$profile = (self::$profile+1)%2;
+		$profile = ( self::$profile + 1 ) % 2;
 		file_put_contents( dirname( __FILE__ ) . "/results/profile-$entryPoint.php", "<?php return $profile;\n" );
 
 		return self::$profile;
@@ -88,8 +88,13 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 			$server = $GLOBALS['wgMediaWikiFarm']->getVariable( '$SERVER' );
 			$localSettingsFile = $GLOBALS['wgMediaWikiFarm']->getConfigFile();
 
-			file_put_contents( dirname( __FILE__ ) . '/results/metadata.php', "<?php return array( 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile' );\n" );
-			file_put_contents( dirname( __FILE__ ) . "/results/measures-$entryPoint.php", "<?php return array( 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile', 0 => array(), 1 => array() );\n" );
+			file_put_contents( dirname( __FILE__ ) . '/results/metadata.php',
+				"<?php return array( 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile' );\n"
+			);
+			file_put_contents( dirname( __FILE__ ) . "/results/measures-$entryPoint.php",
+				"<?php return array( 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile', " .
+				"0 => array(), 1 => array() );\n"
+			);
 		}
 
 		# Load existing state
@@ -124,8 +129,12 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 			return $this->farmDir . '/tests/perfs/main.php';
 		}
 
-		if( $this->variables['$VERSION'] ) $localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
-		else $localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		if( $this->variables['$VERSION'] ) {
+			$localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
+		} else {
+			$localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
+		}
+
 		return $this->cacheDir . '/' . $localSettingsFile;
 	}
 
@@ -143,7 +152,8 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 
 		return parent::createLocalSettings( $configuration,
 			"# Start counter\nif( class_exists( 'MediaWikiFarmTestPerfs' ) ) {\n\tMediaWikiFarmTestPerfs::startCounter( 'config' );\n}\n",
-			"# Stop counter\nif( class_exists( 'MediaWikiFarmTestPerfs' ) ) {\n\tMediaWikiFarmTestPerfs::stopCounter( 'config' );\n\tMediaWikiFarmTestPerfs::writeResults();\n}\n"
+			"# Stop counter\nif( class_exists( 'MediaWikiFarmTestPerfs' ) ) {\n\tMediaWikiFarmTestPerfs::stopCounter( 'config' );" .
+				"\n\tMediaWikiFarmTestPerfs::writeResults();\n}\n"
 		);
 	}
 

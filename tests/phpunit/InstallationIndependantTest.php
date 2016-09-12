@@ -3,7 +3,6 @@
 require_once 'MediaWikiFarmTestCase.php';
 
 /**
-/**
  * Installation-independant methods tests.
  *
  * These tests operate on constant methods, i.e. which do not modify the internal state of the
@@ -36,9 +35,9 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Set up the default MediaWikiFarm object with a sample correct configuration file.
 	 */
 	protected function setUp() {
-		
+
 		parent::setUp();
-		
+
 		if( is_null( $this->farm ) ) {
 			$this->farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion.example.org' );
 		}
@@ -50,7 +49,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 *
 	 * @requires Symfony\Component\Yaml\Yaml::parse
 	 * @covers MediaWikiFarm::readFile
-	 * @covers ::MediaWikiFarm_readYAML
+	 * @covers ::wfMediaWikiFarm_readYAML
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -192,7 +191,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
-	 * @uses ::MediaWikiFarm_readYAML
+	 * @uses ::wfMediaWikiFarm_readYAML
 	 */
 	function testBadSyntaxFileReadingYAML() {
 
@@ -225,7 +224,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
-	 * @uses ::MediaWikiFarm_readYAML
+	 * @uses ::wfMediaWikiFarm_readYAML
 	 */
 	function testEmptyFileReadingYAML() {
 
@@ -337,7 +336,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 			),
 			$result );
 		unlink( self::$wgMediaWikiFarmConfigDir . '/testreading2.json' );
-	
+
 		$farm->readFile( 'subdir/testreading2.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/subdir/testreading2.json.php' ) );
 	}

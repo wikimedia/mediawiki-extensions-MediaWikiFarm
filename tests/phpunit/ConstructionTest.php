@@ -3,7 +3,6 @@
 require_once 'MediaWikiFarmTestCase.php';
 
 /**
-/**
  * @group MediaWikiFarm
  */
 class ConstructionTest extends MediaWikiFarmTestCase {
@@ -19,7 +18,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 */
 	function testSuccessfulConstructionMultiversion() {
-		
+
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
 				self::$wgMediaWikiFarmConfigDir,
@@ -42,6 +41,13 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 			'config' => array(
 				array( 'file' => 'settings.php',
 				       'key' => 'default',
+				),
+				array( 'file' => 'localsettings.php',
+				       'key' => '*testfarm',
+				       'default' => 'testfarm',
+				),
+				array( 'file' => 'globalsettings.php',
+				       'key' => '*',
 				),
 				array( 'file' => 'LocalSettings.php',
 				       'exec' => true,

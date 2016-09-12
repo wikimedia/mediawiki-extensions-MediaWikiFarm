@@ -9,9 +9,7 @@
 // @codeCoverageIgnoreStart
 
 # Include library
-// @codingStandardsIgnoreStart MediaWiki.Usage.DirUsage.FunctionFound
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestPerfs.php';
-// @codingStandardsIgnoreEnd
 
 if( $_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1' ) {
 	exit;
@@ -31,7 +29,9 @@ switch( MediaWikiFarmTestPerfs::getEntryPointProfile( 'index.php' ) ) {
 		$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
 
 		# Check the entry point is installed in a multiversion MediaWiki farm or in the classical MediaWiki extensions directory
-		if( is_file( dirname( $wgMediaWikiFarmCodeDir ) . '/includes/DefaultSettings.php' ) ) exit;
+		if( is_file( dirname( $wgMediaWikiFarmCodeDir ) . '/includes/DefaultSettings.php' ) ) {
+			exit;
+		}
 
 		# Override default MediaWikiFarm configuration
 		@include_once dirname( dirname( dirname( __FILE__ ) ) ) . '/config/MediaWikiFarmDirectories.php';

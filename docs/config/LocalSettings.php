@@ -1,10 +1,12 @@
 <?php
 /**
- * Configuration managed by MediaWikiFarm -- MonoVersion case.
+ * Configuration managed by MediaWikiFarm -- monoversion case.
  */
 
 # Protect against web entry
-if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) exit;
+if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
+	exit;
+}
 
 // Configuration directory.
 // There must be a file 'farms.yml' or 'farms.php' or 'farms.json' inside.

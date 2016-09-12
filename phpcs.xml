@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<ruleset name="MediaWiki">
+	<file>.</file>
+	<rule ref="vendor/mediawiki/mediawiki-codesniffer/MediaWiki">
+		<!-- This extension is intended to keep backward compatibility with PHP 5.2, so keep long array syntax -->
+		<exclude name="Generic.Arrays.DisallowLongArraySyntax.Found" />
+		<!-- All remaining silenced errors are for inclusion of a optional PHP config file -->
+		<exclude name="Generic.PHP.NoSilencedErrors.Discouraged" />
+		<!-- I find "catch( Exception $e ) {}" is quite clear -->
+		<exclude name="Squiz.WhiteSpace.ScopeClosingBrace.ContentBefore" />
+		<!-- This extension is intended to keep backward compatibility with PHP 5.2, so keep dirname( __FILE__ ) -->
+		<exclude name="MediaWiki.Usage.DirUsage.FunctionFound" />
+		<!-- I prefer to keep the possibility to put an "else" on a newline -->
+		<exclude name="MediaWiki.ControlStructures.IfElseStructure.SpaceBeforeElse" />
+		<!-- I don’t like "if ( true )", I prefer "if( true )" -->
+		<exclude name="MediaWiki.WhiteSpace.SpaceAfterControlStructure.Incorrect" />
+		<!-- Sometimes multiple blank lines can be better for readability of a long file -->
+		<exclude name="MediaWiki.WhiteSpace.MultipleEmptyLines.MultipleEmptyLines" />
+	</rule>
+	<!-- Lines should be less than 160 characters -->
+	<rule ref="Generic.Files.LineLength">
+		<properties>
+			<property name="lineLimit" value="160" />
+		</properties>
+	</rule>
+	<arg name="encoding" value="utf8" />
+	<arg name="extensions" value="php" />
+	<exclude-pattern>tests/perfs/results</exclude-pattern>
+	<exclude-pattern>vendor</exclude-pattern>
+</ruleset>
