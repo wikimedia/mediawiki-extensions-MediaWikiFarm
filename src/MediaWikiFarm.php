@@ -1255,7 +1255,7 @@ class MediaWikiFarm {
 	 * @codeCoverageIgnore
 	 *
 	 * @param SiteConfiguration $wgConf SiteConfiguration object.
-	 * @param string $dbName Database name.
+	 * @param string $wikiID Database name.
 	 * @return array
 	 */
 	function SiteConfigurationSiteParamsCallback( $wgConf, $wikiID ) {
@@ -1439,7 +1439,7 @@ class MediaWikiFarm {
 	 * Set a wiki property and replace placeholders (property name version).
 	 *
 	 * @param string $name Name of the property.
-	 * @param bool This variable is mandatory.
+	 * @param bool $mandatory This variable is mandatory.
 	 * @return void
 	 * @throws MWFConfigurationException When the variable is mandatory and missing.
 	 * @throws InvalidArgumentException
@@ -1714,6 +1714,7 @@ class MediaWikiFarm {
 	 * @mediawikifarm-idempotent
 	 * @SuppressWarning(PHPMD.StaticAccess)
 	 *
+	 * @param array $array1 First array.
 	 * @return array
 	 */
 	static function arrayMerge( $array1 /* ... */ ) {

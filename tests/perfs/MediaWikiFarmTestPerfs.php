@@ -162,13 +162,14 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 *
 	 * This function is very similar to its parent but is performance-spied.
 	 *
+	 * @param bool $force Whether to force loading in $this->configuration even if there is a LocalSettings.php
 	 * @return void.
 	 */
-	function getMediaWikiConfig() {
+	function getMediaWikiConfig( $force = false ) {
 
 		MediaWikiFarmTestPerfs::startCounter( 'compilation' );
 
-		parent::getMediaWikiConfig();
+		parent::getMediaWikiConfig( $force );
 
 		MediaWikiFarmTestPerfs::stopCounter( 'compilation' );
 	}

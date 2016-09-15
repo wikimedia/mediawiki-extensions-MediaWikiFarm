@@ -9,15 +9,12 @@
 /node_modules
 /vendor
 
-# Web access for multiversion farms
-# You can put e.g. dedicated 404 error pages in addition of entry points
-# If you want to version-control this subdirectory with git, you can – in this case
-# add /index.php and others in its .gitignore to avoid double version-control.)
-/www
-
 # Tests
 /tests/phpunit/data/config/versions.php
 /tests/phpunit/data/config/varwikiversions.php
 /tests/phpunit/data/config/deployments.php
 /tests/phpunit/data/config/testdeploymentsfarmversions.php
 /tests/perfs/results
+
+# Compiled code documentation
+/docs/code
