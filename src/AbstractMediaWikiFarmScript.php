@@ -7,13 +7,17 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  */
 
+// @codeCoverageIgnoreStart
+require_once dirname( __FILE__ ) . '/MediaWikiFarm.php';
+// @codeCoverageIgnoreEnd
+
 /**
  * This class contains the major part of the script utility, mainly in the main() method.
  * Using a class instead of a raw script it better for testability purposes and to use
  * less global variables (in fact none; the only global variable written are for
  * compatibility purposes, e.g. PHPUnit expects $_SERVER['argv']).
  */
-class MediaWikiFarmScript {
+abstract class AbstractMediaWikiFarmScript {
 
 	/** @var int Number of input arguments. */
 	public $argc = 0;
@@ -21,11 +25,14 @@ class MediaWikiFarmScript {
 	/** @var string[] Input arguments. */
 	public $argv = array();
 
+	/** @var string Short usage, displayed on request or error. */
+	public $shortUsage = '';
+
+	/** @var string Long usage, displayed on request. */
+	public $longUsage = '';
+
 	/** @var string Host name. */
 	public $host = '';
-
-	/** @var string Script name. */
-	public $script = '';
 
 	/** @var int Status. */
 	public $status = 0;
@@ -35,7 +42,7 @@ class MediaWikiFarmScript {
 	 *
 	 * @param int $argc Number of input arguments.
 	 * @param string[] $argv Input arguments.
-	 * @return MediaWikiFarmScript
+	 * @return AbstractMediaWikiFarmScript
 	 */
 	function __construct( $argc, $argv ) {
 
@@ -97,47 +104,26 @@ class MediaWikiFarmScript {
 	}
 
 	/**
-	 * Display help and return success or error.
+	 * Display help.
 	 *
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 *
-	 * @param bool $error Return an error code?
-	 * @return void
+	 * @param bool $long Show extended usage.
+	 * @return void.
 	 */
-	function usage( $error = true ) {
-
-		$fullPath = realpath( $this->argv[0] );
+	function usage( $long = false ) {
 
 		# Minimal help, be it an error or not
-		echo <<<HELP
-
-    Usage: php {$this->argv[0]} MediaWikiScript --wiki=hostname …
-
-    Parameters:
-
-      - MediaWikiScript: name of the script, e.g. "maintenance/runJobs.php"
-      - hostname: hostname of the wiki, e.g. "mywiki.example.org"
-
-
-HELP;
+		if( $this->shortUsage ) {
+			echo $this->shortUsage . "\n";
+		}
 
 		# Regular help
-		if( !$error ) {
-			echo <<<HELP
-    | Note simple names as "runJobs" will be converted to "maintenance/runJobs.php".
-    |
-    | For easier use, you can alias it in your shell:
-    |
-    |     alias mwscript='php $fullPath'
-
-
-HELP;
+		if( $long && $this->longUsage ) {
+			echo $this->longUsage . "\n";
 		}
 	}
 
 	/**
-	 * Load related global parameters and symbols
+	 * Load related global parameters and symbols.
 	 *
 	 * Note that, these files being loaded in a restricted scope, only the three global variables explicitely
 	 * declared as global will be affected (but obviously the variables using $GLOBALS in these files); this
@@ -145,7 +131,7 @@ HELP;
 	 *
 	 * @codeCoverageIgnore
 	 *
-	 * @return void
+	 * @return void.
 	 */
 	function load() {
 
@@ -180,7 +166,7 @@ HELP;
 	 * Perhaps in the future some other globals will be changed, like in $_SERVER: PWD, PHP_SELF,
 	 * SCRIPT_NAME, SCRIPT_FILENAME, PATH_TRANSLATED, if it is needed.
 	 *
-	 * @return void
+	 * @return void.
 	 */
 	function exportArguments() {
 
@@ -194,74 +180,38 @@ HELP;
 	}
 
 	/**
-	 * Main program for the script.
+	 * Main program for the script, preliminary part.
 	 *
-	 * @return int HTTP-like return code, in [200, 400, 404, 500].
+	 * Although it returns void, the 'status' property can say if there was an error or not,
+	 * and if it becomes different than 0, the main program will (should) return.
+	 *
+	 * @return void.
 	 */
-	function main() {
+	function premain() {
 
 		# Return usage
 		if( $this->argc == 2 && ( $this->argv[1] == '-h' || $this->argv[1] == '--help' ) ) {
-			$this->usage( false );
+			$this->usage( true );
 			$this->status = 204;
 			return;
 		}
+	}
 
-		# Get wiki
-		$this->host = $this->getParam( 'wiki' );
-		if( is_null( $this->host ) ) {
-			$this->usage();
-			$this->status = 400;
-			return;
-		}
+	/**
+	 * Main program for the script, preliminary part.
+	 *
+	 * Although it returns void, the 'status' property says if there was an error or not.
+	 *
+	 * @return void.
+	 */
+	abstract function main();
 
-		# Get script
-		$this->script = $this->getParam( 1, false );
-		if( preg_match( '/^[a-zA-Z-]+$/', $this->script ) ) {
-			$this->script = 'maintenance/' . $this->script . '.php';
-		}
-
-		if( is_null( $this->script ) ) {
-			$this->usage();
-			$this->status = 400;
-			return;
-		}
-
-		# Replace the caller script by the MediaWiki script
-		$this->getParam( 0 );
-		$this->argv[0] = $this->script;
-
-
-		# Initialise the requested version
-		$code = MediaWikiFarm::load( $this->script, $this->host );
-		if( $code != 200 ) {
-			$this->status = $code;
-			return;
-		}
-		if( !is_file( $this->script ) ) {
-			echo "Script not found.\n";
-			$this->status = 400;
-			return;
-		}
-
-
-		# Display parameters
-		# NB: avoid to use `global $wgMediaWikiFarm;` because it would create the global variable
-		# and set it to null if it does not exist
-		$wgMediaWikiFarm = $GLOBALS['wgMediaWikiFarm'];
-		$wikiID = $wgMediaWikiFarm->getVariable( '$WIKIID' );
-		$suffix = $wgMediaWikiFarm->getVariable( '$SUFFIX' );
-		$version = $wgMediaWikiFarm->getVariable( '$VERSION' ) ? $wgMediaWikiFarm->getVariable( '$VERSION' ) : 'current';
-		$code = $wgMediaWikiFarm->getVariable( '$CODE' );
-		echo <<<PARAMS
-
-Wiki:    {$this->host} (wikiID: $wikiID; suffix: $suffix)
-Version: $version: $code
-Script:  {$this->script}
-
-
-PARAMS;
-
+	/**
+	 * Main program for the script, postliminary part.
+	 *
+	 * @return void.
+	 */
+	function postmain() {
 
 		# Export symbols
 		$this->exportArguments();
@@ -272,15 +222,7 @@ PARAMS;
 	/**
 	 * Post-execution of the main script, only needed in the case 'maintenance/update.php' is run (see main documentation).
 	 *
-	 * @return void
+	 * @return void.
 	 */
-	function restInPeace() {
-
-		if( !array_key_exists( 'wgMediaWikiFarm', $GLOBALS ) || !$GLOBALS['wgMediaWikiFarm'] instanceof MediaWikiFarm ) {
-			return;
-		}
-
-		# Update version after maintenance/update.php (the only case where another version is given before execution)
-		$GLOBALS['wgMediaWikiFarm']->updateVersionAfterMaintenance();
-	}
+	function restInPeace() {}
 }

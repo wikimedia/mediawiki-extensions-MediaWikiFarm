@@ -1,6 +1,6 @@
 <?php
 /**
- * Entry point for CLI scripts in the context of a monoversion or multiversion MediaWiki farm.
+ * Entry point for CLI scripts in the context of a MediaWiki farm.
  *
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
@@ -14,7 +14,7 @@ if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
 }
 
 # Load classes
-require_once dirname( dirname( __FILE__ ) ) . '/src/Script.php';
+require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarmScript.php';
 
 # Prepare environment
 $wgMediaWikiFarmScript = new MediaWikiFarmScript( $argc, $argv );

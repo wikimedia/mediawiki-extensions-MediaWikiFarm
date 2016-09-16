@@ -63,6 +63,7 @@ HELP;
 	 * Test construction.
 	 *
 	 * @covers MediaWikiFarmScript::__construct
+	 * @covers AbstractMediaWikiFarmScript::__construct
 	 */
 	function testConstruction() {
 
@@ -76,7 +77,9 @@ HELP;
 	 * Test usage method.
 	 *
 	 * @covers MediaWikiFarmScript::usage
+	 * @covers AbstractMediaWikiFarmScript::usage
 	 * @uses MediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::__construct
 	 */
 	function testUsage1() {
 
@@ -91,7 +94,9 @@ HELP;
 	 * Test usage method.
 	 *
 	 * @covers MediaWikiFarmScript::usage
+	 * @covers AbstractMediaWikiFarmScript::usage
 	 * @uses MediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::__construct
 	 */
 	function testUsage2() {
 
@@ -99,15 +104,17 @@ HELP;
 
 		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 1, array( self::$mwscriptPath ) );
 
-		$wgMediaWikiFarmScript->usage( false );
+		$wgMediaWikiFarmScript->usage( true );
 	}
 
 	/**
 	 * Test usage method.
 	 *
 	 * @covers MediaWikiFarmScript::main
+	 * @covers AbstractMediaWikiFarmScript::premain
 	 * @uses MediaWikiFarmScript::__construct
-	 * @uses MediaWikiFarmScript::usage
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::usage
 	 */
 	function testUsage3() {
 
@@ -124,8 +131,10 @@ HELP;
 	 * Test usage method.
 	 *
 	 * @covers MediaWikiFarmScript::main
+	 * @covers AbstractMediaWikiFarmScript::premain
 	 * @uses MediaWikiFarmScript::__construct
-	 * @uses MediaWikiFarmScript::usage
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::usage
 	 */
 	function testUsage4() {
 
@@ -143,6 +152,7 @@ HELP;
 	 *
 	 * @covers MediaWikiFarmScript::exportArguments
 	 * @uses MediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::__construct
 	 * @backupGlobals enabled
 	 */
 	function testExport() {
@@ -168,6 +178,7 @@ HELP;
 	 *
 	 * @covers MediaWikiFarmScript::getParam
 	 * @uses MediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::__construct
 	 */
 	function testGetParam() {
 
@@ -207,6 +218,7 @@ HELP;
 	 * @ backupGlobals enabled
 	 * @ covers MediaWikiFarmScript::load
 	 * @ uses MediaWikiFarmScript::__construct
+	 * @ uses AbstractMediaWikiFarmScript::__construct
 	 *
 	function testLoad() {
 
@@ -226,7 +238,9 @@ HELP;
 	 * @covers MediaWikiFarmScript::main
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
-	 * @uses MediaWikiFarmScript::usage
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::usage
+	 * @uses AbstractMediaWikiFarmScript::premain
 	 */
 	function testMissingArgumentWiki() {
 
@@ -245,7 +259,9 @@ HELP;
 	 * @covers MediaWikiFarmScript::main
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
-	 * @uses MediaWikiFarmScript::usage
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::usage
+	 * @uses AbstractMediaWikiFarmScript::premain
 	 */
 	function testMissingArgumentScript() {
 
@@ -268,6 +284,8 @@ HELP;
 	 * @covers MediaWikiFarmScript::main
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::premain
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
@@ -304,6 +322,8 @@ HELP;
 	 * @covers MediaWikiFarmScript::main
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::premain
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
@@ -340,9 +360,12 @@ HELP;
 	 *
 	 * @backupGlobals enabled
 	 * @covers MediaWikiFarmScript::main
+	 * @covers AbstractMediaWikiFarmScript::premain
+	 * @covers AbstractMediaWikiFarmScript::postmain
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
 	 * @uses MediaWikiFarmScript::exportArguments
+	 * @uses AbstractMediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
@@ -398,6 +421,9 @@ OUTPUT
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
 	 * @uses MediaWikiFarmScript::exportArguments
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::premain
+	 * @uses AbstractMediaWikiFarmScript::postmain
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm

@@ -22,9 +22,14 @@
 		"mediawiki/mediawiki-codesniffer": "*"
 	},
 	"scripts": {
-		"validate-schema": "php ./scripts/validate-schema.php",
-		"phpdoc": "./vendor/bin/phpdoc -d src,scripts -e php,php.txt -t ./docs/code",
-		"parallel-lint": "./vendor/bin/parallel-lint --exclude vendor .",
-		"phpcs": "phpcs -p -s"
+		"validate-schema": "php ./bin/validate-schema.php",
+		"lint": "parallel-lint --exclude vendor .",
+		"phpcs": "phpcs -p -s",
+		"phpdoc": "phpdoc -d bin,src -t ./docs/code",
+		"test": [
+			"composer lint",
+			"composer phpcs",
+			"composer phpdoc"
+		]
 	}
 }
