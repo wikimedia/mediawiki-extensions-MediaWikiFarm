@@ -219,7 +219,7 @@ class MediaWikiFarm {
 
 		try {
 			# Initialise object
-			$wgMediaWikiFarm = new static( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
+			$wgMediaWikiFarm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
 
 			# Check existence
 			$exists = $wgMediaWikiFarm->checkExistence();
@@ -353,6 +353,9 @@ class MediaWikiFarm {
 		# Merge general array parameters into global variables
 		foreach( $this->configuration['arrays'] as $setting => $value ) {
 
+			if( !array_key_exists( $setting, $GLOBALS ) ) {
+				$GLOBALS[$setting] = array();
+			}
 			$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
 		}
 
@@ -1302,15 +1305,18 @@ class MediaWikiFarm {
 				$loadingMechanism = $this->detectLoadingMechanism( 'extension', $name );
 				if( !is_null( $loadingMechanism ) ) {
 					$this->configuration['extensions'][$name] = $loadingMechanism;
-					$settings['wgUseExtension'.$name] = true;
-					continue;
+					$settings['wgUseExtension'.preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $name )] = true;
+				} else {
+					$loadingMechanism = $this->detectLoadingMechanism( 'skin', $name );
+					if( !is_null( $loadingMechanism ) ) {
+						$this->configuration['skins'][$name] = $loadingMechanism;
+						$settings['wgUseSkin'.preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $name )] = true;
+					}
 				}
-
-				$loadingMechanism = $this->detectLoadingMechanism( 'skin', $name );
-				if( !is_null( $loadingMechanism ) ) {
-					$this->configuration['skins'][$name] = $loadingMechanism;
-					$settings['wgUseSkin'.$name] = true;
-				}
+			}
+			if( preg_match( '/[^a-zA-Z0-9_\x7f\xff]/', $setting ) ) {
+				$settings[preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $setting )] = $settings[$setting];
+				unset( $settings[$setting] );
 			}
 		}
 	}
@@ -1398,6 +1404,12 @@ class MediaWikiFarm {
 		$localSettings .= "\n# General settings\n";
 		foreach( $configuration['settings'] as $setting => $value ) {
 			$localSettings .= "\$$setting = " . var_export( $value, true ) . ";\n";
+		}
+
+		# Array settings
+		$localSettings .= "\n# Array settings\n";
+		foreach( $configuration['arrays'] as $setting => $value ) {
+			$localSettings .= "if( !array_key_exists( '$setting', \$GLOBALS ) ) {\n\t\$GLOBALS['$setting'] = array();\n}\n";
 		}
 		foreach( $configuration['arrays'] as $setting => $value ) {
 			$localSettings .= self::writeArrayAssignment( $value, "\$$setting" );
@@ -1510,9 +1522,9 @@ class MediaWikiFarm {
 		$files[] = $dir . 'FunctionsTest.php';
 		$files[] = $dir . 'InstallationIndependantTest.php';
 		$files[] = $dir . 'LoadingTest.php';
+		$files[] = $dir . 'MediaWikiFarmScriptTest.php';
 		$files[] = $dir . 'MonoversionInstallationTest.php';
 		$files[] = $dir . 'MultiversionInstallationTest.php';
-		$files[] = $dir . 'ScriptTest.php';
 
 		return true;
 	}

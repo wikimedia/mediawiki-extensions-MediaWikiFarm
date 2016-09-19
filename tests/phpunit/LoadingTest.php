@@ -91,6 +91,11 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				'wgUseSkinTestSkinRequireOnce' => true,
 				'wgUseSkinTestSkinComposer' => true,
 			),
+			'arrays' => array(
+				'wgFileExtensions' => array(
+					0 => 'djvu',
+				),
+			),
 			'extensions' => array(
 				'TestExtensionWfLoadExtension' => 'wfLoadExtension',
 				'TestExtensionBiLoading' => 'wfLoadExtension',
@@ -105,6 +110,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 			),
 		);
 		$this->backupGlobalVariables( array_keys( $result['settings'] ) );
+		$this->backupAndUnsetGlobalVariable( 'wgFileExtensions' );
 
 		$exists = MediaWikiFarm::load( 'index.php', 'a.testfarm-multiversion-test-extensions.example.org' );
 		$this->assertEquals( 200, $exists );
@@ -112,6 +118,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		$wgMediaWikiFarm->loadMediaWikiConfig();
 		$this->assertEquals( $result['settings'], $wgMediaWikiFarm->getConfiguration( 'settings' ) );
+		$this->assertEquals( $result['arrays'], $wgMediaWikiFarm->getConfiguration( 'arrays' ) );
 		$this->assertEquals( $result['extensions'], $wgMediaWikiFarm->getConfiguration( 'extensions' ) );
 		$this->assertEquals( $result['skins'], $wgMediaWikiFarm->getConfiguration( 'skins' ) );
 
@@ -125,6 +132,8 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		# Check that $result['settings'] (whose all values are 'true') is a subset of $trueGlobals
 		$this->assertEmpty( array_diff( array_keys( $result['settings'] ), $trueGlobals ) );
+		$this->assertTrue( array_key_exists( 'wgFileExtensions', $GLOBALS ) );
+		$this->assertEquals( $result['arrays']['wgFileExtensions'], $GLOBALS['wgFileExtensions'] );
 
 		# Check that extensions+skins are in ExtensionRegistry queue
 		if( class_exists( 'ExtensionRegistry' ) ) {
@@ -179,6 +188,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 				'wgUseExtensionTestExtensionMissing' => false,
 				'wgUseSkinTestSkinMissing' => false,
+				'wgUseExtensionConfirmEditQuestyCaptcha' => false,
 				'wgUseTestExtensionMissing' => true,
 				'wgUseTestSkinMissing' => true,
 

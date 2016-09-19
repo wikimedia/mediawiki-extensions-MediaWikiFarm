@@ -438,6 +438,20 @@ require_once "\$IP/extensions/Echo/Echo.php";
 \$wgMemCachedServers = array (
   0 => '127.0.0.1:11211',
 );
+
+# Array settings
+if( !array_key_exists( 'wgExtraNamespaces', \$GLOBALS ) ) {
+	\$GLOBALS['wgExtraNamespaces'] = array();
+}
+if( !array_key_exists( 'wgNamespaceAliases', \$GLOBALS ) ) {
+	\$GLOBALS['wgNamespaceAliases'] = array();
+}
+if( !array_key_exists( 'wgFileExtensions', \$GLOBALS ) ) {
+	\$GLOBALS['wgFileExtensions'] = array();
+}
+if( !array_key_exists( 'wgVirtualRestConfig', \$GLOBALS ) ) {
+	\$GLOBALS['wgVirtualRestConfig'] = array();
+}
 \$wgExtraNamespaces[100] = 'Bibliography';
 \$wgNamespaceAliases['Bibliography'] = 100;
 \$wgFileExtensions[] = 'djvu';

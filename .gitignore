@@ -3,6 +3,8 @@
 .swp
 .*.swp
 *~
+.DS_Store
+*.kate-swp
 
 # Composer & npm
 /composer.lock

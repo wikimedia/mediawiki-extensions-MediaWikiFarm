@@ -13,8 +13,11 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	/** @var string Configuration directory for tests. */
 	public static $wgMediaWikiFarmConfigDir = '';
 
-	/** @var string Code directory for tests. */
+	/** @var string Code directory of the real installation. */
 	public static $wgMediaWikiFarmCodeDir = '';
+
+	/** @var string Code directory created for tests. */
+	public static $wgMediaWikiFarmCodeDir2 = '';
 
 	/** @var string Cache directory for tests. */
 	public static $wgMediaWikiFarmCacheDir = '';
@@ -72,6 +75,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 		# Set test configuration parameters
 		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
 		self::$wgMediaWikiFarmCodeDir = dirname( $IP );
+		self::$wgMediaWikiFarmCodeDir2 = dirname( __FILE__ ) . '/data/mediawiki';
 		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';
 
 		# Create versions.php: the list of existing values for variable '$WIKIID' with their associated versions

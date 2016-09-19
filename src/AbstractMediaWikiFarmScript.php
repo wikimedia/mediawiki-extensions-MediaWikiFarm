@@ -16,6 +16,13 @@ require_once dirname( __FILE__ ) . '/MediaWikiFarm.php';
  * Using a class instead of a raw script it better for testability purposes and to use
  * less global variables (in fact none; the only global variable written are for
  * compatibility purposes, e.g. PHPUnit expects $_SERVER['argv']).
+ *
+ * It is recommended to use the following values for status (in CLI, it must be a number
+ * between 0 and 255) and explain it in long help:
+ *   - 0 = success
+ *   - 1 = missing wiki (similar to HTTP 404)
+ *   - 4 = user error, like a missing parameter (similar to HTTP 400)
+ *   - 5 = internal error in farm configuration (similar to HTTP 500)
  */
 abstract class AbstractMediaWikiFarmScript {
 
@@ -152,9 +159,7 @@ abstract class AbstractMediaWikiFarmScript {
 		@include_once dirname( dirname( __FILE__ ) ) . '/config/MediaWikiFarmDirectories.php';
 
 		# Load MediaWikiFarm class symbol
-		// @codingStandardsIgnoreStart MediaWiki.Usage.DirUsage.FunctionFound
 		require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
-		// @codingStandardsIgnoreEnd
 	}
 
 	/**
@@ -162,7 +167,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * NB: although it can be seen as superfluous, this is required in some cases to wipe off
 	 * the presence of MediaWikiFarm. The MediaWiki script 'tests/phpunit/phpunit.php' and PHPUnit
-	 * need it (precisely $_SERVER['argv']; the other are for consistency).
+	 * need it (precisely $_SERVER['argv']; the others are for consistency).
 	 * Perhaps in the future some other globals will be changed, like in $_SERVER: PWD, PHP_SELF,
 	 * SCRIPT_NAME, SCRIPT_FILENAME, PATH_TRANSLATED, if it is needed.
 	 *
@@ -182,42 +187,28 @@ abstract class AbstractMediaWikiFarmScript {
 	/**
 	 * Main program for the script, preliminary part.
 	 *
-	 * Although it returns void, the 'status' property can say if there was an error or not,
-	 * and if it becomes different than 0, the main program will (should) return.
-	 *
-	 * @return void.
+	 * @return bool If false, the main program should return.
 	 */
 	function premain() {
 
 		# Return usage
 		if( $this->argc == 2 && ( $this->argv[1] == '-h' || $this->argv[1] == '--help' ) ) {
 			$this->usage( true );
-			$this->status = 204;
-			return;
+			return false;
 		}
+
+		return true;
 	}
 
 	/**
 	 * Main program for the script, preliminary part.
 	 *
-	 * Although it returns void, the 'status' property says if there was an error or not.
+	 * This function return true in case of success (else false), but a more detailled status should be indicated in
+	 * the object property 'status'.
 	 *
-	 * @return void.
+	 * @return bool If false, there was an error in the program.
 	 */
 	abstract function main();
-
-	/**
-	 * Main program for the script, postliminary part.
-	 *
-	 * @return void.
-	 */
-	function postmain() {
-
-		# Export symbols
-		$this->exportArguments();
-
-		$this->status = 200;
-	}
 
 	/**
 	 * Post-execution of the main script, only needed in the case 'maintenance/update.php' is run (see main documentation).
@@ -225,4 +216,109 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @return void.
 	 */
 	function restInPeace() {}
+
+
+
+	/*
+	 * Utility functions
+	 * ----------------- */
+
+	/**
+	 * Recursively delete a directory.
+	 *
+	 * @param string $dir Directory path.
+	 * @param bool $deleteDir Delete the root directory (or leave it empty).
+	 * @return void.
+	 */
+	static function rmdirr( $dir, $deleteDir = true ) {
+
+		if( !is_dir( $dir ) ) {
+			if( is_file( $dir ) || is_link( $dir ) ) {
+				unlink( $dir );
+			}
+			return;
+		}
+
+		$files = array_diff( scandir( $dir ), array( '.', '..' ) );
+		foreach( $files as $file ) {
+			if( is_dir( $dir . '/' . $file ) ) {
+				self::rmdirr( $dir . '/' . $file );
+			} else {
+				unlink( $dir . '/' . $file );
+			}
+		}
+
+		if( $deleteDir ) {
+			rmdir( $dir );
+		}
+	}
+
+	/**
+	 * Recursively copy a directory.
+	 *
+	 * @param string $source Source path, can be a normal file or a directory.
+	 * @param string $dest Destination path, should be a directory.
+	 * @param bool $force If true, delete the destination directory before beginning.
+	 * @param string[] $blacklist Regular expression to blacklist some files; if begins
+	 *                 with '/', only files from the root directory will be considered.
+	 * @param string[] $whitelist Regular expression to whitelist only some files; if begins
+	 *                 with '/', only files from the root directory will be considered.
+	 * @param string $base Internal parameter to track the base directory.
+	 * @return void.
+	 */
+	function copyr( $source, $dest, $force = false, $blacklist = array(), $whitelist = null, $base = '' ) {
+
+		# Return if we are considering a blacklisted file
+		foreach( $blacklist as $file ) {
+			if( preg_match( '|' . ( $file{0} == '/' ? '^' : '' ) . $file . '$|', $base ) ) {
+				return;
+			}
+		}
+
+		# Return if we are considering a non-whitelisted file
+		if( is_array( $whitelist ) && $base ) {
+			$isWhitelisted = false;
+			foreach( $whitelist as $file ) {
+				if( preg_match( '|' . ( $file{0} == '/' ? '^' : '' ) . $file . '$|', $base ) ) {
+					$isWhitelisted = true;
+					break;
+				}
+			}
+			if( !$isWhitelisted ) {
+				return;
+			}
+		}
+
+		# Delete the destination directory (only in the first call, not in recursion)
+		if( $force && is_dir( $dest ) ) {
+			self::rmdirr( $dest, false );
+		}
+		/*elseif( is_dir( $source ) ) {
+			$dest = dirname( $dest );
+		}*/
+
+		# Leaf: file; stop the recursion by copying the file
+		if( is_file( $source ) ) {
+			if( !is_dir( $dest ) ) {
+				mkdir( $dest );
+			}
+			copy( $source, $dest . '/' . basename( $source ) );
+		}
+
+		# General node: directory - continue the recursion by calling the function on files and directories
+		elseif( is_dir( $source ) ) {
+			$files = array_diff( scandir( $source ), array( '.', '..' ) );
+			if( !is_dir( $dest ) ) {
+				mkdir( $dest );
+			}
+			foreach( $files as $file ) {
+				if( is_file( $source . '/' . $file ) ) {
+					self::copyr( $source . '/' . $file, $dest, false, $blacklist, $whitelist, $base . '/' . $file );
+				}
+				elseif( is_dir( $source . '/' . $file ) ) {
+					self::copyr( $source . '/' . $file, $dest . '/' . $file, false, $blacklist, $whitelist, $base . '/' . $file );
+				}
+			}
+		}
+	}
 }

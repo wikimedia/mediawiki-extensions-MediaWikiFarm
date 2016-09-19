@@ -49,6 +49,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 				'wgUseSkinMonoBook' => false,
 				'wgUseExtensionParserFunctions' => true,
 				'wgUseExtensionCentralAuth' => false,
+				'wgUseExtensionConfirmEdit/QuestyCaptcha' => true,
 				'wgUseLocalExtensionSmartLinks' => true,
 				'wgUseLocalExtensionChangeTabs' => false,
 				'wgServer' => 'https://a.testfarm-monoversion.example.org',
@@ -141,6 +142,9 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$farm->getMediaWikiConfig();
 		$config = $farm->getConfiguration( 'settings' );
 		$this->assertTrue( $config['wgUsePathInfo'] );
+		$this->assertFalse( array_key_exists( 'wgUseExtensionConfirmEdit/QuestyCaptcha', $config ) );
+		$this->assertTrue( array_key_exists( 'wgUseExtensionConfirmEditQuestyCaptcha', $config ) );
+		$this->assertFalse( $config['wgUseExtensionConfirmEditQuestyCaptcha'] );
 
 		# Re-load to use config cache
 		$farm = new MediaWikiFarm( 'b.testfarm-multiversion-test-extensions.example.org',
@@ -150,6 +154,9 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$farm->getMediaWikiConfig( true );
 		$config = $farm->getConfiguration( 'settings' );
 		$this->assertTrue( $config['wgUsePathInfo'] );
+		$this->assertFalse( array_key_exists( 'wgUseExtensionConfirmEdit/QuestyCaptcha', $config ) );
+		$this->assertTrue( array_key_exists( 'wgUseExtensionConfirmEditQuestyCaptcha', $config ) );
+		$this->assertFalse( $config['wgUseExtensionConfirmEditQuestyCaptcha'] );
 
 		$this->assertEquals(
 			self::$wgMediaWikiFarmCacheDir . '/testfarm-multiversion-test-extensions'

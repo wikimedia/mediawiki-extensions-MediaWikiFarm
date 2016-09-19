@@ -51,6 +51,12 @@ HELP;
     | For easier use, you can alias it in your shell:
     |
     |     alias mwscript='php $fullPath'
+    |
+    | Return codes:
+    | 0 = success
+    | 1 = missing wiki (similar to HTTP 404)
+    | 4 = user error, like a missing parameter (similar to HTTP 400)
+    | 5 = internal error in farm configuration (similar to HTTP 500)
 
 HELP;
 	}
@@ -58,24 +64,24 @@ HELP;
 	/**
 	 * Main program for the script.
 	 *
-	 * Although it returns void, the 'status' property says if there was an error or not.
+	 * This function return true in case of success (else false), but a more detailled status should be indicated in
+	 * the object property 'status'.
 	 *
-	 * @return void.
+	 * @return bool If false, there was an error in the program.
 	 */
 	function main() {
 
 		# Manage mandatory arguments.
-		$this->premain();
-		if( $this->status ) {
-			return;
+		if( !$this->premain() ) {
+			return false;
 		}
 
 		# Get wiki
 		$this->host = $this->getParam( 'wiki' );
 		if( is_null( $this->host ) ) {
 			$this->usage();
-			$this->status = 400;
-			return;
+			$this->status = 4;
+			return false;
 		}
 
 		# Get script
@@ -86,8 +92,8 @@ HELP;
 
 		if( is_null( $this->script ) ) {
 			$this->usage();
-			$this->status = 400;
-			return;
+			$this->status = 4;
+			return false;
 		}
 
 		# Replace the caller script by the MediaWiki script
@@ -97,14 +103,17 @@ HELP;
 
 		# Initialise the requested version
 		$code = MediaWikiFarm::load( $this->script, $this->host );
-		if( $code != 200 ) {
-			$this->status = $code;
-			return;
+		if( $code == 404 ) {
+			$this->status = 1;
+			return false;
+		} elseif( $code == 500 ) {
+			$this->status = 5;
+			return false;
 		}
 		if( !is_file( $this->script ) ) {
 			echo "Script not found.\n";
-			$this->status = 400;
-			return;
+			$this->status = 4;
+			return false;
 		}
 
 
@@ -125,7 +134,10 @@ Script:  {$this->script}
 
 PARAMS;
 
-		$this->postmain();
+		# Export symbols
+		$this->exportArguments();
+
+		return true;
 	}
 
 	/**

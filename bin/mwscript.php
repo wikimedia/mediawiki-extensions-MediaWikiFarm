@@ -21,9 +21,7 @@ $wgMediaWikiFarmScript = new MediaWikiFarmScript( $argc, $argv );
 
 $wgMediaWikiFarmScript->load();
 
-$wgMediaWikiFarmScript->main();
-
-if( $wgMediaWikiFarmScript->status == 200 ) {
+if( $wgMediaWikiFarmScript->main() ) {
 
 	# Execute the script
 	require $wgMediaWikiFarmScript->argv[0];

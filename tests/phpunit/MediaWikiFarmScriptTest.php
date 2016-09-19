@@ -54,6 +54,12 @@ HELP;
     | For easier use, you can alias it in your shell:
     |
     |     alias mwscript='php $mwscriptPath'
+    |
+    | Return codes:
+    | 0 = success
+    | 1 = missing wiki (similar to HTTP 404)
+    | 4 = user error, like a missing parameter (similar to HTTP 400)
+    | 5 = internal error in farm configuration (similar to HTTP 500)
 
 
 HELP;
@@ -124,7 +130,7 @@ HELP;
 
 		$wgMediaWikiFarmScript->main();
 
-		$this->assertEquals( 204, $wgMediaWikiFarmScript->status );
+		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
 	}
 
 	/**
@@ -144,7 +150,7 @@ HELP;
 
 		$wgMediaWikiFarmScript->main();
 
-		$this->assertEquals( 204, $wgMediaWikiFarmScript->status );
+		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
 	}
 
 	/**
@@ -250,7 +256,7 @@ HELP;
 
 		$wgMediaWikiFarmScript->main();
 
-		$this->assertEquals( 400, $wgMediaWikiFarmScript->status );
+		$this->assertEquals( 4, $wgMediaWikiFarmScript->status );
 	}
 
 	/**
@@ -271,7 +277,7 @@ HELP;
 
 		$wgMediaWikiFarmScript->main();
 
-		$this->assertEquals( 400, $wgMediaWikiFarmScript->status );
+		$this->assertEquals( 4, $wgMediaWikiFarmScript->status );
 		$this->assertNull( $wgMediaWikiFarmScript->script );
 		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
 		$this->assertEquals( array( self::$mwscriptPath ), $wgMediaWikiFarmScript->argv );
@@ -308,8 +314,46 @@ HELP;
 
 		$wgMediaWikiFarmScript->main();
 
-		$this->assertEquals( 404, $wgMediaWikiFarmScript->status );
+		$this->assertEquals( 1, $wgMediaWikiFarmScript->status );
 		$this->assertEquals( 'c.testfarm-monoversion-with-file-variable-without-version.example.org', $wgMediaWikiFarmScript->host );
+		$this->assertEquals( 'maintenance/showJobs.php', $wgMediaWikiFarmScript->script );
+		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
+		$this->assertEquals( array( 'maintenance/showJobs.php' ), $wgMediaWikiFarmScript->argv );
+	}
+
+	/**
+	 * Test internal problem.
+	 *
+	 * @backupGlobals enabled
+	 * @covers MediaWikiFarmScript::main
+	 * @uses MediaWikiFarmScript::__construct
+	 * @uses MediaWikiFarmScript::getParam
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::premain
+	 * @uses MediaWikiFarm::load
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::checkExistence
+	 * @uses MediaWikiFarm::checkHostVariables
+	 * @uses MediaWikiFarm::setVariable
+	 * @uses MediaWikiFarm::replaceVariables
+	 * @uses MediaWikiFarm::readFile
+	 */
+	function testInternalProblem() {
+
+		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+
+		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3,
+			array( self::$mwscriptPath, '--wiki=a.testfarm-with-badly-formatted-file-variable.example.org', 'showJobs' )
+		);
+
+		$wgMediaWikiFarmScript->main();
+
+		$this->assertEquals( 5, $wgMediaWikiFarmScript->status );
+		$this->assertEquals( 'a.testfarm-with-badly-formatted-file-variable.example.org', $wgMediaWikiFarmScript->host );
 		$this->assertEquals( 'maintenance/showJobs.php', $wgMediaWikiFarmScript->script );
 		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
 		$this->assertEquals( array( 'maintenance/showJobs.php' ), $wgMediaWikiFarmScript->argv );
@@ -348,7 +392,7 @@ HELP;
 
 		$wgMediaWikiFarmScript->main();
 
-		$this->assertEquals( 400, $wgMediaWikiFarmScript->status );
+		$this->assertEquals( 4, $wgMediaWikiFarmScript->status );
 		$this->assertEquals( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmScript->host );
 		$this->assertEquals( 'maintenance/veryMissingScript.php', $wgMediaWikiFarmScript->script );
 		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
@@ -361,7 +405,6 @@ HELP;
 	 * @backupGlobals enabled
 	 * @covers MediaWikiFarmScript::main
 	 * @covers AbstractMediaWikiFarmScript::premain
-	 * @covers AbstractMediaWikiFarmScript::postmain
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
 	 * @uses MediaWikiFarmScript::exportArguments
@@ -405,7 +448,7 @@ OUTPUT
 
 		$wgMediaWikiFarmScript->main();
 
-		$this->assertEquals( 200, $wgMediaWikiFarmScript->status );
+		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
 		$this->assertEquals( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmScript->host );
 		$this->assertEquals( 'maintenance/showJobs.php', $wgMediaWikiFarmScript->script );
 		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
@@ -423,7 +466,6 @@ OUTPUT
 	 * @uses MediaWikiFarmScript::exportArguments
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::premain
-	 * @uses AbstractMediaWikiFarmScript::postmain
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
@@ -466,10 +508,39 @@ OUTPUT
 		$wgMediaWikiFarmScript->main();
 		$wgMediaWikiFarmScript->restInPeace();
 
-		$this->assertEquals( 200, $wgMediaWikiFarmScript->status );
+		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
 
 		# For coverage
 		unset( $GLOBALS['wgMediaWikiFarm'] );
 		$wgMediaWikiFarmScript->restInPeace();
+	}
+
+	/**
+	 * Test routines for copying and deleting directories.
+	 *
+	 * @covers MediaWikiFarmScript::copyr
+	 * @covers MediaWikiFarmScript::rmdirr
+	 * @uses MediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 */
+	function testRecursiveCopyAndDelete() {
+
+		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3, array( self::$mwscriptPath, '--wiki=a.testfarm-monoversion.example.org', 'showJobs' ) );
+
+		MediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir2 . '/vstub', dirname( __FILE__ ) . '/data/copie', true, array( '/skins/TestSkinEmpty', 'TestSkinRequireOnce' ) );
+		MediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir2 . '/vstub/includes/DefaultSettings.php', dirname( __FILE__ ) . '/data/copie/newdir', true );
+		$this->assertTrue( is_file( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php' ) );
+		$this->assertTrue( is_file( dirname( __FILE__ ) . '/data/copie/newdir/DefaultSettings.php' ) );
+		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie/skins/TestSkinEmpty' ) );
+		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie/skins/TestSkinRequireOnce' ) );
+
+		MediaWikiFarmScript::rmdirr( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php', true );
+		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php' ) );
+
+		MediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir2 . '/vstub', dirname( __FILE__ ) . '/data/copie', true, array(), array( '/', '/includes', '/includes/.*' ) );
+		$this->assertTrue( is_file( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php' ) );
+
+		MediaWikiFarmScript::rmdirr( dirname( __FILE__ ) . '/data/copie', true );
+		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie' ) );
 	}
 }

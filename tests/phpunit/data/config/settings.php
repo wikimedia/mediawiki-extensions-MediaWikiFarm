@@ -36,6 +36,7 @@ return array(
 	# Extensions
 	'wgUseExtensionParserFunctions' => true,
 	'wgUseExtensionCentralAuth' => false,
+	'wgUseExtensionConfirmEdit/QuestyCaptcha' => true,
 
 	# Local extensions (flags used in some PHP file)
 	'wgUseLocalExtensionSmartLinks' => true,
