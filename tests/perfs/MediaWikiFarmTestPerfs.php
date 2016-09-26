@@ -17,7 +17,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	protected static $counters = array();
 
 	/** @var float Entry point (bis). */
-	protected static $entryPoint2 = '';
+	protected static $entryPoint = '';
 
 	/** @var float Profile (0=farm, 1=classical installation). */
 	protected static $profile = 0;
@@ -39,7 +39,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 			file_put_contents( dirname( __FILE__ ) . "/results/profile-$entryPoint.php", "<?php return 0;\n" );
 		}
 
-		self::$entryPoint2 = $entryPoint;
+		self::$entryPoint = $entryPoint;
 		self::$profile = include dirname( __FILE__ ) . "/results/profile-$entryPoint.php";
 
 		$profile = ( self::$profile + 1 ) % 2;
@@ -81,7 +81,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 		global $IP;
 
 		$profile = self::$profile;
-		$entryPoint = self::$entryPoint2;
+		$entryPoint = self::$entryPoint;
 
 		if( !is_file( dirname( __FILE__ ) . "/results/measures-$entryPoint.php" ) && $profile == 0 ) {
 

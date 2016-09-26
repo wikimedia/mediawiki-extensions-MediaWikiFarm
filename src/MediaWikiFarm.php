@@ -36,8 +36,11 @@ class MediaWikiFarm {
 	 * Properties
 	 * ---------- */
 
-	/** @var string Entry point script. */
-	protected $entryPoint = '';
+	/** @var array Parameters: EntryPoint (string) and ExtensionRegistry (bool). */
+	protected $parameters = array(
+		'EntryPoint' => '',
+		'ExtensionRegistry' => null,
+	);
 
 	/** @var string Farm code directory. */
 	protected $farmDir = '';
@@ -83,15 +86,16 @@ class MediaWikiFarm {
 	 * --------- */
 
 	/**
-	 * Get entry point script.
+	 * Get a parameter.
 	 *
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 *
-	 * @return string Entry point script.
+	 * @param string $key Parameter name.
+	 * @return mixed|null Requested parameter or null if nonexistant.
 	 */
-	function getEntryPoint() {
-		return $this->entryPoint;
+	function getParameter( $key ) {
+		if( array_key_exists( $key, $this->parameters ) ) {
+			return $this->parameters[$key];
+		}
+		return null;
 	}
 
 	/**
@@ -179,19 +183,8 @@ class MediaWikiFarm {
 	 * @return array MediaWiki configuration, either entire, either a part depending on the parameter.
 	 */
 	function getConfiguration( $key = null ) {
-		switch( $key ) {
-			case 'general':
-				return $this->configuration['general'];
-			case 'settings':
-				return $this->configuration['settings'];
-			case 'arrays':
-				return $this->configuration['arrays'];
-			case 'skins':
-				return $this->configuration['skins'];
-			case 'extensions':
-				return $this->configuration['extensions'];
-			case 'execFiles':
-				return $this->configuration['execFiles'];
+		if( array_key_exists( $key, $this->configuration ) ) {
+			return $this->configuration[$key];
 		}
 		return $this->configuration;
 	}
@@ -211,15 +204,19 @@ class MediaWikiFarm {
 	 *
 	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
 	 * @param string|null $host Host name (string) or null to use the global variables HTTP_HOST or SERVER_NAME.
+	 * @param array $parameters Parameters, see object property $parameters.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
-	static function load( $entryPoint = '', $host = null ) {
+	static function load( $entryPoint = '', $host = null, $parameters = array() ) {
 
 		global $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 
 		try {
 			# Initialise object
-			$wgMediaWikiFarm = new MediaWikiFarm( $host, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $entryPoint );
+			$wgMediaWikiFarm = new MediaWikiFarm( $host,
+				$wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir,
+				array_merge( $parameters, array( 'EntryPoint' => $entryPoint ) )
+			);
 
 			# Check existence
 			$exists = $wgMediaWikiFarm->checkExistence();
@@ -369,12 +366,10 @@ class MediaWikiFarm {
 		}
 
 		# Register this extension MediaWikiFarm to appear in Special:Version
-		if( function_exists( 'wfLoadExtension' ) ) {
+		if( $this->parameters['ExtensionRegistry'] ) {
 			wfLoadExtension( 'MediaWikiFarm', $this->codeDir ? $this->farmDir . '/extension.json' : null );
 		}
 		else {
-			// Ignore this code coverage because tests are probably run on MediaWiki 1.25+
-			// @codeCoverageIgnoreStart
 			$GLOBALS['wgExtensionCredits']['other'][] = array(
 				'path' => $this->farmDir . '/MediaWikiFarm.php',
 				'name' => 'MediaWikiFarm',
@@ -389,13 +384,12 @@ class MediaWikiFarm {
 			$GLOBALS['wgAutoloadClasses']['MWFConfigurationException'] = 'src/MediaWikiFarm.php';
 			$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = array( 'i18n' );
 			$GLOBALS['wgHooks']['UnitTestsList'][] = array( 'MediaWikiFarm::onUnitTestsList' );
-			// @codeCoverageIgnoreEnd
 		}
 
 		# Load extensions with the wfLoadExtension mechanism
 		foreach( $this->configuration['extensions'] as $extension => $value ) {
 
-			if( $value == 'wfLoadExtension' ) {
+			if( $value == 'wfLoadExtension' && $extension != 'MediaWikiFarm' ) {
 
 				wfLoadExtension( $extension );
 			}
@@ -472,12 +466,12 @@ class MediaWikiFarm {
 	 * @param string $configDir Configuration directory.
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
 	 * @param string|false $cacheDir Cache directory; if false, the cache is disabled.
-	 * @param string $entryPoint Entry point script.
+	 * @param array $parameters Parameters: EntryPoint (string) and ExtensionRegistry (bool).
 	 * @return MediaWikiFarm
 	 * @throws MWFConfigurationException When no farms.yml/php/json is found.
 	 * @throws InvalidArgumentException When wrong input arguments are passed.
 	 */
-	function __construct( $host, $configDir, $codeDir = null, $cacheDir = false, $entryPoint = '' ) {
+	function __construct( $host, $configDir, $codeDir = null, $cacheDir = false, $parameters = array() ) {
 
 		# Default value for host
 		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
@@ -506,16 +500,27 @@ class MediaWikiFarm {
 		if( !is_string( $cacheDir ) && $cacheDir !== false ) {
 			throw new InvalidArgumentException( 'Cache directory must be false or a directory' );
 		}
-		if( !is_string( $entryPoint ) ) {
-			throw new InvalidArgumentException( 'Entry point must be a string' );
+		if( !is_array( $parameters ) ) {
+			throw new InvalidArgumentException( 'Parameters must be an array' );
+		} else {
+			foreach( $parameters as $key => $value ) {
+				if( $key == 'EntryPoint' && !is_string( $value ) ) {
+					throw new InvalidArgumentException( 'Entry point must be a string' );
+				} elseif( $key == 'ExtensionRegistry' && !is_bool( $value ) ) {
+					throw new InvalidArgumentException( 'ExtensionRegistry parameter must be a bool' );
+				}
+			}
 		}
 
 		# Set parameters
 		$this->farmDir = dirname( dirname( __FILE__ ) );
-		$this->entryPoint = $entryPoint;
 		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
 		$this->cacheDir = $cacheDir;
+		$this->parameters = array_merge( array(
+			'EntryPoint' => '',
+			'ExtensionRegistry' => null,
+		), $parameters );
 
 		# Create cache directory
 		if( $this->cacheDir && !is_dir( $this->cacheDir ) ) {
@@ -701,7 +706,7 @@ class MediaWikiFarm {
 		global $IP;
 
 		# Special case for the update: new (uncached) version must be used
-		$cache = ( $this->entryPoint != 'maintenance/update.php' );
+		$cache = ( $this->parameters['EntryPoint'] != 'maintenance/update.php' );
 
 		# Read cache file
 		$deployments = array();
@@ -1284,6 +1289,11 @@ class MediaWikiFarm {
 
 		$settings = &$this->configuration['settings'];
 
+		# Autodetect if ExtensionRegistry is here
+		if( is_null( $this->parameters['ExtensionRegistry'] ) ) {
+			$this->parameters['ExtensionRegistry'] = class_exists( 'ExtensionRegistry' );
+		}
+
 		# Search for skin and extension activation
 		foreach( $settings as $setting => $value ) {
 			if( preg_match( '/^wgUse(Extension|Skin)(.+)$/', $setting, $matches ) && $value === true ) {
@@ -1319,6 +1329,11 @@ class MediaWikiFarm {
 				unset( $settings[$setting] );
 			}
 		}
+
+		$settings['wgUseExtensionMediaWikiFarm'] = true;
+		if( $this->parameters['ExtensionRegistry'] ) {
+			$this->configuration['extensions']['MediaWikiFarm'] = 'wfLoadExtension';
+		}
 	}
 
 	/**
@@ -1337,7 +1352,7 @@ class MediaWikiFarm {
 		}
 
 		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
-		if( function_exists( 'wfLoad' . ucfirst( $type ) ) && is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) ) {
+		if( $this->parameters['ExtensionRegistry'] && is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) ) {
 			return 'wfLoad' . ucfirst( $type );
 		}
 
@@ -1425,12 +1440,13 @@ class MediaWikiFarm {
 
 		# Extensions loaded with wfLoadExtension
 		$localSettings .= "\n# Extensions\n";
-		if( function_exists( 'wfLoadExtension' ) ) {
-			$localSettings .= "wfLoadExtension( 'MediaWikiFarm'" . ( $this->codeDir ? ', ' . var_export( $this->farmDir . '/extension.json', true ) : '' ) ." );\n";
-		}
 		foreach( $configuration['extensions'] as $extension => $loading ) {
 			if( $loading == 'wfLoadExtension' ) {
-				$localSettings .= "wfLoadExtension( '$extension' );\n";
+				if( $extension == 'MediaWikiFarm' ) {
+					$localSettings .= "wfLoadExtension( 'MediaWikiFarm'" . ( $this->codeDir ? ', ' . var_export( $this->farmDir . '/extension.json', true ) : '' ) ." );\n";
+				} else {
+					$localSettings .= "wfLoadExtension( '$extension' );\n";
+				}
 			}
 		}
 

@@ -33,20 +33,17 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 
 		parent::__construct( $argc, $argv );
 
-		$this->shortUsage = <<<HELP
-
+		$this->shortUsage = "
     Usage: php {$this->argv[0]} MediaWikiScript --wiki=hostname …
 
     Parameters:
 
-      - MediaWikiScript: name of the script, e.g. "maintenance/runJobs.php"
-      - hostname: hostname of the wiki, e.g. "mywiki.example.org"
-
-HELP;
+      - MediaWikiScript: name of the script, e.g. \"maintenance/runJobs.php\"
+      - hostname: hostname of the wiki, e.g. \"mywiki.example.org\"
+";
 
 		$fullPath = realpath( $this->argv[0] );
-		$this->longUsage = <<<HELP
-    | Note simple names as "runJobs" will be converted to "maintenance/runJobs.php".
+		$this->longUsage = "    | Note simple names as \"runJobs\" will be converted to \"maintenance/runJobs.php\".
     |
     | For easier use, you can alias it in your shell:
     |
@@ -57,8 +54,7 @@ HELP;
     | 1 = missing wiki (similar to HTTP 404)
     | 4 = user error, like a missing parameter (similar to HTTP 400)
     | 5 = internal error in farm configuration (similar to HTTP 500)
-
-HELP;
+";
 	}
 
 	/**
@@ -125,14 +121,12 @@ HELP;
 		$suffix = $wgMediaWikiFarm->getVariable( '$SUFFIX' );
 		$version = $wgMediaWikiFarm->getVariable( '$VERSION' ) ? $wgMediaWikiFarm->getVariable( '$VERSION' ) : 'current';
 		$code = $wgMediaWikiFarm->getVariable( '$CODE' );
-		echo <<<PARAMS
-
+		echo "
 Wiki:    {$this->host} (wikiID: $wikiID; suffix: $suffix)
 Version: $version: $code
 Script:  {$this->script}
 
-
-PARAMS;
+";
 
 		# Export symbols
 		$this->exportArguments();

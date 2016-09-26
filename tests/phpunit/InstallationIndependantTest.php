@@ -1,6 +1,7 @@
 <?php
 
 require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
  * Installation-independant methods tests.
@@ -304,6 +305,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
 	function testCacheFile() {
 
@@ -413,6 +415,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 				'MonoBook' => 'require_once',
 			),
 			'extensions' => array(
+				'MediaWikiFarm' => 'wfLoadExtension',
 				'ParserFunctions' => 'wfLoadExtension',
 				'Echo' => 'require_once',
 				'SemanticMediaWiki' => 'composer',

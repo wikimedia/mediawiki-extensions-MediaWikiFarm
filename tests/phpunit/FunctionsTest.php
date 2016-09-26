@@ -1,6 +1,7 @@
 <?php
 
 require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
  * Functions tests.

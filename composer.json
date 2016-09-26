@@ -26,8 +26,20 @@
 		"lint": "parallel-lint --exclude vendor .",
 		"phpcs": "phpcs -p -s",
 		"phpdoc": "phpdoc -d bin,src -t ./docs/code",
+		"phpunit": [
+			"sed -i 's/extends MediaWikiTestCase/extends PHPUnit_Framework_TestCase/' tests/phpunit/MediaWikiFarmTestCase.php",
+			"phpdbg -qrr `which phpunit` --strict-coverage",
+			"sed -i 's/extends PHPUnit_Framework_TestCase/extends MediaWikiTestCase/' tests/phpunit/MediaWikiFarmTestCase.php"
+		],
+		"unit": [
+			"sed -i 's/extends MediaWikiTestCase/extends PHPUnit_Framework_TestCase/' tests/phpunit/MediaWikiFarmTestCase.php",
+			"phpunit --no-coverage",
+			"sed -i 's/extends PHPUnit_Framework_TestCase/extends MediaWikiTestCase/' tests/phpunit/MediaWikiFarmTestCase.php"
+		],
 		"test": [
 			"composer lint",
+			"composer unit",
+			"composer phpunit",
 			"composer phpcs",
 			"composer phpdoc"
 		]

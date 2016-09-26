@@ -1,6 +1,15 @@
 <?php
 
 require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
+
+if( !function_exists( 'wfLoadExtension' ) ) {
+	function wfLoadExtension( $ext, $path = null ) {}
+}
+
+if( !function_exists( 'wfLoadSkin' ) ) {
+	function wfLoadSkin( $skin, $path = null ) {}
+}
 
 /**
  * Tests about extensions+skins loading.
@@ -75,6 +84,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				'wgUseTestExtensionBiLoading' => true,
 				'wgUseTestExtensionRequireOnce' => true,
 				'wgUseTestExtensionComposer' => true,
+				'wgUseExtensionMediaWikiFarm' => true,
 
 				'wgUseExtensionTestExtensionWfLoadExtension' => true,
 				'wgUseExtensionTestExtensionBiLoading' => true,
@@ -101,6 +111,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				'TestExtensionBiLoading' => 'wfLoadExtension',
 				'TestExtensionRequireOnce' => 'require_once',
 				'TestExtensionComposer' => 'composer',
+				'MediaWikiFarm' => 'wfLoadExtension',
 			),
 			'skins' => array(
 				'TestSkinWfLoadSkin' => 'wfLoadSkin',
@@ -112,7 +123,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$this->backupGlobalVariables( array_keys( $result['settings'] ) );
 		$this->backupAndUnsetGlobalVariable( 'wgFileExtensions' );
 
-		$exists = MediaWikiFarm::load( 'index.php', 'a.testfarm-multiversion-test-extensions.example.org' );
+		$exists = MediaWikiFarm::load( 'index.php', 'a.testfarm-multiversion-test-extensions.example.org', array( 'ExtensionRegistry' => true ) );
 		$this->assertEquals( 200, $exists );
 		$this->assertEquals( 'vstub', $wgMediaWikiFarm->getVariable( '$VERSION' ) );
 
@@ -121,7 +132,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( $result['arrays'], $wgMediaWikiFarm->getConfiguration( 'arrays' ) );
 		$this->assertEquals( $result['extensions'], $wgMediaWikiFarm->getConfiguration( 'extensions' ) );
 		$this->assertEquals( $result['skins'], $wgMediaWikiFarm->getConfiguration( 'skins' ) );
-
 
 		$trueGlobals = array();
 		foreach( $GLOBALS as $key => $value ) {
@@ -143,6 +153,46 @@ class LoadingTest extends MediaWikiFarmTestCase {
 			$this->assertContains( $wgStyleDirectory . '/TestSkinWfLoadSkin/skin.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
 			$this->assertContains( $wgStyleDirectory . '/TestSkinBiLoading/skin.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
 		}
+	}
+
+	/**
+	 * Test regular loading mechanisms.
+	 *
+	 * @covers MediaWikiFarm::loadMediaWikiConfig
+	 * @uses MediaWikiFarm::load
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::checkExistence
+	 * @uses MediaWikiFarm::checkHostVariables
+	 * @uses MediaWikiFarm::setVersion
+	 * @uses MediaWikiFarm::isMediaWiki
+	 * @uses MediaWikiFarm::updateVersion
+	 * @uses MediaWikiFarm::setOtherVariables
+	 * @uses MediaWikiFarm::setVariable
+	 * @uses MediaWikiFarm::replaceVariables
+	 * @uses MediaWikiFarm::getMediaWikiConfig
+	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::isLocalSettingsFresh
+	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::arrayMerge
+	 * @uses MediaWikiFarm::getConfiguration
+	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::extractSkinsAndExtensions
+	 * @uses MediaWikiFarm::detectLoadingMechanism
+	 */
+	function testRegistrationMediaWikiFarm() {
+
+		$this->backupGlobalVariable( 'wgAutoloadClasses' );
+
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
+			array( 'ExtensionRegistry' => false )
+		);
+		$farm->checkExistence();
+		$farm->loadMediaWikiConfig();
+
+		$this->assertArrayHasKey( 'MediaWikiFarm', $GLOBALS['wgAutoloadClasses'] );
+		$this->assertEquals( 'src/MediaWikiFarm.php', $GLOBALS['wgAutoloadClasses']['MediaWikiFarm'] );
 	}
 
 	/**
@@ -181,8 +231,9 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		$result = array(
 			'settings' => array(
-				'wgUseExtensionTestExtensionWfLoadExtension' => true,
-				'wgUseSkinTestSkinWfLoadSkin' => true,
+				'wgUseExtensionTestExtensionWfLoadExtension' => false,
+				'wgUseSkinTestSkinWfLoadSkin' => false,
+				'wgUseExtensionMediaWikiFarm' => true,
 
 				'wgUsePathInfo' => true,
 
@@ -197,13 +248,16 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				'wgUseTestExtensionEmpty' => true,
 				'wgUseTestSkinEmpty' => true,
 			),
-			'extensions' => array(
-				'TestExtensionWfLoadExtension' => 'wfLoadExtension',
-			),
-			'skins' => array(
-				'TestSkinWfLoadSkin' => 'wfLoadSkin',
-			),
+			'extensions' => array(),
+			'skins' => array(),
 		);
+		if( class_exists( 'ExtensionRegistry' ) ) {
+			$result['settings']['wgUseExtensionTestExtensionWfLoadExtension'] = true;
+			$result['settings']['wgUseSkinTestSkinWfLoadSkin'] = true;
+			$result['extensions']['TestExtensionWfLoadExtension'] = 'wfLoadExtension';
+			$result['extensions']['MediaWikiFarm'] = 'wfLoadExtension';
+			$result['skins']['TestSkinWfLoadSkin'] = 'wfLoadSkin';
+		}
 
 		$exists = MediaWikiFarm::load( 'index.php', 'b.testfarm-multiversion-test-extensions.example.org' );
 		$this->assertEquals( 200, $exists );

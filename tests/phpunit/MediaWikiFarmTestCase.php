@@ -7,17 +7,16 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  */
 
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/AbstractMediaWikiFarmScript.php';
+
 
 abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
 	/** @var string Configuration directory for tests. */
 	public static $wgMediaWikiFarmConfigDir = '';
 
-	/** @var string Code directory of the real installation. */
-	public static $wgMediaWikiFarmCodeDir = '';
-
 	/** @var string Code directory created for tests. */
-	public static $wgMediaWikiFarmCodeDir2 = '';
+	public static $wgMediaWikiFarmCodeDir = '';
 
 	/** @var string Cache directory for tests. */
 	public static $wgMediaWikiFarmCacheDir = '';
@@ -42,23 +41,25 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
 		# MediaWikiTestCase disables the @backupGlobals in its constructor.
 		# Although it speeds up greatly the tests, there is no more checks on global variables.
-		# Uncomment it for that. When a lot of globals are changed, as it could be the case in
-		# LoadingTest, PHPUnit takes a LOT of time to compute differences (10+ min), so the
-		# backup* functions below restore the globals to the original value to make the diffs
-		# easy to check and to declare what globals are to be changed in the test (other
-		# changes will report the test as risky). MediaWiki equivalent functions (setMwGlobals)
+		# This restores the defaut value (case-by-case choice). When a lot of globals are changed,
+		# as it could be the case in LoadingTest, PHPUnit takes a LOT of time to compute differences
+		# (10+ min), so the backup* functions below restore the globals to the original value to
+		# make the diffs easy to check and to declare what globals are to be changed in the test
+		# (other changes will report the test as risky). MediaWiki equivalent functions (setMwGlobals)
 		# were introduced in MW 1.21 and always assume the global exists, but in counterpart
 		# they are more elaborated on serialisation heuristics.
-		// $this->backupGlobals = true;
+		$this->backupGlobals = null;
 
+		# Closures are thought to be serialisable although they are not, so blacklist them
 		$this->backupGlobalsBlacklist = array_merge(
 			$this->backupGlobalsBlacklist,
 			array(
+				'factory',
 				'wgExtensionFunctions',
 				'wgHooks',
 				'wgParamDefinitions',
-				'factory',
 				'wgParser',
+				'wgFlowActions',
 			)
 		);
 	}
@@ -68,37 +69,10 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 */
 	static function setUpBeforeClass() {
 
-		global $IP;
-
-		$dirIP = basename( $IP );
-
 		# Set test configuration parameters
 		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
-		self::$wgMediaWikiFarmCodeDir = dirname( $IP );
-		self::$wgMediaWikiFarmCodeDir2 = dirname( __FILE__ ) . '/data/mediawiki';
+		self::$wgMediaWikiFarmCodeDir = dirname( __FILE__ ) . '/data/mediawiki';
 		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';
-
-		# Create versions.php: the list of existing values for variable '$WIKIID' with their associated versions
-		$versionsFile = <<<PHP
-<?php
-
-return array(
-	'atestfarm' => '$dirIP',
-);
-
-PHP;
-		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/versions.php', $versionsFile );
-
-		# Create varwikiversions.php: the list of existing values for variable '$wiki' with their associated versions
-		$versionsFile = <<<PHP
-<?php
-
-return array(
-	'a' => '$dirIP',
-);
-
-PHP;
-		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/varwikiversions.php', $versionsFile );
 
 		# Move http404.php to current directory - @todo: should be improved
 		copy( self::$wgMediaWikiFarmConfigDir . '/http404.php', 'phpunitHTTP404.php' );
@@ -109,7 +83,9 @@ PHP;
 	 */
 	protected function tearDown() {
 
-		wfRecursiveRemoveDir( self::$wgMediaWikiFarmCacheDir );
+		if( is_dir( self::$wgMediaWikiFarmCacheDir ) ) {
+			AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir );
+		}
 
 		# Restore backuped global variables
 		$this->restoreSimpleGlobalVariables();
@@ -122,9 +98,9 @@ PHP;
 	 */
 	static function tearDownAfterClass() {
 
-		unlink( self::$wgMediaWikiFarmConfigDir . '/versions.php' );
-		unlink( self::$wgMediaWikiFarmConfigDir . '/varwikiversions.php' );
-		unlink( 'phpunitHTTP404.php' );
+		if( is_file( 'phpunitHTTP404.php' ) ) {
+			unlink( 'phpunitHTTP404.php' );
+		}
 
 		parent::tearDownAfterClass();
 	}

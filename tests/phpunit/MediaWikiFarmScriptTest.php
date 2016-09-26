@@ -1,6 +1,8 @@
 <?php
 
 require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarmScript.php';
 
 /**
  * Tests about class Script.
@@ -128,7 +130,7 @@ HELP;
 
 		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 2, array( self::$mwscriptPath, '-h' ) );
 
-		$wgMediaWikiFarmScript->main();
+		$this->assertFalse( $wgMediaWikiFarmScript->main() );
 
 		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
 	}
@@ -148,7 +150,7 @@ HELP;
 
 		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 2, array( self::$mwscriptPath, '--help' ) );
 
-		$wgMediaWikiFarmScript->main();
+		$this->assertFalse( $wgMediaWikiFarmScript->main() );
 
 		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
 	}
@@ -385,6 +387,8 @@ HELP;
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
+		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
 		$this->expectOutputString( "Script not found.\n" );
 
@@ -433,6 +437,8 @@ HELP;
 		$this->backupGlobalVariable( 'argv' );
 		$this->backupGlobalSubvariable( '_SERVER', 'argc' );
 		$this->backupGlobalSubvariable( '_SERVER', 'argv' );
+		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
+		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
 		$this->expectOutputString( <<<OUTPUT
 
@@ -492,6 +498,8 @@ OUTPUT
 		$this->backupGlobalVariable( 'argv' );
 		$this->backupGlobalSubvariable( '_SERVER', 'argc' );
 		$this->backupGlobalSubvariable( '_SERVER', 'argv' );
+		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
+		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
 		$this->expectOutputString( <<<OUTPUT
 
@@ -527,8 +535,10 @@ OUTPUT
 
 		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3, array( self::$mwscriptPath, '--wiki=a.testfarm-monoversion.example.org', 'showJobs' ) );
 
-		MediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir2 . '/vstub', dirname( __FILE__ ) . '/data/copie', true, array( '/skins/TestSkinEmpty', 'TestSkinRequireOnce' ) );
-		MediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir2 . '/vstub/includes/DefaultSettings.php', dirname( __FILE__ ) . '/data/copie/newdir', true );
+		MediaWikiFarmScript::copyr(
+			self::$wgMediaWikiFarmCodeDir . '/vstub', dirname( __FILE__ ) . '/data/copie',
+			true, array( '/skins/TestSkinEmpty', 'TestSkinRequireOnce' ) );
+		MediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir . '/vstub/includes/DefaultSettings.php', dirname( __FILE__ ) . '/data/copie/newdir', true );
 		$this->assertTrue( is_file( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php' ) );
 		$this->assertTrue( is_file( dirname( __FILE__ ) . '/data/copie/newdir/DefaultSettings.php' ) );
 		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie/skins/TestSkinEmpty' ) );
@@ -537,7 +547,9 @@ OUTPUT
 		MediaWikiFarmScript::rmdirr( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php', true );
 		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php' ) );
 
-		MediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir2 . '/vstub', dirname( __FILE__ ) . '/data/copie', true, array(), array( '/', '/includes', '/includes/.*' ) );
+		MediaWikiFarmScript::copyr(
+			self::$wgMediaWikiFarmCodeDir . '/vstub', dirname( __FILE__ ) . '/data/copie',
+			true, array(), array( '/', '/includes', '/includes/.*' ) );
 		$this->assertTrue( is_file( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php' ) );
 
 		MediaWikiFarmScript::rmdirr( dirname( __FILE__ ) . '/data/copie', true );

@@ -1,6 +1,7 @@
 <?php
 
 require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
  * @group MediaWikiFarm
@@ -21,7 +22,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 */
 	static function constructMediaWikiFarm( $host ) {
 
-		$farm = new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, null, false, 'index.php' );
+		$farm = new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, null, false, array( 'EntryPoint' => 'index.php' ) );
 
 		return $farm;
 	}

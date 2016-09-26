@@ -1,6 +1,7 @@
 <?php
 
 require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
  * @group MediaWikiFarm
@@ -41,7 +42,7 @@ PHP;
 	 */
 	static function constructMediaWikiFarm( $host, $entryPoint = 'index.php' ) {
 
-		$farm = new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, $entryPoint );
+		$farm = new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => $entryPoint ) );
 
 		return $farm;
 	}
@@ -78,8 +79,6 @@ PHP;
 	 */
 	function testVariables() {
 
-		global $IP;
-
 		$this->farm->checkExistence();
 
 		/** Check variables. */
@@ -89,8 +88,8 @@ PHP;
 				'$SERVER' => 'a.testfarm-multiversion.example.org',
 				'$SUFFIX' => 'testfarm',
 				'$WIKIID' => 'atestfarm',
-				'$VERSION' => basename( $IP ),
-				'$CODE' => $IP,
+				'$VERSION' => 'vstub',
+				'$CODE' => self::$wgMediaWikiFarmCodeDir . '/vstub',
 				'$VERSIONS' => 'versions.php',
 			),
 			$this->farm->getVariables() );
@@ -226,7 +225,7 @@ PHP;
 	function testFamilyFarm() {
 
 		$farm = new MediaWikiFarm( 'a.a.testfarm-multiversion-with-file-versions-other-keys.example.org',
-		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php'
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 		$this->assertTrue( $farm->checkExistence() );
 		$this->assertEquals( 'afamilytestfarm', $farm->getVariable( '$SUFFIX' ) );
@@ -234,7 +233,7 @@ PHP;
 		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
 
 		$farm = new MediaWikiFarm( 'b.a.testfarm-multiversion-with-file-versions-other-keys.example.org',
-		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php'
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 		$this->assertTrue( $farm->checkExistence() );
 		$this->assertEquals( 'afamilytestfarm', $farm->getVariable( '$SUFFIX' ) );
@@ -242,7 +241,7 @@ PHP;
 		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
 
 		$farm = new MediaWikiFarm( 'a.b.testfarm-multiversion-with-file-versions-other-keys.example.org',
-		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php'
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 		$this->assertTrue( $farm->checkExistence() );
 		$this->assertEquals( 'bfamilytestfarm', $farm->getVariable( '$SUFFIX' ) );
@@ -279,7 +278,7 @@ PHP;
 	function testDeploymedVersions() {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
-		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php'
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 
 		$this->assertTrue( $farm->checkExistence() );
@@ -287,7 +286,7 @@ PHP;
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
-		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php'
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 		$this->assertTrue( $farm->checkExistence() );
 		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
@@ -300,7 +299,7 @@ PHP;
 	 */
 	function testDeploymedVersions2() {
 
-		# Create versions.php: the list of existing values for variable '$WIKIID' with their associated versions
+		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
 		$versionsFile = <<<PHP
 <?php
 
@@ -309,10 +308,21 @@ return array(
 );
 
 PHP;
+
+		# Create deployments.php: the list of existing values for variable '$WIKIID' with their associated deployed versions
+		$deploymentsFile = <<<PHP
+<?php
+
+return array(
+	'atestdeploymentsfarm' => 'vstub',
+);
+
+PHP;
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $deploymentsFile );
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
-		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php'
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
@@ -328,8 +338,30 @@ PHP;
 	 */
 	function testDeploymedVersions3() {
 
+		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
+		$versionsFile = <<<PHP
+<?php
+
+return array(
+	'atestdeploymentsfarm' => 'vstub2',
+);
+
+PHP;
+
+		# Create deployments.php: the list of existing values for variable '$WIKIID' with their associated deployed versions
+		$deploymentsFile = <<<PHP
+<?php
+
+return array(
+	'atestdeploymentsfarm' => 'vstub',
+);
+
+PHP;
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $deploymentsFile );
+
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
-		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'maintenance/update.php'
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'maintenance/update.php' )
 			);
 		$farm->updateVersionAfterMaintenance();
 
@@ -352,8 +384,30 @@ PHP;
 	 */
 	function testDeploymedVersions4() {
 
+		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
+		$versionsFile = <<<PHP
+<?php
+
+return array(
+	'atestdeploymentsfarm' => 'vstub2',
+);
+
+PHP;
+
+		# Create deployments.php: the list of existing values for variable '$WIKIID' with their associated deployed versions
+		$deploymentsFile = <<<PHP
+<?php
+
+return array(
+	'atestdeploymentsfarm' => 'vstub2',
+);
+
+PHP;
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $deploymentsFile );
+
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
-		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, 'index.php'
+		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
@@ -388,8 +442,12 @@ PHP;
 	 */
 	static function tearDownAfterClass() {
 
-		unlink( dirname( __FILE__ ) . '/data/config/deployments.php' );
-		unlink( dirname( __FILE__ ) . '/data/config/testdeploymentsfarmversions.php' );
+		if( is_file( dirname( __FILE__ ) . '/data/config/deployments.php' ) ) {
+			unlink( dirname( __FILE__ ) . '/data/config/deployments.php' );
+		}
+		if( is_file( dirname( __FILE__ ) . '/data/config/testdeploymentsfarmversions.php' ) ) {
+			unlink( dirname( __FILE__ ) . '/data/config/testdeploymentsfarmversions.php' );
+		}
 
 		parent::tearDownAfterClass();
 	}
