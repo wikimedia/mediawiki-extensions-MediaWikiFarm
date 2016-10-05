@@ -130,6 +130,7 @@ Script:  {$this->script}
 
 		# Export symbols
 		$this->exportArguments();
+		$GLOBALS['_SERVER']['HTTP_HOST'] = $this->host;
 
 		return true;
 	}
