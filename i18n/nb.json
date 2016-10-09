@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Jon Harald Søby"
+		]
+	},
+	"mediawikifarm-desc": "Gjør en MediaWiki-installasjon til en farm som består av flere uavhengige wikier."
+}
