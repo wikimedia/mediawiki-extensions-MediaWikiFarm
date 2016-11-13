@@ -918,7 +918,7 @@ class MediaWikiFarm {
 		}
 
 		# Populate from cache
-		if( $this->cacheDir && is_file( $this->cacheDir . '/' . $cacheFile ) ) {
+		if( !$force && $this->cacheDir && is_file( $this->cacheDir . '/' . $cacheFile ) ) {
 			$this->configuration = $this->readFile( $cacheFile, $this->cacheDir );
 			return;
 		}

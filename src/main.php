@@ -24,7 +24,7 @@ if( !isset( $wgVersion ) ) {
 }
 
 # Compile MediaWiki configuration
-$wgMediaWikiFarm->getMediaWikiConfig();
+$wgMediaWikiFarm->getMediaWikiConfig( true );
 
 # Load skins with the require_once mechanism
 foreach( $wgMediaWikiFarm->getConfiguration( 'skins' ) as $skin => $value ) {
