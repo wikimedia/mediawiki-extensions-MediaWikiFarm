@@ -1296,31 +1296,43 @@ class MediaWikiFarm {
 
 		# Search for skin and extension activation
 		foreach( $settings as $setting => $value ) {
-			if( preg_match( '/^wgUse(Extension|Skin)(.+)$/', $setting, $matches ) && $value === true ) {
+			if( preg_match( '/^wgUse(Extension|Skin)(.+)$/', $setting, $matches ) && ( $value === true || $value == 'require_once' || $value == 'composer' ) ) {
 
 				$type = strtolower( $matches[1] );
 				$name = $matches[2];
 				$loadingMechanism = $this->detectLoadingMechanism( $type, $name );
+				if( $value !== true ) {
+					$loadingMechanism = $value;
+				}
 
 				if( is_null( $loadingMechanism ) ) {
 					$settings[$setting] = false;
 				} else {
 					$this->configuration[$type.'s'][$name] = $loadingMechanism;
+					$settings[preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $setting )] = true;
 				}
 			}
-			elseif( preg_match( '/^wgUse(.+)$/', $setting, $matches ) && $value === true ) {
+			elseif( preg_match( '/^wgUse(.+)$/', $setting, $matches ) && ( $value === true || $value == 'require_once' || $value == 'composer' ) ) {
 
 				$name = $matches[1];
 
 				$loadingMechanism = $this->detectLoadingMechanism( 'extension', $name );
 				if( !is_null( $loadingMechanism ) ) {
+					if( $value !== true ) {
+						$loadingMechanism = $value;
+					}
 					$this->configuration['extensions'][$name] = $loadingMechanism;
 					$settings['wgUseExtension'.preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $name )] = true;
+					unset( $settings[$setting] );
 				} else {
 					$loadingMechanism = $this->detectLoadingMechanism( 'skin', $name );
 					if( !is_null( $loadingMechanism ) ) {
+						if( $value !== true ) {
+							$loadingMechanism = $value;
+						}
 						$this->configuration['skins'][$name] = $loadingMechanism;
 						$settings['wgUseSkin'.preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $name )] = true;
+						unset( $settings[$setting] );
 					}
 				}
 			}

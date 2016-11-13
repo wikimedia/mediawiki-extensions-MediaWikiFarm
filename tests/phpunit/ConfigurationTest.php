@@ -158,6 +158,39 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( 'wfLoadExtension', $extensions['TestExtensionBiLoading'] );
 		$this->assertEquals( 'wfLoadExtension', $extensions['TestExtensionWfLoadExtension'] );
 		$this->assertEquals( 'wfLoadExtension', $extensions['MediaWikiFarm'] );
+
+		# Now with imposed loading mechanism (1)
+		$farm = new MediaWikiFarm( 'c.testfarm-multiversion-test-extensions.example.org',
+			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false,
+			array( 'EntryPoint' => 'index.php' )
+		);
+
+		$farm->checkExistence();
+		$farm->getMediaWikiConfig();
+		$settings = $farm->getConfiguration( 'settings' );
+		$extensions = $farm->getConfiguration( 'extensions' );
+		$this->assertTrue( $settings['wgUseExtensionTestExtensionBiLoading'] );
+		$this->assertArrayHasKey( 'TestExtensionBiLoading', $extensions );
+		$this->assertEquals( 'require_once', $extensions['TestExtensionBiLoading'] );
+
+		# Now with imposed loading mechanism (2)
+		$farm = new MediaWikiFarm( 'd.testfarm-multiversion-test-extensions.example.org',
+			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false,
+			array( 'EntryPoint' => 'index.php' )
+		);
+
+		$farm->checkExistence();
+		$farm->getMediaWikiConfig();
+		$settings = $farm->getConfiguration( 'settings' );
+		#$this->assertEquals( [], $settings );
+		$extensions = $farm->getConfiguration( 'extensions' );
+		$skins = $farm->getConfiguration( 'skins' );
+		$this->assertTrue( $settings['wgUseExtensionTestExtensionBiLoading'] );
+		$this->assertTrue( $settings['wgUseSkinTestSkinBiLoading'] );
+		$this->assertArrayHasKey( 'TestExtensionBiLoading', $extensions );
+		$this->assertArrayHasKey( 'TestSkinBiLoading', $skins );
+		$this->assertEquals( 'require_once', $extensions['TestExtensionBiLoading'] );
+		$this->assertEquals( 'require_once', $skins['TestSkinBiLoading'] );
 	}
 
 	/**

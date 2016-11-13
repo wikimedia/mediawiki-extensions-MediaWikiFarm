@@ -80,21 +80,11 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		$result = array(
 			'settings' => array(
-				'wgUseTestExtensionWfLoadExtension' => true,
-				'wgUseTestExtensionBiLoading' => true,
-				'wgUseTestExtensionRequireOnce' => true,
-				'wgUseTestExtensionComposer' => true,
 				'wgUseExtensionMediaWikiFarm' => true,
-
 				'wgUseExtensionTestExtensionWfLoadExtension' => true,
 				'wgUseExtensionTestExtensionBiLoading' => true,
 				'wgUseExtensionTestExtensionRequireOnce' => true,
 				'wgUseExtensionTestExtensionComposer' => true,
-
-				'wgUseTestSkinWfLoadSkin' => true,
-				'wgUseTestSkinBiLoading' => true,
-				'wgUseTestSkinRequireOnce' => true,
-				'wgUseTestSkinComposer' => true,
 
 				'wgUseSkinTestSkinWfLoadSkin' => true,
 				'wgUseSkinTestSkinBiLoading' => true,
