@@ -55,10 +55,13 @@ class MediaWikiFarm {
 	protected $cacheDir = '/tmp/mw-cache';
 
 	/** @var array Configuration for this farm. */
-	protected $farmConfig = array();
+	protected $farmConfig = array(
+		'coreconfig' => array(),
+	);
 
 	/** @var string[] Variables related to the current request. */
 	protected $variables = array(
+		'$FARM' => '',
 		'$SERVER' => '',
 		'$SUFFIX' => '',
 		'$WIKIID' => '',
@@ -310,6 +313,24 @@ class MediaWikiFarm {
 		# For now, remove loading of one config file to improve a bit performance
 		// $this->setWgConf();
 
+		# Cache the result
+		if( $this->cacheDir ) {
+			$variables = $this->variables;
+			$variables['$CORECONFIG'] = $this->farmConfig['coreconfig'];
+			$variables['$CONFIG'] = array();
+			foreach( $this->farmConfig['config'] as $file ) {
+				if( is_array( $file ) && ! ( array_key_exists( 'executable', $file ) && $file['executable'] ) ) {
+					$variables['$CONFIG'][] = $file['file'];
+				}
+			}
+			$versions = $this->readFile( 'versions.php', dirname( $this->cacheDir ), false );
+			if( !is_array( $versions ) ) {
+				$versions = array();
+			}
+			$versions[$this->variables['$SERVER']] = $variables;
+			$this->cacheFile( $versions, 'versions.php', dirname( $this->cacheDir ) );
+		}
+
 		return true;
 	}
 
@@ -527,12 +548,33 @@ class MediaWikiFarm {
 			mkdir( $this->cacheDir );
 		}
 
+		# Shortcut loading
+		if( $this->cacheDir && ( $result = $this->readFile( 'versions.php', $this->cacheDir, false ) ) && array_key_exists( $host, $result ) ) {
+			$result = $result[$host];
+			$fresh = true;
+			$myfreshness = filemtime( $this->cacheDir . '/versions.php' );
+			foreach( $result['$CORECONFIG'] as $coreconfig ) {
+				if( filemtime( $this->configDir . '/' . $coreconfig ) > $myfreshness ) {
+					$fresh = false;
+					break;
+				}
+			}
+			if( $fresh ) {
+				$this->farmConfig['config'] = $result['$CONFIG'];
+				unset( $result['$CONFIG'] );
+				unset( $result['$CORECONFIG'] );
+				$this->variables = $result;
+				$this->cacheDir .= '/' . $result['$FARM'];
+				return;
+			}
+		}
+
 		# Now select the right farm amoung all farms
 		$result = $this->selectFarm( $host, false, 5 );
 
 		# Success
 		if( $result['farm'] ) {
-			$this->farmConfig = $result['config'];
+			$this->farmConfig = array_merge( $result['config'], $this->farmConfig );
 			$this->variables = array_merge( $result['variables'], $this->variables );
 			if( $this->cacheDir ) {
 				$this->cacheDir .= '/' . $result['farm'];
@@ -541,6 +583,7 @@ class MediaWikiFarm {
 				mkdir( $this->cacheDir );
 			}
 			$this->variables['$SERVER'] = $result['host'];
+			$this->variables['$FARM'] = $result['farm'];
 			return;
 		}
 
@@ -576,10 +619,13 @@ class MediaWikiFarm {
 		# Read the farms configuration
 		if( !$farms ) {
 			// @codingStandardsIgnoreStart
-			if( $farms = $this->readFile( 'farms.yml', $this->configDir ) );
-			elseif( $farms = $this->readFile( 'farms.php', $this->configDir ) );
-			elseif( $farms = $this->readFile( 'farms.json', $this->configDir ) );
-			else {
+			if( $farms = $this->readFile( 'farms.yml', $this->configDir ) ) {
+				$this->farmConfig['coreconfig'][] = 'farms.yml';
+			} elseif( $farms = $this->readFile( 'farms.php', $this->configDir ) ) {
+				$this->farmConfig['coreconfig'][] = 'farms.php';
+			} elseif( $farms = $this->readFile( 'farms.json', $this->configDir ) ) {
+				$this->farmConfig['coreconfig'][] = 'farms.json';
+			} else {
 				return array( 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => false, 'redirects' => $redirects );
 			}
 			// @codingStandardsIgnoreEnd
@@ -655,12 +701,14 @@ class MediaWikiFarm {
 			}
 
 			# Really check if the variable is in the listing file
-			$choices = $this->readFile( $this->replaceVariables( $variable['file'] ), $this->configDir );
+			$filename = $this->replaceVariables( $variable['file'] );
+			$choices = $this->readFile( $filename, $this->configDir );
 			if( $choices === false ) {
 				throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $variable['file'] .
 					'\' defining existing values for variable \'' . $key . '\''
 				);
 			}
+			$this->farmConfig['coreconfig'][] = $filename;
 
 			# Check if the array is a simple list of wiki identifiers without version information…
 			if( array_keys( $choices ) === range( 0, count( $choices ) - 1 ) ) {
@@ -689,10 +737,6 @@ class MediaWikiFarm {
 	 * Set the version.
 	 *
 	 * Depending of the installation mode, use a cache file, search the version in a file, or does nothing for monoversion case.
-	 *
-	 * @todo “Merge” checkHostVariables and setVersion: the key ‘deployments’, when present, should be handled as soon as possible
-	 *       to avoid reading all ‘variables’ files; in this case the keys in the ‘deployments’ file must be host names and will
-	 *       directly answer whether or not the wiki exists and returns its version.
 	 *
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
@@ -725,6 +769,7 @@ class MediaWikiFarm {
 		if( is_string( $this->codeDir ) && array_key_exists( $this->variables['$WIKIID'], $deployments ) ) {
 			$this->variables['$VERSION'] = $deployments[$this->variables['$WIKIID']];
 			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
+			$this->farmConfig['coreconfig'][] = $this->variables['$DEPLOYMENTS'];
 		}
 		# Multiversion mode – version was given in a ‘variables’ file
 		elseif( is_string( $this->codeDir ) && is_string( $this->variables['$VERSION'] ) ) {
@@ -762,6 +807,7 @@ class MediaWikiFarm {
 			}
 
 			# Cache the version
+			$this->farmConfig['coreconfig'][] = $this->variables['$VERSIONS'];
 			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
 			if( $cache ) {
 				$this->updateVersion( $this->variables['$VERSION'] );
@@ -979,7 +1025,7 @@ class MediaWikiFarm {
 			$configFile = $this->replaceVariables( $configFile );
 
 			# Executable config files
-			if( array_key_exists( 'exec', $configFile ) && $configFile['exec'] ) {
+			if( array_key_exists( 'executable', $configFile ) && $configFile['executable'] ) {
 
 				$this->configuration['execFiles'][] = $this->configDir . '/' . $configFile['file'];
 				continue;
@@ -1090,7 +1136,7 @@ class MediaWikiFarm {
 			$configFile = $this->replaceVariables( $configFile );
 
 			# Executable config files
-			if( array_key_exists( 'exec', $configFile ) && $configFile['exec'] ) {
+			if( array_key_exists( 'executable', $configFile ) && $configFile['executable'] ) {
 
 				$this->configuration['execFiles'][] = $this->configDir . '/' . $configFile['file'];
 				continue;
@@ -1295,7 +1341,8 @@ class MediaWikiFarm {
 		}
 
 		# Search for skin and extension activation
-		foreach( $settings as $setting => $value ) {
+		$settings2 = $settings; # This line is about avoiding the behavious in PHP 5 where newly-added items are evaluated
+		foreach( $settings2 as $setting => $value ) {
 			if( preg_match( '/^wgUse(Extension|Skin)(.+)$/', $setting, $matches ) && ( $value === true || $value == 'require_once' || $value == 'composer' ) ) {
 
 				$type = strtolower( $matches[1] );
@@ -1575,9 +1622,10 @@ class MediaWikiFarm {
 	 *
 	 * @param string $filename Name of the requested file.
 	 * @param string $directory Parent directory.
+	 * @param bool $cache The successfully file read must be cached.
 	 * @return array|false The interpreted array in case of success, else false.
 	 */
-	function readFile( $filename, $directory = '' ) {
+	function readFile( $filename, $directory = '', $cache = true ) {
 
 		# Check parameter
 		if( !is_string( $filename ) ) {
@@ -1590,7 +1638,7 @@ class MediaWikiFarm {
 
 		# Check the file exists
 		$prefixedFile = $directory ? $directory . '/' . $filename : $filename;
-		$cachedFile = $this->cacheDir !== false ? $this->cacheDir . '/' . $filename . '.php' : false;
+		$cachedFile = $this->cacheDir !== false && $cache ? $this->cacheDir . '/' . $filename . '.php' : false;
 		if( !is_file( $prefixedFile ) ) {
 			$format = null;
 		}

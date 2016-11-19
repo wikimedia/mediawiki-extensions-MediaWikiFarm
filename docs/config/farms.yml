@@ -6,7 +6,7 @@ mywiki:
     wikiID: 'mywiki'
     config:
       - file: 'LocalSettings.php'
-        exec: true
+        executable: true
 
 
 ## Configuration similar to the Wikimedia farm

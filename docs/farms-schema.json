@@ -98,7 +98,7 @@
 										"description": "Default key.",
 										"pattern": "^[a-z$-]+$"
 									},
-									"exec": {
+									"executable": {
 										"type": "boolean",
 										"description": "This PHP file must be directly read.",
 										"default": false

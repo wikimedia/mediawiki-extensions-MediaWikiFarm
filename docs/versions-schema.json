@@ -1,0 +1,57 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"name": "Versions cache file.",
+	"type": "object",
+	"additionalProperties": false,
+	"patternProperties": {
+		"^[a-zA-Z0-9\\._-]+$": {
+			"type": "object",
+			"description": "A particular host.",
+			"properties": {
+				"variables": {
+					"type": "object",
+					"description": "Dictionary variable-value.",
+					"additionalProperties": false,
+					"properties": {
+						"$FARM": {
+							"type": "string",
+							"description": "Farm name.",
+							"pattern": "^[a-zA-Z0-9\\._-]+$"
+						},
+						"$SERVER": {
+							"type": "string",
+							"description": "Server host (must be the same as the first key in the hierarchy).",
+							"pattern": "^[a-zA-Z0-9\\._-]+$"
+						},
+						"$SUFFIX": {
+							"type": "string",
+							"description": "Suffix of the wiki.",
+							"pattern": "^[a-zA-Z0-9\\._-]+$"
+						},
+						"$WIKIID": {
+							"type": "string",
+							"description": "WikiID of the wiki.",
+							"pattern": "^[a-zA-Z0-9\\._-]+$"
+						},
+						"$VERSION": {
+							"type": "string",
+							"description": "Version of the wiki.",
+							"pattern": "^[a-zA-Z0-9\\._-]+$"
+						},
+						"$CODE": {
+							"type": "string",
+							"description": "MediaWiki code path.",
+							"pattern": "^[a-zA-Z0-9\\/\\._-]+$"
+						}
+					},
+					"patternProperties": {
+						"^\\$[a-z]+$": {
+							"type": "string",
+							"description": "Value of the variable."
+						}
+					}
+				}
+			}
+		}
+	}
+}

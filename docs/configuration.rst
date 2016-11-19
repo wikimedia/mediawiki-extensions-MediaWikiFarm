@@ -45,7 +45,7 @@ The main config file is a dictionary. Here is an example in YAML syntax with all
           - file: 'PrivateSettings.yml'
             key: '*'
           - file: 'ExecSettings.php'
-            exec: true
+            executable: true
     
     # Internally redirect .com to .org (obviously it can also be done on the HTTP level)
     '(?<lang>[a-z]+)\.(?<family>[a-z]+)\.com':
@@ -110,7 +110,7 @@ The schema of each file depends on the other key defined here:
 
 * If there is a subkey 'key' with another value containing '*' (mandatory character), the file content must be a dictionary where keys are MediaWiki configuration parameters and values must be dictionaries with keys (which will be interpreted by replacing the star by the key and by replacing other variables) and values are the corresponding values. The corresponding priority depends on the resulting keys. There should be also a subkey 'default' containing only variables; any key named 'default' in the file content will be replaced by this value.
 
-* If there is a subkey 'exec' with boolean value 'true', the file content is interpreted as a raw PHP and will always be executed after all dictionaries listed above are executed. Hence it have a super-priority, in addition of the fact all the power of PHP can be used.
+* If there is a subkey 'executable' with boolean value 'true', the file content is interpreted as a raw PHP and will always be executed after all dictionaries listed above are executed. Hence it have a super-priority, in addition of the fact all the power of PHP can be used.
 
 In order to make to the configuration easier to read, it is adviced to only use PHP files where it is required: definition of functions, conditionnally define configuration parameters (if their unconditional presence is harmful).
 

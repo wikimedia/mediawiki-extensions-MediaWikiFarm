@@ -40,6 +40,9 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 			'suffix' => 'testfarm',
 			'wikiID' => '$wikitestfarm',
 			'versions' => 'versions.php',
+			'coreconfig' => array(
+				'farms.php',
+			),
 			'config' => array(
 				array( 'file' => 'settings.php',
 				       'key' => 'default',
@@ -52,7 +55,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				       'key' => '*',
 				),
 				array( 'file' => 'LocalSettings.php',
-				       'exec' => true,
+				       'executable' => true,
 				),
 			),
 		);
@@ -91,6 +94,9 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 			'suffix' => 'testfarm',
 			'wikiID' => '$wikitestfarm',
 			'HTTP404' => 'phpunitHTTP404.php',
+			'coreconfig' => array(
+				'farms.php',
+			),
 			'config' => array(
 				array( 'file' => 'settings.php',
 				       'key' => 'default',
@@ -107,7 +113,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				       'key' => '*',
 				),
 				array( 'file' => 'LocalSettings.php',
-				       'exec' => true,
+				       'executable' => true,
 				),
 			),
 		);

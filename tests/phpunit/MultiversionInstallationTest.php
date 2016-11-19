@@ -65,6 +65,7 @@ PHP;
 		$this->assertEquals(
 			array(
 				'$wiki' => 'a',
+				'$FARM' => 'testfarm-multiversion',
 				'$SERVER' => 'a.testfarm-multiversion.example.org',
 				'$SUFFIX' => '',
 				'$WIKIID' => '',
@@ -85,6 +86,7 @@ PHP;
 		$this->assertEquals(
 			array(
 				'$wiki' => 'a',
+				'$FARM' => 'testfarm-multiversion',
 				'$SERVER' => 'a.testfarm-multiversion.example.org',
 				'$SUFFIX' => 'testfarm',
 				'$WIKIID' => 'atestfarm',

@@ -266,7 +266,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @param string $base Internal parameter to track the base directory.
 	 * @return void.
 	 */
-	function copyr( $source, $dest, $force = false, $blacklist = array(), $whitelist = null, $base = '' ) {
+	static function copyr( $source, $dest, $force = false, $blacklist = array(), $whitelist = null, $base = '' ) {
 
 		# Return if we are considering a blacklisted file
 		foreach( $blacklist as $file ) {

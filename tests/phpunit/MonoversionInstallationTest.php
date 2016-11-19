@@ -45,6 +45,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 		$this->assertEquals(
 			array(
 				'$wiki' => 'a',
+				'$FARM' => 'testfarm-monoversion',
 				'$SERVER' => 'a.testfarm-monoversion.example.org',
 				'$SUFFIX' => '',
 				'$WIKIID' => '',
@@ -67,6 +68,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 		$this->assertEquals(
 			array(
 				'$wiki' => 'a',
+				'$FARM' => 'testfarm-monoversion',
 				'$SERVER' => 'a.testfarm-monoversion.example.org',
 				'$SUFFIX' => 'testfarm',
 				'$WIKIID' => 'atestfarm',

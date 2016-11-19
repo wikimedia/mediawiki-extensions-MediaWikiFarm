@@ -241,6 +241,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$this->assertFalse( $config['wgUseExtensionConfirmEditQuestyCaptcha'] );
 
 		# Re-load to use config cache
+		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir . '/versions.php' );
 		$farm = new MediaWikiFarm( 'b.testfarm-multiversion-test-extensions.example.org',
 			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', self::$wgMediaWikiFarmCacheDir,
 			array( 'EntryPoint' => 'index.php' )
@@ -303,6 +304,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( 200000, $config['wgMemCachedTimeout'] );
 
 		# Re-load to use config cache
+		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir . '/versions.php' );
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org',
 			self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir,
 			array( 'EntryPoint' => 'index.php' )
