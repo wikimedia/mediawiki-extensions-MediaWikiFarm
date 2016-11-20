@@ -317,12 +317,7 @@ class MediaWikiFarm {
 		if( $this->cacheDir ) {
 			$variables = $this->variables;
 			$variables['$CORECONFIG'] = $this->farmConfig['coreconfig'];
-			$variables['$CONFIG'] = array();
-			foreach( $this->farmConfig['config'] as $file ) {
-				if( is_array( $file ) && ! ( array_key_exists( 'executable', $file ) && $file['executable'] ) ) {
-					$variables['$CONFIG'][] = $file['file'];
-				}
-			}
+			$variables['$CONFIG'] = $this->farmConfig['config'];
 			$versions = $this->readFile( 'versions.php', dirname( $this->cacheDir ), false );
 			if( !is_array( $versions ) ) {
 				$versions = array();
@@ -905,10 +900,15 @@ class MediaWikiFarm {
 			$localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
 		}
 
+		# Check there is a LocalSettings.php file
+		if( !is_file( $localSettingsFile ) ) {
+			return false;
+		}
+
 		# Check modification time of original config files
 		$oldness = 0;
 		foreach( $this->farmConfig['config'] as $configFile ) {
-			if( !is_array( $configFile ) || !is_string( $configFile['file'] ) ) {
+			if( !is_array( $configFile ) || !is_string( $configFile['file'] ) || ( array_key_exists( 'executable', $configFile ) && $configFile['executable'] ) ) {
 				continue;
 			}
 			$file = $this->configDir . '/' . $this->replaceVariables( $configFile['file'] );
@@ -918,7 +918,7 @@ class MediaWikiFarm {
 			$oldness = max( $oldness, filemtime( $file ) );
 		}
 
-		return is_file( $localSettingsFile ) && ( filemtime( $localSettingsFile ) >= $oldness );
+		return filemtime( $localSettingsFile ) >= $oldness;
 	}
 
 	/**

@@ -34,7 +34,7 @@ mywiki:
 #      - file: 'org/PrivateSettings.yml'
 #        key: '*'
 #      - file: 'org/ExecSettings.php'
-#        exec: true
+#        executable: true
 #
 ## Configuration for a small wiki farm
 #com-example:
@@ -60,7 +60,7 @@ mywiki:
 #      - file: 'com/example/PrivateSettings.yml'
 #        key: '*'
 #      - file: 'com/example/ExecSettings.php'
-#        exec: true
+#        executable: true
 #
 ## Aliases
 #
