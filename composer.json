@@ -17,6 +17,7 @@
 	"require-dev": {
 		"justinrainbow/json-schema": "~3.0",
 		"phpdocumentor/phpdocumentor": "*",
+		"phpunit/phpunit": "~4.8",
 		"jakub-onderka/php-parallel-lint": "*",
 		"phpmd/phpmd": "*",
 		"mediawiki/mediawiki-codesniffer": "*"
