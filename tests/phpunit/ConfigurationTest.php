@@ -182,7 +182,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$farm->checkExistence();
 		$farm->getMediaWikiConfig();
 		$settings = $farm->getConfiguration( 'settings' );
-		#$this->assertEquals( [], $settings );
 		$extensions = $farm->getConfiguration( 'extensions' );
 		$skins = $farm->getConfiguration( 'skins' );
 		$this->assertTrue( $settings['wgUseExtensionTestExtensionBiLoading'] );

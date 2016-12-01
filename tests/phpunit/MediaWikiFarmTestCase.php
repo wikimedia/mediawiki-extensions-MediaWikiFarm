@@ -9,6 +9,13 @@
 
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/AbstractMediaWikiFarmScript.php';
 
+# These tests can be called either directly with PHPUnit or through the PHPUnit infrastructure
+# inside MediaWiki (the wrapper tests/phpunit/phpunit.php).
+# When executing PHPUnit alone, this class does not exist
+if( !class_exists( 'MediaWikiTestCase' ) ) {
+
+	class MediaWikiTestCase extends PHPUnit_Framework_TestCase {}
+}
 
 abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
@@ -76,6 +83,10 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
 		# Move http404.php to current directory - @todo: should be improved
 		copy( self::$wgMediaWikiFarmConfigDir . '/http404.php', 'phpunitHTTP404.php' );
+
+		# Dynamically create these files to avoid CI error reports
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/badsyntax.json', "{\n\t\"element1\",\n}\n" );
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/empty.json', "null\n" );
 	}
 
 	/**
@@ -100,6 +111,12 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
 		if( is_file( 'phpunitHTTP404.php' ) ) {
 			unlink( 'phpunitHTTP404.php' );
+		}
+		if( is_file( self::$wgMediaWikiFarmConfigDir . '/badsyntax.json' ) ) {
+			unlink( self::$wgMediaWikiFarmConfigDir . '/badsyntax.json' );
+		}
+		if( is_file( self::$wgMediaWikiFarmConfigDir . '/empty.json' ) ) {
+			unlink( self::$wgMediaWikiFarmConfigDir . '/empty.json' );
 		}
 
 		parent::tearDownAfterClass();

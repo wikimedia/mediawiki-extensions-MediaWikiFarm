@@ -539,7 +539,9 @@ class MediaWikiFarm {
 		}
 
 		# Shortcut loading
+		// @codingStandardsIgnoreStart
 		if( $this->cacheDir && ( $result = $this->readFile( 'versions.php', $this->cacheDir, false ) ) && array_key_exists( $host, $result ) ) {
+		// @codingStandardsIgnoreEnd
 			$result = $result[$host];
 			$fresh = true;
 			$myfreshness = filemtime( $this->cacheDir . '/versions.php' );

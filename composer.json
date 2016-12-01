@@ -16,27 +16,21 @@
 	},
 	"require-dev": {
 		"justinrainbow/json-schema": "~3.0",
-		"phpdocumentor/phpdocumentor": "*",
 		"phpunit/phpunit": "~4.8",
 		"jakub-onderka/php-parallel-lint": "*",
 		"phpmd/phpmd": "*",
 		"mediawiki/mediawiki-codesniffer": "*"
 	},
+	"suggest": {
+		"phpdocumentor/phpdocumentor": "*"
+	},
 	"scripts": {
 		"validate-schema": "php ./bin/validate-schema.php",
 		"lint": "parallel-lint --exclude vendor .",
 		"phpcs": "phpcs -p -s",
-		"phpdoc": "phpdoc -d bin,src -t ./docs/code",
-		"phpunit": [
-			"sed -i 's/extends MediaWikiTestCase/extends PHPUnit_Framework_TestCase/' tests/phpunit/MediaWikiFarmTestCase.php",
-			"phpdbg -qrr `which phpunit` --strict-coverage",
-			"sed -i 's/extends PHPUnit_Framework_TestCase/extends MediaWikiTestCase/' tests/phpunit/MediaWikiFarmTestCase.php"
-		],
-		"unit": [
-			"sed -i 's/extends MediaWikiTestCase/extends PHPUnit_Framework_TestCase/' tests/phpunit/MediaWikiFarmTestCase.php",
-			"phpunit --no-coverage",
-			"sed -i 's/extends PHPUnit_Framework_TestCase/extends MediaWikiTestCase/' tests/phpunit/MediaWikiFarmTestCase.php"
-		],
+		"phpdoc": "[ \"`which phpdoc`\" = \"\" ] || phpdoc -d bin,src -t ./docs/code",
+		"phpunit": "which phpdbg && phpdbg -qrr `which phpunit` --strict-coverage || phpunit --strict-coverage",
+		"unit": "phpunit --no-coverage",
 		"test": [
 			"composer lint",
 			"composer unit",
