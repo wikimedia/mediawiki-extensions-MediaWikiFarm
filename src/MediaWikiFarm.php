@@ -308,11 +308,6 @@ class MediaWikiFarm {
 		# Set other variables of the wiki
 		$this->setOtherVariables();
 
-		# Set available suffixes and wikis
-		# This is not useful since nobody else use available suffixes and wikis
-		# For now, remove loading of one config file to improve a bit performance
-		// $this->setWgConf();
-
 		# Cache the result
 		if( $this->cacheDir ) {
 			$variables = $this->variables;
@@ -863,25 +858,6 @@ class MediaWikiFarm {
 	}
 
 	/**
-	 * Set available suffixes and wikis.
-	 *
-	 * @todo Still hacky: before setting parameters in store in farms.yml, various configurations should be reviewed
-	 *       to select accordingly the rights management modelisation
-	 *
-	 * @return void
-	 */
-	/*function setWgConf() {
-
-		global $wgConf;
-
-		$wgConf->suffixes = array( $this->variables['$SUFFIX'] );
-		$wikiIDs = $this->readFile( $this->variables['$SUFFIX'] . '/wikis.yml', $this->configDir );
-		foreach( array_keys( $wikiIDs ) as $wiki ) {
-			$wgConf->wikis[] = $wiki . '-' . $this->variables['$SUFFIX'];
-		}
-	}*/
-
-	/**
 	 * Is the cache configuration file LocalSettings.php for the requested wiki fresh?
 	 *
 	 * @mediawikifarm-const
@@ -943,13 +919,6 @@ class MediaWikiFarm {
 	 */
 	function getMediaWikiConfig( $force = false ) {
 
-		// global $wgConf;
-
-		# In MediaWiki 1.16, $wgConf is not created by default
-		// if( is_null( $wgConf ) ) {
-		// 	$wgConf = new SiteConfiguration();
-		// }
-
 		if( !$force && $this->isLocalSettingsFresh() ) {
 			return;
 		}
@@ -969,22 +938,6 @@ class MediaWikiFarm {
 			return;
 		}
 
-		# Populate wgConf
-		// $this->populatewgConf();
-
-		# Get specific configuration for this wiki
-		# Do not use SiteConfiguration::extractAllGlobals or the configuration caching would become
-		# ineffective and there would be inconsistencies in this process
-		// $this->configuration['general'] = $wgConf->getAll( $myWiki, $mySuffix, array() );
-
-		# For the permissions array, fix a small strangeness: when an existing default permission
-		# is true, it is not possible to make it false in the specific configuration
-		// if( array_key_exists( '+wgGroupPermissions', $wgConf->settings ) ) {
-		// 	$this->configuration['general']['wgGroupPermissions'] = self::arrayMerge( $this->configuration['general']['wgGroupPermissions'],
-		// 		$wgConf->get( '+wgGroupPermissions', $myWiki, $mySuffix )
-		// 	);
-		// }
-
 		# Get specific configuration for this wiki
 		$this->populateSettings();
 
@@ -998,93 +951,6 @@ class MediaWikiFarm {
 				rename( $localSettingsFile . '.tmp', $localSettingsFile );
 			}
 		}
-
-		// $wgConf->siteParamsCallback = array( $this, 'SiteConfigurationSiteParamsCallback' );
-	}
-
-	/**
-	 * Popuplate wgConf from config files.
-	 *
-	 * @SuppressWarnings(PHPMD.ElseExpression)
-	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-	 * @codeCoverageIgnore
-	 *
-	 * @return bool Success.
-	 */
-	function populatewgConf() {
-
-		global $wgConf;
-
-		foreach( $this->farmConfig['config'] as $configFile ) {
-
-			if( !is_array( $configFile ) ) {
-				continue;
-			}
-
-			# Replace variables
-			$configFile = $this->replaceVariables( $configFile );
-
-			# Executable config files
-			if( array_key_exists( 'executable', $configFile ) && $configFile['executable'] ) {
-
-				$this->configuration['execFiles'][] = $this->configDir . '/' . $configFile['file'];
-				continue;
-			}
-
-			$theseSettings = $this->readFile( $configFile['file'], $this->configDir );
-			if( $theseSettings === false ) {
-				# If a file is unavailable, skip it
-				continue;
-			}
-
-			# Key 'default' => no choice of the wiki
-			if( $configFile['key'] == 'default' ) {
-
-				foreach( $theseSettings as $setting => $value ) {
-
-					$wgConf->settings[$setting]['default'] = $value;
-				}
-			}
-
-			# Key '*' => choice of any wiki
-			elseif( $configFile['key'] == '*' ) {
-
-				foreach( $theseSettings as $setting => $value ) {
-
-					foreach( $value as $suffix => $val ) {
-
-						$wgConf->settings[$setting][$suffix] = $val;
-					}
-				}
-			}
-
-			# Other key
-			else {
-
-				$defaultKey = '';
-				$classicKey = '';
-				if( array_key_exists( 'default', $configFile ) && is_string( $configFile['default'] ) ) {
-					$defaultKey = $this->replaceVariables( $configFile['default'] );
-				}
-				if( is_string( $configFile['key'] ) ) {
-					$classicKey = $this->replaceVariables( $configFile['key'] );
-				}
-
-				foreach( $theseSettings as $setting => $values ) {
-
-					foreach( $values as $wiki => $val ) {
-
-						if( $wiki == 'default' && $defaultKey ) {
-							$wgConf->settings[$setting][$defaultKey] = $val;
-						} else {
-							$wgConf->settings[$setting][str_replace( '*', $wiki, $classicKey )] = $val;
-						}
-					}
-				}
-			}
-		}
-
-		return true;
 	}
 
 	/**
@@ -1297,33 +1163,6 @@ class MediaWikiFarm {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Callback to use in SiteConfiguration.
-	 *
-	 * It is not possible to retrieve the language because SiteConfiguration will loop.
-	 * It is not ideal since other parameters from other suffixes are not known.
-	 *
-	 * @mediawikifarm-const
-	 * @codeCoverageIgnore
-	 *
-	 * @param SiteConfiguration $wgConf SiteConfiguration object.
-	 * @param string $wikiID Database name.
-	 * @return array
-	 */
-	function SiteConfigurationSiteParamsCallback( $wgConf, $wikiID ) {
-
-		if( substr( $wikiID, strlen( $wikiID ) - strlen( $this->variables['$SUFFIX'] ) ) != $this->variables['$SUFFIX'] ) {
-			return null;
-		}
-
-		return array(
-			'suffix' => $this->variables['$SUFFIX'],
-			'lang' => '',
-			'tags' => array(),
-			'params' => array(),
-		);
 	}
 
 	/**

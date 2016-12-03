@@ -207,7 +207,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::populateSettings
-	 * @ uses MediaWikiFarm::populatewgConf
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
@@ -219,7 +218,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::isMediaWiki
-	 * @ uses MediaWikiFarm::SiteConfigurationSiteParamsCallback
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
 	function testLoadMediaWikiConfigMultiversion() {
@@ -275,7 +273,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::populateSettings
-	 * @ uses MediaWikiFarm::populatewgConf
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
@@ -285,7 +282,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge
-	 * @ uses MediaWikiFarm::SiteConfigurationSiteParamsCallback
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
 	function testLoadMediaWikiConfigMonoversion() {
