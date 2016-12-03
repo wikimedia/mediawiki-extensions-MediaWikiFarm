@@ -1149,7 +1149,7 @@ class MediaWikiFarm {
 			}
 
 			# Key 'default' => no choice of the wiki
-			if( $configFile['key'] == 'default' ) {
+			if( $configFile['key'] == 'default' || ( strpos( $configFile['key'], '*' ) === false && $this->variables['$WIKIID'] == $configFile['key'] ) ) {
 
 				foreach( $theseSettings as $setting => $value ) {
 
@@ -1168,7 +1168,7 @@ class MediaWikiFarm {
 			}
 
 			# Other key
-			else {
+			elseif( strpos( $configFile['key'], '*' ) !== false ) {
 
 				// $tags = array(); # @todo data sources not implemented, but code to selection parameters from a tag is below
 
