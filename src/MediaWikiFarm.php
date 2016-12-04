@@ -71,7 +71,6 @@ class MediaWikiFarm {
 
 	/** @var array Configuration parameters for this wiki. */
 	protected $configuration = array(
-		'general' => array(),
 		'settings' => array(),
 		'arrays' => array(),
 		'skins' => array(),
@@ -173,7 +172,6 @@ class MediaWikiFarm {
 	 * Get MediaWiki configuration.
 	 *
 	 * This associative array contains four sections:
-	 *   - 'general': associative array of MediaWiki configuration (e.g. 'wgServer' => '//example.org');
 	 *   - 'settings': associative array of MediaWiki configuration (e.g. 'wgServer' => '//example.org');
 	 *   - 'arrays': associative array of MediaWiki configuration of type array (e.g. 'wgGroupPermissions' => array( 'edit' => false ));
 	 *   - 'skins': associative array of skins configuration (e.g. 'Vector' => 'wfLoadSkin' );
@@ -240,8 +238,11 @@ class MediaWikiFarm {
 				$httpProto = array_key_exists( 'SERVER_PROTOCOL', $_SERVER ) && $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.1' ? 'HTTP/1.1' : 'HTTP/1.0'; // @codeCoverageIgnore
 				header( "$httpProto 404 Not Found" ); // @codeCoverageIgnore
 			}
-			if( $entryPoint == 'index.php' && array_key_exists( '$HTTP404', $wgMediaWikiFarm->variables ) && is_file( $wgMediaWikiFarm->variables['$HTTP404'] ) ) {
-				include $wgMediaWikiFarm->variables['$HTTP404'];
+			if( $entryPoint == 'index.php' && array_key_exists( 'HTTP404', $wgMediaWikiFarm->farmConfig ) ) {
+				$file404 = $wgMediaWikiFarm->replaceVariables( $wgMediaWikiFarm->farmConfig['HTTP404'] );
+				if( is_file( $file404 ) ) {
+					include $file404;
+				}
 			}
 			return 404;
 		}
@@ -288,9 +289,6 @@ class MediaWikiFarm {
 			return true;
 		}
 
-		# Set HTTP 404 early in case it is needed
-		$this->setVariable( 'HTTP404' );
-
 		# Replace variables in the host name and possibly retrieve the version
 		if( !$this->checkHostVariables() ) {
 			return false;
@@ -313,12 +311,7 @@ class MediaWikiFarm {
 			$variables = $this->variables;
 			$variables['$CORECONFIG'] = $this->farmConfig['coreconfig'];
 			$variables['$CONFIG'] = $this->farmConfig['config'];
-			$versions = $this->readFile( 'versions.php', dirname( $this->cacheDir ), false );
-			if( !is_array( $versions ) ) {
-				$versions = array();
-			}
-			$versions[$this->variables['$SERVER']] = $variables;
-			$this->cacheFile( $versions, 'versions.php', dirname( $this->cacheDir ) );
+			self::cacheFile( $variables, $this->variables['$SERVER'] . '.php', $this->cacheDir . '/wikis' );
 		}
 
 		return true;
@@ -348,7 +341,7 @@ class MediaWikiFarm {
 	 */
 	function loadMediaWikiConfig() {
 
-		if( count( $this->configuration['general'] ) == 0 && count( $this->configuration['settings'] ) == 0 && count( $this->configuration['arrays'] ) == 0 ) {
+		if( count( $this->configuration['settings'] ) == 0 && count( $this->configuration['arrays'] ) == 0 ) {
 			$this->getMediaWikiConfig();
 		}
 
@@ -405,16 +398,6 @@ class MediaWikiFarm {
 				wfLoadExtension( $extension );
 			}
 		}
-
-		# Execute PHP files
-		foreach( $this->configuration['execFiles'] as $execFile ) {
-
-			if( !is_file( $execFile ) ) {
-				continue;
-			}
-
-			include $execFile;
-		}
 	}
 
 	/**
@@ -451,13 +434,7 @@ class MediaWikiFarm {
 			return $this->farmDir . '/src/main.php';
 		}
 
-		if( $this->variables['$VERSION'] ) {
-			$localSettingsFile = $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
-		} else {
-			$localSettingsFile = $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
-		}
-
-		return $this->cacheDir . '/' . $localSettingsFile;
+		return $this->cacheDir . '/LocalSettings/' . $this->variables['$SERVER'] . '.php';
 	}
 
 
@@ -523,6 +500,9 @@ class MediaWikiFarm {
 			}
 		}
 
+		# Sanitise host
+		$host = preg_replace( '/[^a-zA-Z0-9\\._-]/', '', $host );
+
 		# Set parameters
 		$this->farmDir = dirname( dirname( __FILE__ ) );
 		$this->configDir = $configDir;
@@ -533,18 +513,11 @@ class MediaWikiFarm {
 			'ExtensionRegistry' => null,
 		), $parameters );
 
-		# Create cache directory
-		if( $this->cacheDir && !is_dir( $this->cacheDir ) ) {
-			mkdir( $this->cacheDir );
-		}
-
 		# Shortcut loading
-		// @codingStandardsIgnoreStart
-		if( $this->cacheDir && ( $result = $this->readFile( 'versions.php', $this->cacheDir, false ) ) && array_key_exists( $host, $result ) ) {
-		// @codingStandardsIgnoreEnd
-			$result = $result[$host];
+		// @codingStandardsIgnoreLine
+		if( $this->cacheDir && ( $result = $this->readFile( $host . '.php', $this->cacheDir . '/wikis', false ) ) ) {
 			$fresh = true;
-			$myfreshness = filemtime( $this->cacheDir . '/versions.php' );
+			$myfreshness = filemtime( $this->cacheDir . '/wikis/' . $host . '.php' );
 			foreach( $result['$CORECONFIG'] as $coreconfig ) {
 				if( filemtime( $this->configDir . '/' . $coreconfig ) > $myfreshness ) {
 					$fresh = false;
@@ -556,8 +529,9 @@ class MediaWikiFarm {
 				unset( $result['$CONFIG'] );
 				unset( $result['$CORECONFIG'] );
 				$this->variables = $result;
-				$this->cacheDir .= '/' . $result['$FARM'];
 				return;
+			} elseif( is_file( $this->cacheDir . '/LocalSettings/' . $host . '.php' ) ) {
+				unlink( $this->cacheDir . '/LocalSettings/' . $host . '.php' );
 			}
 		}
 
@@ -568,12 +542,6 @@ class MediaWikiFarm {
 		if( $result['farm'] ) {
 			$this->farmConfig = array_merge( $result['config'], $this->farmConfig );
 			$this->variables = array_merge( $result['variables'], $this->variables );
-			if( $this->cacheDir ) {
-				$this->cacheDir .= '/' . $result['farm'];
-			}
-			if( $this->cacheDir && !is_dir( $this->cacheDir ) ) {
-				mkdir( $this->cacheDir );
-			}
 			$this->variables['$SERVER'] = $result['host'];
 			$this->variables['$FARM'] = $result['farm'];
 			return;
@@ -856,7 +824,7 @@ class MediaWikiFarm {
 
 		# Update the deployment file
 		$deployments[$this->variables['$WIKIID']] = $version;
-		$this->cacheFile( $deployments, $this->variables['$DEPLOYMENTS'], $this->configDir );
+		self::cacheFile( $deployments, $this->variables['$DEPLOYMENTS'], $this->configDir );
 	}
 
 	/**
@@ -872,11 +840,7 @@ class MediaWikiFarm {
 			return false;
 		}
 
-		if( $this->variables['$VERSION'] ) {
-			$localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
-		} else {
-			$localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
-		}
+		$localSettingsFile = $this->cacheDir . '/LocalSettings/' . $this->variables['$SERVER'] . '.php';
 
 		# Check there is a LocalSettings.php file
 		if( !is_file( $localSettingsFile ) ) {
@@ -906,8 +870,7 @@ class MediaWikiFarm {
 	 * configuration; it is rebuilt when origin configuration files are changed.
 	 *
 	 * The returned array has the following format:
-	 * array( 'general' => array( 'wgSitename' => 'Foo', ... ),
-	 *        'settings' => array( 'wgSitename' => 'Foo', ... ),
+	 * array( 'settings' => array( 'wgSitename' => 'Foo', ... ),
 	 *        'arrays' => array( 'wgGroupPermission' => array(), ... ),
 	 *        'skins' => 'wfLoadSkin'|'require_once',
 	 *        'extensions' => 'wfLoadExtension'|'require_once',
@@ -925,20 +888,15 @@ class MediaWikiFarm {
 			return;
 		}
 
-		if( $this->variables['$VERSION'] ) {
-			$localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$VERSION-$SUFFIX-$WIKIID.php' );
-			$cacheFile = $this->replaceVariables( 'config-$VERSION-$SUFFIX-$WIKIID.php' );
-		}
-		else {
-			$localSettingsFile = $this->cacheDir . '/' . $this->replaceVariables( 'LocalSettings-$SUFFIX-$WIKIID.php' );
-			$cacheFile = $this->replaceVariables( 'config-$SUFFIX-$WIKIID.php' );
-		}
+		// if( is_string( $this->cacheDir ) ) {
+		// 	$cacheFile = $this->cacheDir . '/LocalSettings/' . 'config-' . $this->variables['$SERVER'] . '.php';
+		// }
 
 		# Populate from cache
-		if( !$force && $this->cacheDir && is_file( $this->cacheDir . '/' . $cacheFile ) ) {
-			$this->configuration = $this->readFile( $cacheFile, $this->cacheDir );
-			return;
-		}
+		// if( !$force && $this->cacheDir && is_file( $this->cacheDir . '/LocalSettings/' . $cacheFile ) ) {
+		// 	$this->configuration = $this->readFile( $cacheFile, $this->cacheDir . '/LocalSettings', false );
+		// 	return;
+		// }
 
 		# Get specific configuration for this wiki
 		$this->populateSettings();
@@ -948,10 +906,14 @@ class MediaWikiFarm {
 
 		# Save this configuration in a PHP file
 		if( is_string( $this->cacheDir ) && !count( $this->errors ) ) {
-			$this->cacheFile( $this->configuration, $cacheFile );
-			if( file_put_contents( $localSettingsFile . '.tmp', $this->createLocalSettings( $this->configuration ) ) ) {
-				rename( $localSettingsFile . '.tmp', $localSettingsFile );
-			}
+			// self::cacheFile( $this->configuration,
+			// 	'config-' . $this->variables['$SERVER'] . '.php',
+			// 	$this->cacheDir . '/LocalSettings'
+			// );
+			self::cacheFile( $this->createLocalSettings( $this->configuration ),
+				$this->variables['$SERVER'] . '.php',
+				$this->cacheDir . '/LocalSettings'
+			);
 		}
 	}
 
@@ -1479,7 +1441,7 @@ class MediaWikiFarm {
 
 		# Check the file exists
 		$prefixedFile = $directory ? $directory . '/' . $filename : $filename;
-		$cachedFile = $this->cacheDir !== false && $cache ? $this->cacheDir . '/' . $filename . '.php' : false;
+		$cachedFile = $this->cacheDir !== false && $cache ? $this->cacheDir . '/config/' . $filename . '.php' : false;
 		if( !is_file( $prefixedFile ) ) {
 			$format = null;
 		}
@@ -1506,7 +1468,7 @@ class MediaWikiFarm {
 		# Cached version
 		elseif( $cachedFile && is_string( $format ) && is_file( $cachedFile ) && filemtime( $cachedFile ) >= filemtime( $prefixedFile ) ) {
 
-			return $this->readFile( $filename . '.php', $this->cacheDir );
+			return $this->readFile( $filename . '.php', $this->cacheDir . '/config', false );
 		}
 
 		# Format YAML
@@ -1565,14 +1527,14 @@ class MediaWikiFarm {
 
 			$this->errors[] = 'Unreadable file ' . $filename;
 
-			return $this->readFile( $filename . '.php', $this->cacheDir );
+			return $this->readFile( $filename . '.php', $this->cacheDir . '/config', false );
 		}
 
 		# Regular return for arrays
 		if( is_array( $array ) ) {
 
-			if( $cachedFile && $directory != $this->cacheDir && ( !is_file( $cachedFile ) || ( filemtime( $cachedFile ) < filemtime( $prefixedFile ) ) ) ) {
-				$this->cacheFile( $array, $filename.'.php' );
+			if( $cachedFile && $directory != $this->cacheDir . '/config' && ( !is_file( $cachedFile ) || ( filemtime( $cachedFile ) < filemtime( $prefixedFile ) ) ) ) {
+				self::cacheFile( $array, $filename . '.php', $this->cacheDir . '/config' );
 			}
 
 			return $array;
@@ -1588,28 +1550,41 @@ class MediaWikiFarm {
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *
-	 * @param array $array Array of the data to be cached.
+	 * @param array|string $array Array of the data to be cached.
 	 * @param string $filename Name of the cache file; this filename must have an extension '.php' else no cache file is saved.
-	 * @param string|null $directory Name of the parent directory; null for default cache directory
+	 * @param string $directory Name of the parent directory; null for default cache directory
 	 * @return void
 	 */
-	protected function cacheFile( $array, $filename, $directory = null ) {
+	static function cacheFile( $array, $filename, $directory ) {
 
-		if( !is_string( $directory ) ) {
-			$directory = $this->cacheDir;
+		if( !preg_match( '/\.php$/', $filename ) ) {
+			return;
 		}
 
 		$prefixedFile = $directory . '/' . $filename;
-
-		# Create temporary file
 		$tmpFile = $prefixedFile . '.tmp';
-		if( preg_match( '/\.php$/', $filename ) ) {
-			if( !is_dir( dirname( $tmpFile ) ) ) {
-				mkdir( dirname( $tmpFile ) );
+
+		# Prepare string
+		if( is_array( $array ) ) {
+			$php = "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn " . var_export( $array, true ) . ';';
+		} else {
+			$php = (string) $array;
+		}
+
+		# Create parent directories
+		if( !is_dir( dirname( $tmpFile ) ) ) {
+			$path = '';
+			foreach( explode( '/', dirname( $prefixedFile ) ) as $dir ) {
+				$path .= '/' . $dir;
+				if( !is_dir( $path ) ) {
+					mkdir( $path );
+				}
 			}
-			if( file_put_contents( $tmpFile, "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn ".var_export( $array, true ).';' ) ) {
-				rename( $tmpFile, $prefixedFile );
-			}
+		}
+
+		# Create temporary file and move it to final file
+		if( file_put_contents( $tmpFile, $php ) ) {
+			rename( $tmpFile, $prefixedFile );
 		}
 	}
 

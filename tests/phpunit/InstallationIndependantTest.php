@@ -301,6 +301,9 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test cache file.
 	 *
+	 * @todo This test targets mainly MediaWikiFarm::cacheFile. This function was previously protected, so it was tested through
+	 *       MediaWikiFarm::readFile. Now it is public-static, hence this test should be rewritten to directly test it.
+	 *
 	 * @covers MediaWikiFarm::readFile
 	 * @covers MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::__construct
@@ -315,7 +318,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		# Read original file and check the cached version is written
 		$farm->readFile( 'testreading2.json', self::$wgMediaWikiFarmConfigDir );
-		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/testreading2.json.php' ) );
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/config/testreading2.json.php' ) );
 
 		# Read cached version
 		$result = $farm->readFile( 'testreading2.json', self::$wgMediaWikiFarmConfigDir );
@@ -340,7 +343,11 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		unlink( self::$wgMediaWikiFarmConfigDir . '/testreading2.json' );
 
 		$farm->readFile( 'subdir/testreading2.json', self::$wgMediaWikiFarmConfigDir );
-		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/subdir/testreading2.json.php' ) );
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/config/subdir/testreading2.json.php' ) );
+
+		# Test when it is requested to cache non-PHP file
+		MediaWikiFarm::cacheFile( array(), 'nonexistant.json', self::$wgMediaWikiFarmCacheDir );
+		$this->assertFalse( is_file( self::$wgMediaWikiFarmCacheDir . '/nonexistant.json' ) );
 	}
 
 	/**

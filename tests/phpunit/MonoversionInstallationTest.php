@@ -72,7 +72,6 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 				'$SERVER' => 'a.testfarm-monoversion.example.org',
 				'$SUFFIX' => 'testfarm',
 				'$WIKIID' => 'atestfarm',
-				'$HTTP404' => 'phpunitHTTP404.php',
 				'$VERSION' => '',
 				'$CODE' => $IP,
 			),

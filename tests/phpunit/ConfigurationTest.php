@@ -83,7 +83,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 			'execFiles' => array(
 				0 => dirname( __FILE__ ) . '/data/config/LocalSettings.php',
 			),
-			'general' => array(),
 		);
 
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org',
@@ -99,7 +98,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( $result['skins'], $farm->getConfiguration( 'skins' ) );
 		$this->assertEquals( $result['extensions'], $farm->getConfiguration( 'extensions' ) );
 		$this->assertEquals( $result['execFiles'], $farm->getConfiguration( 'execFiles' ) );
-		$this->assertEquals( $result['general'], $farm->getConfiguration( 'general' ) );
 		$this->assertEquals( $result, $farm->getConfiguration() );
 	}
 
@@ -202,6 +200,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::createLocalSettings
 	 * @covers MediaWikiFarm::writeArrayAssignment
 	 * @covers MediaWikiFarm::getConfigFile
+	 * @covers MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
@@ -214,7 +213,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
@@ -252,8 +250,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$this->assertFalse( $config['wgUseExtensionConfirmEditQuestyCaptcha'] );
 
 		$this->assertEquals(
-			self::$wgMediaWikiFarmCacheDir . '/testfarm-multiversion-test-extensions'
-				. '/LocalSettings-vstub-testextensionsfarm-btestextensionsfarm.php',
+			self::$wgMediaWikiFarmCacheDir . '/LocalSettings/b.testfarm-multiversion-test-extensions.example.org.php',
 			$farm->getConfigFile()
 		);
 	}
@@ -268,6 +265,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::createLocalSettings
 	 * @covers MediaWikiFarm::writeArrayAssignment
 	 * @covers MediaWikiFarm::getConfigFile
+	 * @covers MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
@@ -279,7 +277,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
@@ -299,7 +296,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( 200000, $config['wgMemCachedTimeout'] );
 
 		# Re-load to use config cache
-		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir . '/versions.php' );
+		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir . '/wikis/a.testfarm-monoversion.example.org.php' );
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org',
 			self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir,
 			array( 'EntryPoint' => 'index.php' )
@@ -310,6 +307,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$config = $farm->getConfiguration( 'settings' );
 		$this->assertEquals( 200000, $config['wgMemCachedTimeout'] );
 
-		$this->assertEquals( self::$wgMediaWikiFarmCacheDir . '/testfarm-monoversion/LocalSettings-testfarm-atestfarm.php', $farm->getConfigFile() );
+		$this->assertEquals( self::$wgMediaWikiFarmCacheDir . '/LocalSettings/a.testfarm-monoversion.example.org.php', $farm->getConfigFile() );
 	}
 }

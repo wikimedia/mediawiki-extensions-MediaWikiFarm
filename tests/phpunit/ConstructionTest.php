@@ -405,9 +405,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmCacheDir,
 				array( 'EntryPoint' => 'index.php' ) );
 
-		$this->assertEquals( self::$wgMediaWikiFarmCacheDir . '/testfarm-multiversion', $farm->getCacheDir() );
-		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCacheDir ) );
-		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCacheDir . '/testfarm-multiversion' ) );
+		$this->assertEquals( self::$wgMediaWikiFarmCacheDir, $farm->getCacheDir() );
 	}
 
 	/**
@@ -568,7 +566,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
-	 * Test the 'loading' function with non-existant wiki.
+	 * Test the 'loading' function with nonexistant wiki in an existant farm.
 	 *
 	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::load
@@ -580,24 +578,27 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 */
-	function testLoadingNonExistant() {
+	function testLoadingSoftMissingError() {
 
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
 		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', null );
-		$this->backupAndSetGlobalSubvariable( '_SERVER', 'SERVER_NAME', 'c.testfarm-monoversion-with-file-variable-without-version.example.org' );
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'SERVER_NAME', 'z.testfarm-monoversion-with-file-variable-without-version.example.org' );
 		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarmHTTP404Executed' );
 
 		$code = MediaWikiFarm::load( 'index.php' );
 
-		$this->assertEquals( 404, $code );
-		$this->assertTrue( $GLOBALS['wgMediaWikiFarmHTTP404Executed'] );
+		$this->assertEquals( 404, $code, 'The host was not evaluated as “soft-missing” (existing farm, nonexistant wiki).' );
+		$this->assertTrue(
+			array_key_exists( 'wgMediaWikiFarmHTTP404Executed', $GLOBALS ) && $GLOBALS['wgMediaWikiFarmHTTP404Executed'] === true,
+			'The PHP file corresponding to HTTP errors “404 Not Found” was not executed.'
+		);
 	}
 
 	/**
-	 * Test the 'loading' function with farm error.
+	 * Test the 'loading' function with a nonexistant farm.
 	 *
 	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::load
@@ -605,16 +606,16 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 */
-	function testLoadingError() {
+	function testLoadingHardMissingError() {
 
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
-		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', 'a.testfarm-missing.example.org' );
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', 'a.testfarm-nonexistant.example.org' );
 
 		$code = MediaWikiFarm::load( 'index.php' );
 
-		$this->assertEquals( 500, $code );
+		$this->assertEquals( 500, $code, 'The host was not evaluated as “hard-missing” (nonexistant farm).' );
 	}
 }
