@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"!Silent"
+		]
+	},
+	"mediawikifarm-desc": "Transforma uma instalação MediaWiki num site de alojamento de wikis que permite múltiplas wikis independentes."
+}
