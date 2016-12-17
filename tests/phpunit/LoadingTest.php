@@ -247,6 +247,8 @@ class LoadingTest extends MediaWikiFarmTestCase {
 			$result['extensions']['TestExtensionWfLoadExtension'] = 'wfLoadExtension';
 			$result['extensions']['MediaWikiFarm'] = 'wfLoadExtension';
 			$result['skins']['TestSkinWfLoadSkin'] = 'wfLoadSkin';
+		} else {
+			$result['extensions']['MediaWikiFarm'] = 'require_once';
 		}
 
 		$exists = MediaWikiFarm::load( 'index.php', 'b.testfarm-multiversion-test-extensions.example.org' );

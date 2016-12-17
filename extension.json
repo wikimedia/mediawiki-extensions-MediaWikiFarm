@@ -9,7 +9,7 @@
 	"url": "https://www.mediawiki.org/wiki/Extension:MediaWikiFarm",
 	"type": "other",
 	"requires": {
-		"MediaWiki": ">= 1.6.0"
+		"MediaWiki": ">= 1.3.0"
 	},
 	"config": {
 		"MediaWikiFarmConfigDir": "/etc/mediawiki",
@@ -28,6 +28,8 @@
 	},
 	"AutoloadClasses": {
 		"MediaWikiFarm": "src/MediaWikiFarm.php",
+		"AbstractMediaWikiFarmScript": "src/AbstractMediaWikiFarmScript.php",
+		"MediaWikiFarmScript": "src/MediaWikiFarmScript.php",
 		"MWFConfigurationException": "src/MediaWikiFarm.php"
 	},
 	"manifest_version": 1

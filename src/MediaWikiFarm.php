@@ -369,11 +369,21 @@ class MediaWikiFarm {
 			}
 		}
 
-		# Register this extension MediaWikiFarm to appear in Special:Version
-		if( $this->parameters['ExtensionRegistry'] ) {
-			wfLoadExtension( 'MediaWikiFarm', $this->codeDir ? $this->farmDir . '/extension.json' : null );
+		# Load extensions with the wfLoadExtension mechanism
+		foreach( $this->configuration['extensions'] as $extension => $value ) {
+
+			if( $value == 'wfLoadExtension' && ( $extension != 'MediaWikiFarm' || !$this->codeDir ) ) {
+
+				wfLoadExtension( $extension );
+			}
 		}
-		else {
+
+		# Register this extension MediaWikiFarm to appear in Special:Version
+		if( $this->configuration['extensions']['MediaWikiFarm'] == 'wfLoadExtension' && $this->codeDir ) {
+
+			wfLoadExtension( 'MediaWikiFarm', $this->farmDir . '/extension.json' );
+		}
+		elseif( $this->configuration['extensions']['MediaWikiFarm'] == 'require_once' ) {
 			$GLOBALS['wgExtensionCredits']['other'][] = array(
 				'path' => $this->farmDir . '/MediaWikiFarm.php',
 				'name' => 'MediaWikiFarm',
@@ -385,18 +395,11 @@ class MediaWikiFarm {
 			);
 
 			$GLOBALS['wgAutoloadClasses']['MediaWikiFarm'] = 'src/MediaWikiFarm.php';
+			$GLOBALS['wgAutoloadClasses']['AbstractMediaWikiFarmScript'] = 'src/AbstractMediaWikiFarmScript.php';
+			$GLOBALS['wgAutoloadClasses']['MediaWikiFarmScript'] = 'src/MediaWikiFarmScript.php';
 			$GLOBALS['wgAutoloadClasses']['MWFConfigurationException'] = 'src/MediaWikiFarm.php';
 			$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = array( 'i18n' );
 			$GLOBALS['wgHooks']['UnitTestsList'][] = array( 'MediaWikiFarm::onUnitTestsList' );
-		}
-
-		# Load extensions with the wfLoadExtension mechanism
-		foreach( $this->configuration['extensions'] as $extension => $value ) {
-
-			if( $value == 'wfLoadExtension' && $extension != 'MediaWikiFarm' ) {
-
-				wfLoadExtension( $extension );
-			}
 		}
 	}
 
@@ -1193,6 +1196,7 @@ class MediaWikiFarm {
 		}
 
 		$settings['wgUseExtensionMediaWikiFarm'] = true;
+		$this->configuration['extensions']['MediaWikiFarm'] = 'require_once';
 		if( $this->parameters['ExtensionRegistry'] ) {
 			$this->configuration['extensions']['MediaWikiFarm'] = 'wfLoadExtension';
 		}
@@ -1304,10 +1308,10 @@ class MediaWikiFarm {
 		$localSettings .= "\n# Extensions\n";
 		foreach( $configuration['extensions'] as $extension => $loading ) {
 			if( $loading == 'wfLoadExtension' ) {
-				if( $extension == 'MediaWikiFarm' ) {
-					$localSettings .= "wfLoadExtension( 'MediaWikiFarm'" . ( $this->codeDir ? ', ' . var_export( $this->farmDir . '/extension.json', true ) : '' ) ." );\n";
-				} else {
+				if( $extension != 'MediaWikiFarm' || !$this->codeDir ) {
 					$localSettings .= "wfLoadExtension( '$extension' );\n";
+				} elseif( $extension == 'MediaWikiFarm' ) {
+					$localSettings .= "wfLoadExtension( 'MediaWikiFarm', " . var_export( $this->farmDir . '/extension.json', true ) . " );\n";
 				}
 			}
 		}
