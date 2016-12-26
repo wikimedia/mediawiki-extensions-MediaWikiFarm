@@ -1297,7 +1297,7 @@ class MediaWikiFarm {
 		foreach( $configuration['extensions'] as $extension ) {
 			if( $extension[2] == 'require_once' ) {
 				$extensions[$extension[1]]['require_once'] .= "require_once \"\$IP/{$extension[1]}s/{$extension[0]}/{$extension[0]}.php\";\n";
-			} elseif( $extension == array( 'MediaWikiFarm', 'extension', 'wfLoadExtension' ) && $this->codeDir ) {
+			} elseif( $extension[0] == 'MediaWikiFarm' && $extension[1] == 'extension' && $extension[2] == 'wfLoadExtension' && $this->codeDir ) {
 				$extensions['extension']['wfLoadExtension'] .= "wfLoadExtension( 'MediaWikiFarm', " . var_export( $this->farmDir . '/extension.json', true ) . " );\n";
 			} elseif( $extension[2] == 'wfLoad' . ucfirst( $extension[1] ) ) {
 				$extensions[$extension[1]]['wfLoad' . ucfirst( $extension[1] )] .= 'wfLoad' . ucfirst( $extension[1] ) . '( ' . var_export( $extension[0], true ) . " );\n";
