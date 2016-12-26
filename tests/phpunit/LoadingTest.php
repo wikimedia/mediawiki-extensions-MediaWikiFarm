@@ -60,6 +60,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getMediaWikiConfig
 	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
@@ -97,17 +98,15 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				),
 			),
 			'extensions' => array(
-				'TestExtensionWfLoadExtension' => 'wfLoadExtension',
-				'TestExtensionBiLoading' => 'wfLoadExtension',
-				'TestExtensionRequireOnce' => 'require_once',
-				'TestExtensionComposer' => 'composer',
-				'MediaWikiFarm' => 'wfLoadExtension',
-			),
-			'skins' => array(
-				'TestSkinWfLoadSkin' => 'wfLoadSkin',
-				'TestSkinBiLoading' => 'wfLoadSkin',
-				'TestSkinRequireOnce' => 'require_once',
-				'TestSkinComposer' => 'composer',
+				array( 'TestSkinRequireOnce', 'skin', 'require_once', 6 ),
+				array( 'TestExtensionRequireOnce', 'extension', 'require_once', 2 ),
+				array( 'TestSkinWfLoadSkin', 'skin', 'wfLoadSkin', 4 ),
+				array( 'TestSkinBiLoading', 'skin', 'wfLoadSkin', 5 ),
+				array( 'TestSkinComposer', 'skin', 'composer', 7 ),
+				array( 'TestExtensionWfLoadExtension', 'extension', 'wfLoadExtension', 0 ),
+				array( 'TestExtensionBiLoading', 'extension', 'wfLoadExtension', 1 ),
+				array( 'TestExtensionComposer', 'extension', 'composer', 3 ),
+				array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 8 ),
 			),
 		);
 		$this->backupGlobalVariables( array_keys( $result['settings'] ) );
@@ -121,7 +120,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( $result['settings'], $wgMediaWikiFarm->getConfiguration( 'settings' ) );
 		$this->assertEquals( $result['arrays'], $wgMediaWikiFarm->getConfiguration( 'arrays' ) );
 		$this->assertEquals( $result['extensions'], $wgMediaWikiFarm->getConfiguration( 'extensions' ) );
-		$this->assertEquals( $result['skins'], $wgMediaWikiFarm->getConfiguration( 'skins' ) );
 
 		$trueGlobals = array();
 		foreach( $GLOBALS as $key => $value ) {
@@ -203,6 +201,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getMediaWikiConfig
 	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
@@ -239,16 +238,15 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				'wgUseTestSkinEmpty' => true,
 			),
 			'extensions' => array(),
-			'skins' => array(),
 		);
 		if( class_exists( 'ExtensionRegistry' ) ) {
 			$result['settings']['wgUseExtensionTestExtensionWfLoadExtension'] = true;
 			$result['settings']['wgUseSkinTestSkinWfLoadSkin'] = true;
-			$result['extensions']['TestExtensionWfLoadExtension'] = 'wfLoadExtension';
-			$result['extensions']['MediaWikiFarm'] = 'wfLoadExtension';
-			$result['skins']['TestSkinWfLoadSkin'] = 'wfLoadSkin';
+			$result['extensions'][] = array( 'TestSkinWfLoadSkin', 'skin', 'wfLoadSkin', 1 );
+			$result['extensions'][] = array( 'TestExtensionWfLoadExtension', 'extension', 'wfLoadExtension', 0 );
+			$result['extensions'][] = array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 2 );
 		} else {
-			$result['extensions']['MediaWikiFarm'] = 'require_once';
+			$result['extensions'][] = array( 'MediaWikiFarm', 'extension', 'require_once', 0 );
 		}
 
 		$exists = MediaWikiFarm::load( 'index.php', 'b.testfarm-multiversion-test-extensions.example.org' );
@@ -258,7 +256,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$wgMediaWikiFarm->getMediaWikiConfig();
 		$this->assertEquals( $result['settings'], $wgMediaWikiFarm->getConfiguration( 'settings' ) );
 		$this->assertEquals( $result['extensions'], $wgMediaWikiFarm->getConfiguration( 'extensions' ) );
-		$this->assertEquals( $result['skins'], $wgMediaWikiFarm->getConfiguration( 'skins' ) );
 	}
 
 	/**

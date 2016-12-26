@@ -26,19 +26,11 @@ if( !isset( $wgVersion ) ) {
 # Compile MediaWiki configuration
 $wgMediaWikiFarm->getMediaWikiConfig( true );
 
-# Load skins with the require_once mechanism
-foreach( $wgMediaWikiFarm->getConfiguration( 'skins' ) as $skin => $value ) {
+# Load extensions and skins with the require_once mechanism
+foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $extension ) {
 
-	if( $value == 'require_once' ) {
-		require_once "$IP/skins/$skin/$skin.php";
-	}
-}
-
-# Load extensions with the require_once mechanism
-foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $extension => $value ) {
-
-	if( $value == 'require_once' ) {
-		require_once "$IP/extensions/$extension/$extension.php";
+	if( $extension[2] == 'require_once' ) {
+		require_once "$IP/{$extension[1]}s/{$extension[0]}/{$extension[0]}.php";
 	}
 }
 

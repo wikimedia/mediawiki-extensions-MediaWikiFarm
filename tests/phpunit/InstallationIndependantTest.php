@@ -417,15 +417,13 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 					),
 				),
 			),
-			'skins' => array(
-				'Vector' => 'wfLoadSkin',
-				'MonoBook' => 'require_once',
-			),
 			'extensions' => array(
-				'MediaWikiFarm' => 'wfLoadExtension',
-				'ParserFunctions' => 'wfLoadExtension',
-				'Echo' => 'require_once',
-				'SemanticMediaWiki' => 'composer',
+				array( 'ParserFunctions', 'extension', 'wfLoadExtension' ),
+				array( 'Echo', 'extension', 'require_once' ),
+				array( 'SemanticMediaWiki', 'extension', 'composer' ),
+				array( 'Vector', 'skin', 'wfLoadSkin' ),
+				array( 'MonoBook', 'skin', 'require_once' ),
+				array( 'MediaWikiFarm', 'extension', 'wfLoadExtension' ),
 			),
 			'execFiles' => array(
 				'freeLS.php',
@@ -472,8 +470,8 @@ if( !array_key_exists( 'wgVirtualRestConfig', \$GLOBALS ) ) {
 wfLoadSkin( 'Vector' );
 
 # Extensions
-wfLoadExtension( 'MediaWikiFarm' );
 wfLoadExtension( 'ParserFunctions' );
+wfLoadExtension( 'MediaWikiFarm' );
 
 # Included files
 include 'freeLS.php';

@@ -73,7 +73,6 @@ class MediaWikiFarm {
 	protected $configuration = array(
 		'settings' => array(),
 		'arrays' => array(),
-		'skins' => array(),
 		'extensions' => array(),
 		'execFiles' => array(),
 	);
@@ -174,8 +173,7 @@ class MediaWikiFarm {
 	 * This associative array contains four sections:
 	 *   - 'settings': associative array of MediaWiki configuration (e.g. 'wgServer' => '//example.org');
 	 *   - 'arrays': associative array of MediaWiki configuration of type array (e.g. 'wgGroupPermissions' => array( 'edit' => false ));
-	 *   - 'skins': associative array of skins configuration (e.g. 'Vector' => 'wfLoadSkin' );
-	 *   - 'extensions': associative array of extensions configuration (e.g. 'ParserFunctions' => 'wfLoadExtension' );
+	 *   - 'extensions': list of extensions and skins (e.g. 0 => array( 'ParserFunctions', 'extension', 'wfLoadExtension' ));
 	 *   - 'execFiles': list of PHP files to execute at the end.
 	 *
 	 * @mediawikifarm-const
@@ -360,30 +358,31 @@ class MediaWikiFarm {
 			$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
 		}
 
-		# Load skins with the wfLoadSkin mechanism
-		foreach( $this->configuration['skins'] as $skin => $value ) {
+		# Load extensions and skins with the wfLoadExtension/wfLoadSkin mechanism
+		$loadMediaWikiFarm = false;
+		foreach( $this->configuration['extensions'] as $extension ) {
 
-			if( $value == 'wfLoadSkin' ) {
+			if( $extension[2] == 'wfLoadExtension' ) {
 
-				wfLoadSkin( $skin );
+				if( $extension[0] != 'MediaWikiFarm' || !$this->codeDir ) {
+					wfLoadExtension( $extension[0] );
+				} else {
+					wfLoadExtension( 'MediaWikiFarm', $this->farmDir . '/extension.json' );
+					$loadedMediaWikiFarm = true;
+				}
 			}
-		}
+			elseif( $extension[2] == 'wfLoadSkin' ) {
 
-		# Load extensions with the wfLoadExtension mechanism
-		foreach( $this->configuration['extensions'] as $extension => $value ) {
+				wfLoadSkin( $extension[0] );
+			}
+			elseif( $extension[0] == 'MediaWikiFarm' && $extension[1] == 'extension' && $extension[2] == 'require_once' ) {
 
-			if( $value == 'wfLoadExtension' && ( $extension != 'MediaWikiFarm' || !$this->codeDir ) ) {
-
-				wfLoadExtension( $extension );
+				$loadMediaWikiFarm = true;
 			}
 		}
 
 		# Register this extension MediaWikiFarm to appear in Special:Version
-		if( $this->configuration['extensions']['MediaWikiFarm'] == 'wfLoadExtension' && $this->codeDir ) {
-
-			wfLoadExtension( 'MediaWikiFarm', $this->farmDir . '/extension.json' );
-		}
-		elseif( $this->configuration['extensions']['MediaWikiFarm'] == 'require_once' ) {
+		if( $loadMediaWikiFarm ) {
 			$GLOBALS['wgExtensionCredits']['other'][] = array(
 				'path' => $this->farmDir . '/MediaWikiFarm.php',
 				'name' => 'MediaWikiFarm',
@@ -875,7 +874,6 @@ class MediaWikiFarm {
 	 * The returned array has the following format:
 	 * array( 'settings' => array( 'wgSitename' => 'Foo', ... ),
 	 *        'arrays' => array( 'wgGroupPermission' => array(), ... ),
-	 *        'skins' => 'wfLoadSkin'|'require_once',
 	 *        'extensions' => 'wfLoadExtension'|'require_once',
 	 *      )
 	 *
@@ -1161,7 +1159,7 @@ class MediaWikiFarm {
 				if( is_null( $loadingMechanism ) ) {
 					$settings[$setting] = false;
 				} else {
-					$this->configuration[$type.'s'][$name] = $loadingMechanism;
+					$this->configuration['extensions'][] = array( $name, $type, $loadingMechanism, count( $this->configuration['extensions'] ) );
 					$settings[preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $setting )] = true;
 				}
 			}
@@ -1174,7 +1172,7 @@ class MediaWikiFarm {
 					if( $value !== true ) {
 						$loadingMechanism = $value;
 					}
-					$this->configuration['extensions'][$name] = $loadingMechanism;
+					$this->configuration['extensions'][] = array( $name, 'extension', $loadingMechanism, count( $this->configuration['extensions'] ) );
 					$settings['wgUseExtension'.preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $name )] = true;
 					unset( $settings[$setting] );
 				} else {
@@ -1183,7 +1181,7 @@ class MediaWikiFarm {
 						if( $value !== true ) {
 							$loadingMechanism = $value;
 						}
-						$this->configuration['skins'][$name] = $loadingMechanism;
+						$this->configuration['extensions'][] = array( $name, 'skin', $loadingMechanism, count( $this->configuration['extensions'] ) );
 						$settings['wgUseSkin'.preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $name )] = true;
 						unset( $settings[$setting] );
 					}
@@ -1196,10 +1194,12 @@ class MediaWikiFarm {
 		}
 
 		$settings['wgUseExtensionMediaWikiFarm'] = true;
-		$this->configuration['extensions']['MediaWikiFarm'] = 'require_once';
 		if( $this->parameters['ExtensionRegistry'] ) {
-			$this->configuration['extensions']['MediaWikiFarm'] = 'wfLoadExtension';
+			$this->configuration['extensions'][] = array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', count( $this->configuration['extensions'] ) );
+		} else {
+			$this->configuration['extensions'][] = array( 'MediaWikiFarm', 'extension', 'require_once', count( $this->configuration['extensions'] ) );
 		}
+		usort( $this->configuration['extensions'], array( 'MediaWikiFarm', 'sortExtensions' ) );
 	}
 
 	/**
@@ -1236,6 +1236,32 @@ class MediaWikiFarm {
 	}
 
 	/**
+	 * Sort extensions.
+	 *
+	 * @param array $a First element.
+	 * @param array $b Second element.
+	 * @return int Relative order of the two elements.
+	 */
+	function sortExtensions( $a, $b ) {
+
+		static $loading = array(
+			'require_once' => 10,
+			'composer' => 20,
+			'wfLoadSkin' => 20,
+			'wfLoadExtension' => 20,
+		);
+		static $type = array(
+			'skin' => 1,
+			'extension' => 2,
+		);
+
+		$weight = $loading[$a[2]] + $type[$a[1]] - $loading[$b[2]] - $type[$b[1]];
+		$stability = $a[3] - $b[3];
+
+		return $weight ? $weight : $stability;
+	}
+
+	/**
 	 * Create a LocalSettings.php.
 	 *
 	 * A previous mechanism tested in this extension was to load each category of
@@ -1257,28 +1283,37 @@ class MediaWikiFarm {
 			$localSettings .= "\n" . $preconfig;
 		}
 
-		# Skins loaded with require_once
-		$require_once = false;
-		foreach( $configuration['skins'] as $skin => $loading ) {
-			if( $loading == 'require_once' ) {
-				if( !$require_once ) {
-					$require_once = true;
-					$localSettings .= "\n# Skins loaded with require_once\n";
-				}
-				$localSettings .= "require_once \"\$IP/skins/$skin/$skin.php\";\n";
+		# Sort extensions and skins by loading mechanism
+		$extensions = array(
+			'extension' => array(
+				'require_once' => '',
+				'wfLoadExtension' => '',
+			),
+			'skin' => array(
+				'require_once' => '',
+				'wfLoadSkin' => '',
+			),
+		);
+		foreach( $configuration['extensions'] as $extension ) {
+			if( $extension[2] == 'require_once' ) {
+				$extensions[$extension[1]]['require_once'] .= "require_once \"\$IP/{$extension[1]}s/{$extension[0]}/{$extension[0]}.php\";\n";
+			} elseif( $extension == array( 'MediaWikiFarm', 'extension', 'wfLoadExtension' ) && $this->codeDir ) {
+				$extensions['extension']['wfLoadExtension'] .= "wfLoadExtension( 'MediaWikiFarm', " . var_export( $this->farmDir . '/extension.json', true ) . " );\n";
+			} elseif( $extension[2] == 'wfLoad' . ucfirst( $extension[1] ) ) {
+				$extensions[$extension[1]]['wfLoad' . ucfirst( $extension[1] )] .= 'wfLoad' . ucfirst( $extension[1] ) . '( ' . var_export( $extension[0], true ) . " );\n";
 			}
 		}
 
+		# Skins loaded with require_once
+		if( $extensions['skin']['require_once'] ) {
+			$localSettings .= "\n# Skins loaded with require_once\n";
+			$localSettings .= $extensions['skin']['require_once'];
+		}
+
 		# Extensions loaded with require_once
-		$require_once = false;
-		foreach( $configuration['extensions'] as $extension => $loading ) {
-			if( $loading == 'require_once' ) {
-				if( !$require_once ) {
-					$require_once = true;
-					$localSettings .= "\n# Extensions loaded with require_once\n";
-				}
-				$localSettings .= "require_once \"\$IP/extensions/$extension/$extension.php\";\n";
-			}
+		if( $extensions['extension']['require_once'] ) {
+			$localSettings .= "\n# Extensions loaded with require_once\n";
+			$localSettings .= $extensions['extension']['require_once'];
 		}
 
 		# General settings
@@ -1297,23 +1332,15 @@ class MediaWikiFarm {
 		}
 
 		# Skins loaded with wfLoadSkin
-		$localSettings .= "\n# Skins\n";
-		foreach( $configuration['skins'] as $skin => $loading ) {
-			if( $loading == 'wfLoadSkin' ) {
-				$localSettings .= "wfLoadSkin( '$skin' );\n";
-			}
+		if( $extensions['skin']['wfLoadSkin'] ) {
+			$localSettings .= "\n# Skins\n";
+			$localSettings .= $extensions['skin']['wfLoadSkin'];
 		}
 
 		# Extensions loaded with wfLoadExtension
-		$localSettings .= "\n# Extensions\n";
-		foreach( $configuration['extensions'] as $extension => $loading ) {
-			if( $loading == 'wfLoadExtension' ) {
-				if( $extension != 'MediaWikiFarm' || !$this->codeDir ) {
-					$localSettings .= "wfLoadExtension( '$extension' );\n";
-				} elseif( $extension == 'MediaWikiFarm' ) {
-					$localSettings .= "wfLoadExtension( 'MediaWikiFarm', " . var_export( $this->farmDir . '/extension.json', true ) . " );\n";
-				}
-			}
+		if( $extensions['extension']['wfLoadExtension'] ) {
+			$localSettings .= "\n# Extensions\n";
+			$localSettings .= $extensions['extension']['wfLoadExtension'];
 		}
 
 		# Included files
