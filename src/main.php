@@ -24,12 +24,12 @@ if( !isset( $wgVersion ) ) {
 }
 
 # Compile MediaWiki configuration
-$wgMediaWikiFarm->getMediaWikiConfig( true );
+$wgMediaWikiFarm->compileConfiguration();
 
 # Load extensions and skins with the require_once mechanism
-foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $extension ) {
+foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $key => $extension ) {
 
-	if( $extension[2] == 'require_once' ) {
+	if( $extension[2] == 'require_once' && $key != 'ExtensionMediaWikiFarm' ) {
 		require_once "$IP/{$extension[1]}s/{$extension[0]}/{$extension[0]}.php";
 	}
 }

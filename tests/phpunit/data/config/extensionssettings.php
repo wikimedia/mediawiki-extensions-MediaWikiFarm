@@ -1,45 +1,56 @@
 <?php
 
 return array(
-	'wgUseTestExtensionWfLoadExtension' => array(
+	'wgUseExtensionTestExtensionWfLoadExtension' => array(
+		'atestextensionsfarm' => true,
+		'btestextensionsfarm' => true,
+	),
+	'wgUseExtensionTestExtensionBiLoading' => array(
+		'atestextensionsfarm' => true,
+		'ctestextensionsfarm' => 'require_once',
+		'dtestextensionsfarm' => 'require_once',
+	),
+	'wgUseExtensionTestExtensionRequireOnce' => array(
 		'atestextensionsfarm' => true,
 	),
-	'wgUseTestExtensionBiLoading' => array(
+	'wgUseExtensionTestExtensionComposer2' => array(
+		'atestextensionsfarm' => 'composer',
+	),
+	# TestSkinComposer should be before TestExtensionComposer:
+	# since TSC depends on TEC (see data/mediawiki/vstub/vendor/
+	# MediaWikiExtensions.php), the final order should put
+	# TEC before TSC, at the contrary of the canonical order, this
+	# is another thing which could break in the future and hence
+	# should be unit-tested.
+	'wgUseSkinTestSkinComposer' => array(
+		'atestextensionsfarm' => true,
+	),
+	# TSC depends on TEC and given MediaWikiFarm is aware of this
+	# fact, it should not load the Composer autoloader of TEC
+	# (since, if Composer did correctly its job, this autoloader is
+	# included in TSC autoloader) but it should enable the
+	# wfLoadExtension if there is one (this is the case)
+	# 'wgUseExtensionTestExtensionComposer' => array(
+	# 	'atestextensionsfarm' => true,
+	# ),
+	'wgUseSkinTestSkinWfLoadSkin' => array(
+		'atestextensionsfarm' => true,
+		'btestextensionsfarm' => true,
+	),
+	'wgUseSkinTestSkinBiLoading' => array(
 		'atestextensionsfarm' => true,
 		'dtestextensionsfarm' => 'require_once',
 	),
-	'wgUseTestExtensionRequireOnce' => array(
+	'wgUseSkinTestSkinRequireOnce' => array(
 		'atestextensionsfarm' => true,
 	),
-	'wgUseTestExtensionComposer' => array(
-		'atestextensionsfarm' => true,
-	),
-	'wgUseTestSkinWfLoadSkin' => array(
-		'atestextensionsfarm' => true,
-	),
-	'wgUseTestSkinBiLoading' => array(
-		'atestextensionsfarm' => true,
-		'dtestextensionsfarm' => 'require_once',
-	),
-	'wgUseTestSkinRequireOnce' => array(
-		'atestextensionsfarm' => true,
-	),
-	'wgUseTestSkinComposer' => array(
-		'atestextensionsfarm' => true,
+	'wgUseExtensionTestMissingExtensionComposer' => array(
+		'atestextensionsfarm' => 'composer',
 	),
 	'+wgFileExtensions' => array(
 		'atestextensionsfarm' => array(
 			0 => 'djvu',
 		),
-	),
-	'wgUseExtensionTestExtensionWfLoadExtension' => array(
-		'btestextensionsfarm' => true,
-	),
-	'wgUseExtensionTestExtensionBiLoading' => array(
-		'ctestextensionsfarm' => 'require_once',
-	),
-	'wgUseSkinTestSkinWfLoadSkin' => array(
-		'btestextensionsfarm' => true,
 	),
 	'wgUseExtensionConfirmEdit/QuestyCaptcha' => array(
 		'btestextensionsfarm' => true,
@@ -53,22 +64,10 @@ return array(
 	'wgUseSkinTestSkinMissing' => array(
 		'btestextensionsfarm' => true,
 	),
-	'wgUseTestExtensionMissing' => array(
-		'btestextensionsfarm' => true,
-	),
-	'wgUseTestSkinMissing' => array(
-		'btestextensionsfarm' => true,
-	),
 	'wgUseExtensionTestExtensionEmpty' => array(
 		'btestextensionsfarm' => true,
 	),
 	'wgUseSkinTestSkinEmpty' => array(
-		'btestextensionsfarm' => true,
-	),
-	'wgUseTestExtensionEmpty' => array(
-		'btestextensionsfarm' => true,
-	),
-	'wgUseTestSkinEmpty' => array(
 		'btestextensionsfarm' => true,
 	),
 );

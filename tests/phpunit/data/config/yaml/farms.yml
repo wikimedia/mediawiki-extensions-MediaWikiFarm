@@ -1,0 +1,4 @@
+testfarm-infinite-redirect:
+
+  server: '(?P<wiki>[a-z])\.testfarm-infinite-redirect\.example\.org'
+  redirect: '$wiki.testfarm-infinite-redirect.example.org'

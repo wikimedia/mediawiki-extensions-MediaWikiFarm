@@ -299,6 +299,13 @@ HELP;
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
+	 * @uses MediaWikiFarm::compileConfiguration
+	 * @uses MediaWikiFarm::isLocalSettingsFresh
+	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::activateExtensions
+	 * @uses MediaWikiFarm::detectComposer
+	 * @uses MediaWikiFarm::setEnvironment
+	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
@@ -377,9 +384,17 @@ HELP;
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
 	 * @uses MediaWikiFarm::setOtherVariables
+	 * @uses MediaWikiFarm::compileConfiguration
+	 * @uses MediaWikiFarm::isLocalSettingsFresh
+	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::activateExtensions
+	 * @uses MediaWikiFarm::detectComposer
+	 * @uses MediaWikiFarm::setEnvironment
+	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::arrayMerge
 	 */
 	function testMissingScript() {
 
@@ -420,10 +435,18 @@ HELP;
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
 	 * @uses MediaWikiFarm::setOtherVariables
+	 * @uses MediaWikiFarm::compileConfiguration
+	 * @uses MediaWikiFarm::isLocalSettingsFresh
+	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::activateExtensions
+	 * @uses MediaWikiFarm::detectComposer
+	 * @uses MediaWikiFarm::setEnvironment
+	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::arrayMerge
 	 */
 	function testSuccessfulLoading() {
 
@@ -481,10 +504,18 @@ OUTPUT
 	 * @uses MediaWikiFarm::updateVersion
 	 * @uses MediaWikiFarm::setVersion
 	 * @uses MediaWikiFarm::setOtherVariables
+	 * @uses MediaWikiFarm::compileConfiguration
+	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::isLocalSettingsFresh
+	 * @uses MediaWikiFarm::activateExtensions
+	 * @uses MediaWikiFarm::detectComposer
+	 * @uses MediaWikiFarm::setEnvironment
+	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::arrayMerge
 	 */
 	function testRestInPeace() {
 

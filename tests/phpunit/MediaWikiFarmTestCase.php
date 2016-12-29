@@ -42,7 +42,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @param string $dataname
 	 * @return MediaWikiFarmTestCase
 	 */
-	public function __construct( $name = null, array $data = [], $dataName = '' ) {
+	public function __construct( $name = null, array $data = array(), $dataName = '' ) {
 
 		parent::__construct( $name, $data, $dataName );
 

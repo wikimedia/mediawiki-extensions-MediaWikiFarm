@@ -450,6 +450,56 @@ PHP;
 	}
 
 	/**
+	 * Test cache of checkExistence()
+	 *
+	 * @medium
+	 * @uses AbstractMediaWikiFarmScript::rmdirr
+	 */
+	function testCacheExistence() {
+
+		# Populate the existence cache
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
+			                   array( 'EntryPoint' => 'index.php' )
+			);
+
+		$this->assertTrue( $farm->checkExistence() );
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/wikis/a.testfarm-multiversion.example.org.php' ) );
+		$this->assertFalse( is_file( self::$wgMediaWikiFarmCacheDir . '/LocalSettings/a.testfarm-multiversion.example.org.php' ) );
+
+		# Read the existence cache
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
+			                   array( 'EntryPoint' => 'index.php' )
+			);
+
+		$this->assertTrue( $farm->checkExistence() );
+
+		# Populate the configuration cache
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
+			                   array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true ),
+			                   array( 'ExtensionRegistry' => true )
+			);
+
+		$this->assertTrue( $farm->checkExistence() );
+		$farm->compileConfiguration();
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/wikis/a.testfarm-multiversion.example.org.php' ) );
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/LocalSettings/a.testfarm-multiversion.example.org.php' ) );
+
+		# Invalidate the existence cache
+		sleep( 2 );
+		$this->assertTrue( touch( self::$wgMediaWikiFarmConfigDir . '/farms.php' ) );
+
+		# Check the existence cache is understood as invalidated
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
+			                   array( 'EntryPoint' => 'index.php' )
+			);
+		$this->assertFalse( is_file( self::$wgMediaWikiFarmCacheDir . '/LocalSettings/a.testfarm-multiversion.example.org.php' ) );
+	}
+
+	/**
 	 * Remove config files.
 	 */
 	static function tearDownAfterClass() {

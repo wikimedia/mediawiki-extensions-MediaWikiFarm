@@ -418,12 +418,15 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 				),
 			),
 			'extensions' => array(
-				array( 'ParserFunctions', 'extension', 'wfLoadExtension' ),
-				array( 'Echo', 'extension', 'require_once' ),
-				array( 'SemanticMediaWiki', 'extension', 'composer' ),
-				array( 'Vector', 'skin', 'wfLoadSkin' ),
-				array( 'MonoBook', 'skin', 'require_once' ),
-				array( 'MediaWikiFarm', 'extension', 'wfLoadExtension' ),
+				'ExtensionSemanticMediaWiki' => array( 'SemanticMediaWiki', 'extension', 'composer', 0 ),
+				'SkinMonoBook' => array( 'MonoBook', 'skin', 'require_once', 1 ),
+				'ExtensionEcho' => array( 'Echo', 'extension', 'require_once', 2 ),
+				'SkinVector' => array( 'Vector', 'skin', 'wfLoadSkin', 3 ),
+				'ExtensionMediaWikiFarm' => array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 4 ),
+				'ExtensionParserFunctions' => array( 'ParserFunctions', 'extension', 'wfLoadExtension', 5 ),
+			),
+			'composer' => array(
+				'ExtensionSemanticMediaWiki',
 			),
 			'execFiles' => array(
 				'freeLS.php',
@@ -470,8 +473,8 @@ if( !array_key_exists( 'wgVirtualRestConfig', \$GLOBALS ) ) {
 wfLoadSkin( 'Vector' );
 
 # Extensions
-wfLoadExtension( 'ParserFunctions' );
 wfLoadExtension( 'MediaWikiFarm' );
+wfLoadExtension( 'ParserFunctions' );
 
 # Included files
 include 'freeLS.php';
@@ -481,6 +484,25 @@ include 'freeLS.php';
 PHP;
 
 		$this->assertEquals( $localSettings, $this->farm->createLocalSettings( $configuration, "# Pre-config\n", "# Post-config\n" ) );
+
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false );
+		$extensionJson = var_export( dirname( dirname( dirname( __FILE__ ) ) ) . '/extension.json', true );
+		$localSettings2 = str_replace( 'wfLoadExtension( \'MediaWikiFarm\' );', "wfLoadExtension( 'MediaWikiFarm', $extensionJson );", $localSettings );
+		$this->assertEquals( $localSettings2, $farm->createLocalSettings( $configuration, "# Pre-config\n", "# Post-config\n" ) );
+	}
+
+	/**
+	 * Test Composer key.
+	 *
+	 * @covers MediaWikiFarm::composerKey
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::readFile
+	 */
+	function testComposerKey() {
+
+		$this->assertEquals( 'c4538db9', MediaWikiFarm::composerKey( 'ExtensionSemanticMediaWiki' ) );
+		$this->assertEquals( '', MediaWikiFarm::composerKey( '' ) );
 	}
 
 	/**

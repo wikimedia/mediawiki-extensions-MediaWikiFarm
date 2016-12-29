@@ -36,10 +36,10 @@ class MediaWikiFarm {
 	 * Properties
 	 * ---------- */
 
-	/** @var array Parameters: EntryPoint (string) and ExtensionRegistry (bool). */
-	protected $parameters = array(
+	/** @var array State: EntryPoint (string) and InnerMediaWiki (bool). */
+	protected $state = array(
 		'EntryPoint' => '',
-		'ExtensionRegistry' => null,
+		'InnerMediaWiki' => null,
 	);
 
 	/** @var string Farm code directory. */
@@ -69,12 +69,18 @@ class MediaWikiFarm {
 		'$CODE' => '',
 	);
 
+	/** @var array Environment. */
+	protected $environment = array(
+		'ExtensionRegistry' => null,
+	);
+
 	/** @var array Configuration parameters for this wiki. */
 	protected $configuration = array(
 		'settings' => array(),
 		'arrays' => array(),
 		'extensions' => array(),
 		'execFiles' => array(),
+		'composer' => array(),
 	);
 
 	/** @var array Errors */
@@ -87,14 +93,14 @@ class MediaWikiFarm {
 	 * --------- */
 
 	/**
-	 * Get a parameter.
+	 * Get the inner state.
 	 *
 	 * @param string $key Parameter name.
-	 * @return mixed|null Requested parameter or null if nonexistant.
+	 * @return mixed|null Requested state or null if nonexistant.
 	 */
-	function getParameter( $key ) {
-		if( array_key_exists( $key, $this->parameters ) ) {
-			return $this->parameters[$key];
+	function getState( $key ) {
+		if( array_key_exists( $key, $this->state ) ) {
+			return $this->state[$key];
 		}
 		return null;
 	}
@@ -117,7 +123,7 @@ class MediaWikiFarm {
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *
-	 * @return string Cache directory.
+	 * @return string|false Cache directory.
 	 */
 	function getCacheDir() {
 		return $this->cacheDir;
@@ -174,6 +180,7 @@ class MediaWikiFarm {
 	 *   - 'settings': associative array of MediaWiki configuration (e.g. 'wgServer' => '//example.org');
 	 *   - 'arrays': associative array of MediaWiki configuration of type array (e.g. 'wgGroupPermissions' => array( 'edit' => false ));
 	 *   - 'extensions': list of extensions and skins (e.g. 0 => array( 'ParserFunctions', 'extension', 'wfLoadExtension' ));
+	 *   - 'composer': list of Composer-installed extensions and skins (e.g. 0 => 'ExtensionSemanticMediaWiki');
 	 *   - 'execFiles': list of PHP files to execute at the end.
 	 *
 	 * @mediawikifarm-const
@@ -181,9 +188,17 @@ class MediaWikiFarm {
 	 * @param string|null $key Key of the wanted section or null for the whole array.
 	 * @return array MediaWiki configuration, either entire, either a part depending on the parameter.
 	 */
-	function getConfiguration( $key = null ) {
-		if( array_key_exists( $key, $this->configuration ) ) {
-			return $this->configuration[$key];
+	function getConfiguration( $key = null, $key2 = null ) {
+		if( $key !== null ) {
+			if( array_key_exists( $key, $this->configuration ) ) {
+				if( $key2 !== null && array_key_exists( $key2, $this->configuration[$key] ) ) {
+					return $this->configuration[$key][$key2];
+				} elseif( $key2 !== null ) {
+					return null;
+				}
+				return $this->configuration[$key];
+			}
+			return null;
 		}
 		return $this->configuration;
 	}
@@ -203,10 +218,10 @@ class MediaWikiFarm {
 	 *
 	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
 	 * @param string|null $host Host name (string) or null to use the global variables HTTP_HOST or SERVER_NAME.
-	 * @param array $parameters Parameters, see object property $parameters.
+	 * @param array $state Parameters, see object property $state.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
-	static function load( $entryPoint = '', $host = null, $parameters = array() ) {
+	static function load( $entryPoint = '', $host = null, $state = array(), $environment = array() ) {
 
 		global $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 
@@ -214,11 +229,15 @@ class MediaWikiFarm {
 			# Initialise object
 			$wgMediaWikiFarm = new MediaWikiFarm( $host,
 				$wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir,
-				array_merge( $parameters, array( 'EntryPoint' => $entryPoint ) )
+				array_merge( $state, array( 'EntryPoint' => $entryPoint ) ),
+				$environment
 			);
 
 			# Check existence
 			$exists = $wgMediaWikiFarm->checkExistence();
+
+			# Compile configuration
+			$wgMediaWikiFarm->compileConfiguration();
 		}
 		catch( Exception $e ) {
 
@@ -257,6 +276,9 @@ class MediaWikiFarm {
 		if( !defined( 'MW_CONFIG_FILE' ) ) {
 			define( 'MW_CONFIG_FILE', $wgMediaWikiFarm->getConfigFile() ); // @codeCoverageIgnore
 		}
+
+		# Define we are now inside MediaWiki
+		$wgMediaWikiFarm->state['InnerMediaWiki'] = true;
 
 		return 200;
 	}
@@ -316,6 +338,56 @@ class MediaWikiFarm {
 	}
 
 	/**
+	 * Compile configuration as much as it can.
+	 */
+	function compileConfiguration() {
+
+		if( $this->isLocalSettingsFresh() ) {
+
+			$composerFile = $this->readFile( $this->variables['$SERVER'] . '.php', $this->cacheDir . '/composer', false );
+			if( is_array( $composerFile ) ) {
+				$this->configuration['composer'] = $composerFile;
+			}
+
+			return;
+		}
+
+		# Transform configuration files to a unique configuration
+		if( count( $this->configuration['settings'] ) == 0 ) {
+
+			# Compile the configuration
+			$this->populateSettings();
+
+			# Activate the extensions (possibly not finished here
+			# if we do not know the entire MediaWiki environment)
+			$this->activateExtensions();
+
+			# Save Composer key if available
+			if( $this->cacheDir && !count( $this->errors ) ) {
+				self::cacheFile( $this->configuration['composer'],
+					$this->variables['$SERVER'] . '.php',
+					$this->cacheDir . '/composer'
+				);
+			}
+		}
+
+		# When the MediaWiki environment is set
+		if( $this->setEnvironment() ) {
+
+			# Finalise the extension activation
+			$this->activateExtensions();
+
+			# Create the final LocalSettings.php
+			if( $this->cacheDir && !count( $this->errors ) ) {
+				self::cacheFile( $this->createLocalSettings( $this->configuration ),
+					$this->variables['$SERVER'] . '.php',
+					$this->cacheDir . '/LocalSettings'
+				);
+			}
+		}
+	}
+
+	/**
 	 * This function loads MediaWiki configuration.
 	 *
 	 * Parameters are written in global variables, skins and extensions are loaded with
@@ -339,10 +411,6 @@ class MediaWikiFarm {
 	 */
 	function loadMediaWikiConfig() {
 
-		if( count( $this->configuration['settings'] ) == 0 && count( $this->configuration['arrays'] ) == 0 ) {
-			$this->getMediaWikiConfig();
-		}
-
 		# Set general parameters as global variables
 		foreach( $this->configuration['settings'] as $setting => $value ) {
 
@@ -359,35 +427,31 @@ class MediaWikiFarm {
 		}
 
 		# Load extensions and skins with the wfLoadExtension/wfLoadSkin mechanism
-		$loadMediaWikiFarm = false;
-		foreach( $this->configuration['extensions'] as $extension ) {
+		foreach( $this->configuration['extensions'] as $key => $extension ) {
 
 			if( $extension[2] == 'wfLoadExtension' ) {
 
-				if( $extension[0] != 'MediaWikiFarm' || !$this->codeDir ) {
+				if( $key != 'ExtensionMediaWikiFarm' || !$this->codeDir ) {
 					wfLoadExtension( $extension[0] );
 				} else {
 					wfLoadExtension( 'MediaWikiFarm', $this->farmDir . '/extension.json' );
-					$loadedMediaWikiFarm = true;
 				}
 			}
 			elseif( $extension[2] == 'wfLoadSkin' ) {
 
 				wfLoadSkin( $extension[0] );
 			}
-			elseif( $extension[0] == 'MediaWikiFarm' && $extension[1] == 'extension' && $extension[2] == 'require_once' ) {
-
-				$loadMediaWikiFarm = true;
-			}
 		}
 
 		# Register this extension MediaWikiFarm to appear in Special:Version
-		if( $loadMediaWikiFarm ) {
+		if( array_key_exists( 'ExtensionMediaWikiFarm', $this->configuration['extensions'] ) &&
+		     $this->configuration['extensions']['ExtensionMediaWikiFarm'][2] == 'require_once' &&
+		     $this->codeDir ) {
 			$GLOBALS['wgExtensionCredits']['other'][] = array(
 				'path' => $this->farmDir . '/MediaWikiFarm.php',
 				'name' => 'MediaWikiFarm',
-				'version' => '0.2.0',
-				'author' => 'Seb35',
+				'version' => '0.3.0',
+				'author' => '[https://www.mediawiki.org/wiki/User:Seb35 Seb35]',
 				'url' => 'https://www.mediawiki.org/wiki/Extension:MediaWikiFarm',
 				'descriptionmsg' => 'mediawikifarm-desc',
 				'license-name' => 'GPL-3.0+',
@@ -456,12 +520,13 @@ class MediaWikiFarm {
 	 * @param string $configDir Configuration directory.
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
 	 * @param string|false $cacheDir Cache directory; if false, the cache is disabled.
-	 * @param array $parameters Parameters: EntryPoint (string) and ExtensionRegistry (bool).
+	 * @param array $state Inner state: EntryPoint (string) and InnerMediaWiki (bool).
+	 * @param array $environment MediaWiki environment: ExtensionRegistry (bool).
 	 * @return MediaWikiFarm
 	 * @throws MWFConfigurationException When no farms.yml/php/json is found.
 	 * @throws InvalidArgumentException When wrong input arguments are passed.
 	 */
-	function __construct( $host, $configDir, $codeDir = null, $cacheDir = false, $parameters = array() ) {
+	function __construct( $host, $configDir, $codeDir = null, $cacheDir = false, $state = array(), $environment = array() ) {
 
 		# Default value for host
 		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
@@ -490,15 +555,21 @@ class MediaWikiFarm {
 		if( !is_string( $cacheDir ) && $cacheDir !== false ) {
 			throw new InvalidArgumentException( 'Cache directory must be false or a directory' );
 		}
-		if( !is_array( $parameters ) ) {
-			throw new InvalidArgumentException( 'Parameters must be an array' );
+		if( !is_array( $state ) ) {
+			throw new InvalidArgumentException( 'State must be an array' );
 		} else {
-			foreach( $parameters as $key => $value ) {
-				if( $key == 'EntryPoint' && !is_string( $value ) ) {
-					throw new InvalidArgumentException( 'Entry point must be a string' );
-				} elseif( $key == 'ExtensionRegistry' && !is_bool( $value ) ) {
-					throw new InvalidArgumentException( 'ExtensionRegistry parameter must be a bool' );
-				}
+			if( array_key_exists( 'EntryPoint', $state ) && !is_string( $state['EntryPoint'] ) ) {
+				throw new InvalidArgumentException( 'Entry point must be a string' );
+			}
+			if( array_key_exists( 'InnerMediaWiki', $state ) && !is_bool( $state['InnerMediaWiki'] ) ) {
+				throw new InvalidArgumentException( 'InnerMediaWiki state must be a bool' );
+			}
+		}
+		if( !is_array( $environment ) ) {
+			throw new InvalidArgumentException( 'Environment must be an array' );
+		} else {
+			if( array_key_exists( 'ExtensionRegistry', $environment ) && !is_bool( $environment['ExtensionRegistry'] ) ) {
+				throw new InvalidArgumentException( 'ExtensionRegistry parameter must be a bool' );
 			}
 		}
 
@@ -510,10 +581,13 @@ class MediaWikiFarm {
 		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
 		$this->cacheDir = $cacheDir;
-		$this->parameters = array_merge( array(
+		$this->state = array_merge( array(
 			'EntryPoint' => '',
+			'InnerMediaWiki' => null,
+		), $state );
+		$this->environment = array_merge( array(
 			'ExtensionRegistry' => null,
-		), $parameters );
+		), $environment );
 
 		# Shortcut loading
 		// @codingStandardsIgnoreLine
@@ -712,7 +786,7 @@ class MediaWikiFarm {
 		global $IP;
 
 		# Special case for the update: new (uncached) version must be used
-		$cache = ( $this->parameters['EntryPoint'] != 'maintenance/update.php' );
+		$cache = ( $this->state['EntryPoint'] != 'maintenance/update.php' );
 
 		# Read cache file
 		$deployments = array();
@@ -838,7 +912,7 @@ class MediaWikiFarm {
 	 */
 	function isLocalSettingsFresh() {
 
-		if( $this->cacheDir === false ) {
+		if( !$this->cacheDir ) {
 			return false;
 		}
 
@@ -863,59 +937,6 @@ class MediaWikiFarm {
 		}
 
 		return filemtime( $localSettingsFile ) >= $oldness;
-	}
-
-	/**
-	 * Get or compute the configuration (MediaWiki, skins, extensions) for a wiki.
-	 *
-	 * This function uses a caching mechanism in order to avoid recomputing each time the
-	 * configuration; it is rebuilt when origin configuration files are changed.
-	 *
-	 * The returned array has the following format:
-	 * array( 'settings' => array( 'wgSitename' => 'Foo', ... ),
-	 *        'arrays' => array( 'wgGroupPermission' => array(), ... ),
-	 *        'extensions' => 'wfLoadExtension'|'require_once',
-	 *      )
-	 *
-	 * @SuppressWarnings(PHPMD.StaticAccess)
-	 * @SuppressWarnings(PHPMD.ElseExpression)
-	 *
-	 * @param bool $force Whether to force loading in $this->configuration even if there is a LocalSettings.php
-	 * @return void.
-	 */
-	function getMediaWikiConfig( $force = false ) {
-
-		if( !$force && $this->isLocalSettingsFresh() ) {
-			return;
-		}
-
-		// if( is_string( $this->cacheDir ) ) {
-		// 	$cacheFile = $this->cacheDir . '/LocalSettings/' . 'config-' . $this->variables['$SERVER'] . '.php';
-		// }
-
-		# Populate from cache
-		// if( !$force && $this->cacheDir && is_file( $this->cacheDir . '/LocalSettings/' . $cacheFile ) ) {
-		// 	$this->configuration = $this->readFile( $cacheFile, $this->cacheDir . '/LocalSettings', false );
-		// 	return;
-		// }
-
-		# Get specific configuration for this wiki
-		$this->populateSettings();
-
-		# Extract from the general configuration skin and extension configuration
-		$this->extractSkinsAndExtensions();
-
-		# Save this configuration in a PHP file
-		if( is_string( $this->cacheDir ) && !count( $this->errors ) ) {
-			// self::cacheFile( $this->configuration,
-			// 	'config-' . $this->variables['$SERVER'] . '.php',
-			// 	$this->cacheDir . '/LocalSettings'
-			// );
-			self::cacheFile( $this->createLocalSettings( $this->configuration ),
-				$this->variables['$SERVER'] . '.php',
-				$this->cacheDir . '/LocalSettings'
-			);
-		}
 	}
 
 	/**
@@ -957,6 +978,11 @@ class MediaWikiFarm {
 		$settingsArray = &$this->configuration['arrays'];
 		$prioritiesArray = array();
 
+		$extensions =& $this->configuration['extensions'];
+
+		$settings['wgUseExtensionMediaWikiFarm'] = true;
+		$extensions['ExtensionMediaWikiFarm'] = array( 'MediaWikiFarm', 'extension', null, 0 );
+
 		foreach( $this->farmConfig['config'] as $configFile ) {
 
 			if( !is_array( $configFile ) ) {
@@ -979,27 +1005,53 @@ class MediaWikiFarm {
 				continue;
 			}
 
-			# Key 'default' => no choice of the wiki
-			if( $configFile['key'] == 'default' || ( strpos( $configFile['key'], '*' ) === false && $this->variables['$WIKIID'] == $configFile['key'] ) ) {
+			# Defined key
+			if( strpos( $configFile['key'], '*' ) === false ) {
 
-				foreach( $theseSettings as $setting => $value ) {
+				$priority = 0;
+				if( $configFile['key'] == 'default' ) {
+					$priority = 1;
+				} elseif( $configFile['key'] == $this->variables['$SUFFIX'] ) {
+					$priority = 3;
+				} elseif( $configFile['key'] == $this->variables['$WIKIID'] ) {
+					$priority = 5;
+				} else {
+					/*foreach( $tags as $tag ) {
+						if( $configFile['key'] == $tag ) {
+							$priority = 4;
+							break;
+						}
+					}*/
+					if( $priority == 0 ) {
+						continue;
+					}
+				}
 
-					if( substr( $setting, 0, 1 ) == '+' ) {
-						$setting = substr( $setting, 1 );
-						if( !array_key_exists( $setting, $prioritiesArray ) || $prioritiesArray[$setting] <= 1 ) {
+				foreach( $theseSettings as $rawSetting => $value ) {
+
+					# Sanitise the setting name
+					$setting = preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $rawSetting );
+
+					if( substr( $rawSetting, 0, 1 ) == '+' ) {
+						if( !array_key_exists( $setting, $prioritiesArray ) || $prioritiesArray[$setting] <= $priority ) {
 							$settingsArray[$setting] = $value;
-							$prioritiesArray[$setting] = 1;
+							$prioritiesArray[$setting] = $priority;
 						}
 					}
-					elseif( !array_key_exists( $setting, $priorities ) || $priorities[$setting] <= 1 ) {
+					elseif( !array_key_exists( $setting, $priorities ) || $priorities[$setting] <= $priority ) {
 						$settings[$setting] = $value;
-						$priorities[$setting] = 1;
+						$priorities[$setting] = $priority;
+						if( substr( $setting, 0, 14 ) == 'wgUseExtension' ) {
+							$extensions['Extension' . substr( $rawSetting, 14 )] = array( substr( $rawSetting, 14 ), 'extension', null, count( $extensions ) );
+						} elseif( substr( $setting, 0, 9 ) == 'wgUseSkin' ) {
+							$extensions['Skin' . substr( $rawSetting, 9 )] = array( substr( $rawSetting, 9 ), 'skin', null, count( $extensions ) );
+						}
 					}
 				}
 			}
 
-			# Other key
-			elseif( strpos( $configFile['key'], '*' ) !== false ) {
+			# Regex key
+			else {
 
 				// $tags = array(); # @todo data sources not implemented, but code to selection parameters from a tag is below
 
@@ -1030,12 +1082,14 @@ class MediaWikiFarm {
 					// $tagDefaultKey = in_array( $defaultKey, $tags );
 				}
 
-				foreach( $theseSettings as $setting => $values ) {
+				foreach( $theseSettings as $rawSetting => $values ) {
+
+					# Sanitise the setting name
+					$setting = preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $rawSetting );
 
 					# Depending if it is an array diff or not, create and initialise the variables
-					if( substr( $setting, 0, 1 ) == '+' ) {
+					if( substr( $rawSetting, 0, 1 ) == '+' ) {
 						$settingIsArray = true;
-						$setting = substr( $setting, 1 );
 						if( !array_key_exists( $setting, $prioritiesArray ) ) {
 							$settingsArray[$setting] = array();
 							$prioritiesArray[$setting] = 0;
@@ -1050,6 +1104,11 @@ class MediaWikiFarm {
 						}
 						$thisSetting =  &$settings[$setting];
 						$thisPriority = &$priorities[$setting];
+						if( substr( $setting, 0, 14 ) == 'wgUseExtension' ) {
+							$extensions['Extension' . substr( $rawSetting, 14 )] = array( substr( $rawSetting, 14 ), 'extension', null, count( $extensions ) );
+						} elseif( substr( $setting, 0, 9 ) == 'wgUseSkin' ) {
+							$extensions['Skin' . substr( $rawSetting, 9 )] = array( substr( $rawSetting, 9 ), 'skin', null, count( $extensions ) );
+						}
 					}
 
 					# Set value if there is a label corresponding to wikiID
@@ -1121,6 +1180,11 @@ class MediaWikiFarm {
 						} else {
 							unset( $settings[$setting] );
 							unset( $priorities[$setting] );
+							if( substr( $setting, 0, 14 ) == 'wgUseExtension' ) {
+								unset( $extensions['Extension' . substr( $rawSetting, 14 )] );
+							} elseif( substr( $setting, 0, 9 ) == 'wgUseSkin' ) {
+								unset( $extensions['Skin' . substr( $rawSetting, 9 )] );
+							}
 						}
 					}
 				}
@@ -1131,75 +1195,136 @@ class MediaWikiFarm {
 	}
 
 	/**
-	 * Extract skin and extension configuration from the general configuration.
+	 * Set environment, i.e. every 'environment variables' which lead to a known configuration.
+	 *
+	 * For now, the only environment variable is ExtensionRegistry (is the MediaWiki version
+	 * capable of loading extensions/skins with wfLoadExtension/wfLoadSkin?).
 	 *
 	 * @return void
 	 */
-	function extractSkinsAndExtensions() {
+	function setEnvironment() {
 
-		$settings = &$this->configuration['settings'];
+		if( !$this->state['InnerMediaWiki'] ) {
+			return false;
+		}
+
+		# Set environment
+		$this->environment['ExtensionRegistry'] = class_exists( 'ExtensionRegistry' );
+
+		return true;
+	}
+
+	/**
+	 * Activate extensions and skins depending on their autoloading and activation mechanisms.
+	 *
+	 * When the environment parameter ExtensionRegistry is not set (null), only Composer-enabled
+	 * extensions and skins are Composer-autoloaded; and if ExtensionRegistry is set to true or
+	 * false, extensions and skins are activated through wfLoadExtension/wfLoadSkin or require_once.
+	 *
+	 * The part related to Composer is a bit complicated (partly since optimised): when an extension
+	 * is Composer-managed, it is checked if it was already loaded by another extension (in which
+	 * case Composer has autoloaded its code), then it is registered as Composer-managed, then its
+	 * required extensions are registered. This last part is important, else Composer would have
+	 * silently autoloaded the required extensions, but these would not be known by MediaWikiFarm
+	 * and, more importantly, an eventual wfLoadExtension would not be triggered (e.g. PageForms 4.0+
+	 * is a Composer dependency of the Composer-installed SemanticFormsSelect; if you activate SFS
+	 * but not PF, PF would not be wfLoadExtension’ed – since unknown from MediaWikiFarm – and the
+	 * wfLoadExtension’s SFS issues a fatal error since PF is not wfLoadExtension’ed, even if it is
+	 * Composer-installed).
+	 *
+	 * @return void
+	 */
+	function activateExtensions() {
 
 		# Autodetect if ExtensionRegistry is here
-		if( is_null( $this->parameters['ExtensionRegistry'] ) ) {
-			$this->parameters['ExtensionRegistry'] = class_exists( 'ExtensionRegistry' );
+		$ExtensionRegistry = $this->environment['ExtensionRegistry'];
+
+		# Load Composer dependencies if available
+		$composerLoaded = array();
+		$dependencies = $this->readFile( 'MediaWikiExtensions.php', $this->variables['$CODE'] . '/vendor', false );
+		if( !$dependencies ) {
+			$dependencies = array();
 		}
 
 		# Search for skin and extension activation
-		$settings2 = $settings; # This line is about avoiding the behavious in PHP 5 where newly-added items are evaluated
-		foreach( $settings2 as $setting => $value ) {
-			if( preg_match( '/^wgUse(Extension|Skin)(.+)$/', $setting, $matches ) && ( $value === true || $value == 'require_once' || $value == 'composer' ) ) {
+		foreach( $this->configuration['extensions'] as $key => &$extension ) {
 
-				$type = strtolower( $matches[1] );
-				$name = $matches[2];
-				$loadingMechanism = $this->detectLoadingMechanism( $type, $name );
-				if( $value !== true ) {
-					$loadingMechanism = $value;
-				}
+			$type = $extension[1];
+			$name = $extension[0];
+			$status =& $extension[2];
 
-				if( is_null( $loadingMechanism ) ) {
-					$settings[$setting] = false;
-				} else {
-					$this->configuration['extensions'][] = array( $name, $type, $loadingMechanism, count( $this->configuration['extensions'] ) );
-					$settings[preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $setting )] = true;
+			$setting = 'wgUse' . preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $key );
+			$value =& $this->configuration['settings'][$setting];
+
+			if( $ExtensionRegistry === null || $value === 'composer' ) {
+				if( $this->detectComposer( $type, $name ) ) {
+					$status = 'composer';
+					$value = true;
+				} elseif( $value === 'composer' ) {
+					$value = false;
+					unset( $this->configuration['extensions'][$key] );
 				}
+			} elseif( $value === 'require_once' || $value === 'wfLoad' . ucfirst( $type ) ) {
+				$status = $value;
+				$value = true;
+			// @codingStandardsIgnoreLine
+			} elseif( $value !== false && ( $status = $this->detectLoadingMechanism( $type, $name ) ) ) {
+				$value = true;
+			} elseif( $key != 'ExtensionMediaWikiFarm' ) {
+				$value = false;
+				unset( $this->configuration['extensions'][$key] );
+			} else {
+				$status = $ExtensionRegistry ? 'wfLoadExtension' : 'require_once';
 			}
-			elseif( preg_match( '/^wgUse(.+)$/', $setting, $matches ) && ( $value === true || $value == 'require_once' || $value == 'composer' ) ) {
 
-				$name = $matches[1];
-
-				$loadingMechanism = $this->detectLoadingMechanism( 'extension', $name );
-				if( !is_null( $loadingMechanism ) ) {
-					if( $value !== true ) {
-						$loadingMechanism = $value;
-					}
-					$this->configuration['extensions'][] = array( $name, 'extension', $loadingMechanism, count( $this->configuration['extensions'] ) );
-					$settings['wgUseExtension'.preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $name )] = true;
-					unset( $settings[$setting] );
-				} else {
-					$loadingMechanism = $this->detectLoadingMechanism( 'skin', $name );
-					if( !is_null( $loadingMechanism ) ) {
-						if( $value !== true ) {
-							$loadingMechanism = $value;
+			if( $status == 'composer' ) {
+				if( in_array( $key, $composerLoaded ) ) {
+					continue;
+				}
+				$this->configuration['composer'][] = $key;
+				if( array_key_exists( $key, $dependencies ) ) {
+					$composerLoaded = array_merge( $composerLoaded, $dependencies[$key] );
+					foreach( $dependencies[$key] as $dep ) {
+						if( !array_key_exists( $dep, $this->configuration['extensions'] ) ) {
+							$this->configuration['settings']['wgUse' . preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $dep )] = true;
+							preg_match( '/^(Extension|Skin)(.+)$/', $dep, $matches );
+							$this->configuration['extensions'][$dep] = array( $matches[2], strtolower( $matches[1] ), 'composer', - count( $this->configuration['extensions'] ) );
+						} else {
+							$this->configuration['extensions'][$dep][2] = 'composer';
+							$this->configuration['extensions'][$dep][3] = - abs( $this->configuration['extensions'][$dep][3] );
 						}
-						$this->configuration['extensions'][] = array( $name, 'skin', $loadingMechanism, count( $this->configuration['extensions'] ) );
-						$settings['wgUseSkin'.preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $name )] = true;
-						unset( $settings[$setting] );
 					}
 				}
 			}
-			if( preg_match( '/[^a-zA-Z0-9_\x7f\xff]/', $setting ) ) {
-				$settings[preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $setting )] = $settings[$setting];
-				unset( $settings[$setting] );
-			}
 		}
 
-		$settings['wgUseExtensionMediaWikiFarm'] = true;
-		if( $this->parameters['ExtensionRegistry'] ) {
-			$this->configuration['extensions'][] = array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', count( $this->configuration['extensions'] ) );
-		} else {
-			$this->configuration['extensions'][] = array( 'MediaWikiFarm', 'extension', 'require_once', count( $this->configuration['extensions'] ) );
+		# Sort extensions
+		uasort( $this->configuration['extensions'], array( 'MediaWikiFarm', 'sortExtensions' ) );
+		$i = 0;
+		foreach( $this->configuration['extensions'] as $key => &$extension ) {
+			$extension[3] = $i++;
 		}
-		usort( $this->configuration['extensions'], array( 'MediaWikiFarm', 'sortExtensions' ) );
+	}
+
+	/**
+	 * Detect if the extension can be loaded by Composer.
+	 *
+	 * This use the backend-generated key; without it, no extension can be loaded with Composer in MediaWikiFarm.
+	 *
+	 * @mediawikifarm-const
+	 *
+	 * @param string $type Type, in ['extension', 'skin'].
+	 * @param string $name Name of the extension/skin.
+	 * @return boolean The extension/skin is Composer-managed (at least for its installation).
+	 */
+	function detectComposer( $type, $name ) {
+
+		if( is_file( $this->variables['$CODE'] . '/' . $type . 's/' . $name . '/composer.json' ) &&
+		    is_dir( $this->variables['$CODE'] . '/vendor/composer' . self::composerKey( ucfirst( $type ) . $name ) ) ) {
+
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -1218,18 +1343,18 @@ class MediaWikiFarm {
 		}
 
 		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
-		if( $this->parameters['ExtensionRegistry'] && is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) ) {
+		if( $this->environment['ExtensionRegistry'] && is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$type.'.json' ) ) {
 			return 'wfLoad' . ucfirst( $type );
+		}
+
+		# A composer.json file is in the directory and the extension is properly autoloaded by Composer
+		elseif( $this->detectComposer( $type, $name ) ) {
+			return 'composer';
 		}
 
 		# A MyExtension.php file is in the directory -> assume it is the loading mechanism
 		elseif( is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/'.$name.'.php' ) ) {
 			return 'require_once';
-		}
-
-		# A composer.json file is in the directory -> assume it is the loading mechanism if previous mechanisms didn’t succeed
-		elseif( is_file( $this->variables['$CODE'].'/'.$type.'s/'.$name.'/composer.json' ) ) {
-			return 'composer';
 		}
 
 		return null;
@@ -1238,6 +1363,9 @@ class MediaWikiFarm {
 	/**
 	 * Sort extensions.
 	 *
+	 * The extensions are sorted first by loading mechanism, then, for Composer-managed
+	 * extensions, according to their dependency order.
+	 *
 	 * @param array $a First element.
 	 * @param array $b Second element.
 	 * @return int Relative order of the two elements.
@@ -1245,18 +1373,40 @@ class MediaWikiFarm {
 	function sortExtensions( $a, $b ) {
 
 		static $loading = array(
-			'require_once' => 10,
-			'composer' => 20,
-			'wfLoadSkin' => 20,
-			'wfLoadExtension' => 20,
+			'' => 0,
+			'composer' => 10,
+			'require_once' => 20,
+			'wfLoadSkin' => 30,
+			'wfLoadExtension' => 30,
 		);
 		static $type = array(
 			'skin' => 1,
 			'extension' => 2,
 		);
 
-		$weight = $loading[$a[2]] + $type[$a[1]] - $loading[$b[2]] - $type[$b[1]];
+		$loadA = $a[2] === null ? '' : $a[2];
+		$loadB = $b[2] === null ? '' : $b[2];
+		$weight = $loading[$loadA] + $type[$a[1]] - $loading[$loadB] - $type[$b[1]];
 		$stability = $a[3] - $b[3];
+
+		if( $a[2] == 'composer' && $b[2] == 'composer' ) {
+			# Read the two composer.json, if one is in the require section, it must be before
+			$nameA = ucfirst( $a[1] ) . $a[0];
+			$nameB = ucfirst( $b[1] ) . $b[0];
+			$dependencies = $this->readFile( 'MediaWikiExtensions.php', $this->variables['$CODE'] . '/vendor', false );
+			if( !$dependencies || !array_key_exists( $nameA, $dependencies ) || !array_key_exists( $nameB, $dependencies ) ) {
+				return $weight ? $weight : $stability;
+			}
+			$ArequiresB = in_array( $nameB, $dependencies[$nameA] );
+			$BrequiresA = in_array( $nameA, $dependencies[$nameB] );
+			if( $ArequiresB && $BrequiresA ) {
+				return $stability;
+			} elseif( $BrequiresA ) {
+				return -1;
+			} elseif( $ArequiresB ) {
+				return 1;
+			}
+		}
 
 		return $weight ? $weight : $stability;
 	}
@@ -1294,10 +1444,10 @@ class MediaWikiFarm {
 				'wfLoadSkin' => '',
 			),
 		);
-		foreach( $configuration['extensions'] as $extension ) {
-			if( $extension[2] == 'require_once' ) {
+		foreach( $configuration['extensions'] as $key => $extension ) {
+			if( $extension[2] == 'require_once' && ( $key != 'ExtensionMediaWikiFarm' || !$this->codeDir ) ) {
 				$extensions[$extension[1]]['require_once'] .= "require_once \"\$IP/{$extension[1]}s/{$extension[0]}/{$extension[0]}.php\";\n";
-			} elseif( $extension[0] == 'MediaWikiFarm' && $extension[1] == 'extension' && $extension[2] == 'wfLoadExtension' && $this->codeDir ) {
+			} elseif( $key == 'ExtensionMediaWikiFarm' && $extension[2] == 'wfLoadExtension' && $this->codeDir ) {
 				$extensions['extension']['wfLoadExtension'] .= "wfLoadExtension( 'MediaWikiFarm', " . var_export( $this->farmDir . '/extension.json', true ) . " );\n";
 			} elseif( $extension[2] == 'wfLoad' . ucfirst( $extension[1] ) ) {
 				$extensions[$extension[1]]['wfLoad' . ucfirst( $extension[1] )] .= 'wfLoad' . ucfirst( $extension[1] ) . '( ' . var_export( $extension[0], true ) . " );\n";
@@ -1431,6 +1581,7 @@ class MediaWikiFarm {
 		$files[] = $dir . 'FunctionsTest.php';
 		$files[] = $dir . 'InstallationIndependantTest.php';
 		$files[] = $dir . 'LoadingTest.php';
+		$files[] = $dir . 'MediaWikiFarmComposerScriptTest.php';
 		$files[] = $dir . 'MediaWikiFarmScriptTest.php';
 		$files[] = $dir . 'MonoversionInstallationTest.php';
 		$files[] = $dir . 'MultiversionInstallationTest.php';
@@ -1472,7 +1623,7 @@ class MediaWikiFarm {
 
 		# Check the file exists
 		$prefixedFile = $directory ? $directory . '/' . $filename : $filename;
-		$cachedFile = $this->cacheDir !== false && $cache ? $this->cacheDir . '/config/' . $filename . '.php' : false;
+		$cachedFile = $this->cacheDir && $cache ? $this->cacheDir . '/config/' . $filename . '.php' : false;
 		if( !is_file( $prefixedFile ) ) {
 			$format = null;
 		}
@@ -1708,5 +1859,26 @@ class MediaWikiFarm {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Composer key depending on the activated extensions and skins.
+	 *
+	 * Extension names should follow the form 'ExtensionMyWonderfulExtension';
+	 * Skin names should follow the form 'SkinMyWonderfulSkin'.
+	 *
+	 * @mediawikifarm-const
+	 * @mediawikifarm-idempotent
+	 *
+	 * @param string $name Name of extension or skin.
+	 * @return string Composer key.
+	 */
+	static function composerKey( $name ) {
+
+		if( $name == '' ) {
+			return '';
+		}
+
+		return substr( md5( $name ), 0, 8 );
 	}
 }

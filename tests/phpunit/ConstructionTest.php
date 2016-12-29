@@ -13,7 +13,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 * @covers MediaWikiFarm::getParameter
+	 * @covers MediaWikiFarm::getState
 	 * @covers MediaWikiFarm::getFarmConfiguration
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
@@ -29,8 +29,8 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
 
-		$this->assertEquals( 'index.php', $farm->getParameter( 'EntryPoint' ) );
-		$this->assertNull( $farm->getParameter( 'entryPoint' ) );
+		$this->assertEquals( 'index.php', $farm->getState( 'EntryPoint' ) );
+		$this->assertNull( $farm->getState( 'nonexistant' ) );
 
 		$farmConfig = array(
 			'server' => '(?P<wiki>[a-z])\.testfarm-multiversion\.example\.org',
@@ -68,7 +68,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 * @covers MediaWikiFarm::getParameter
+	 * @covers MediaWikiFarm::getState
 	 * @covers MediaWikiFarm::getFarmConfiguration
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
@@ -84,7 +84,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$this->assertEquals( 'a.testfarm-monoversion.example.org', $farm->getVariable( '$SERVER' ) );
 
-		$this->assertEquals( 'index.php', $farm->getParameter( 'EntryPoint' ) );
+		$this->assertEquals( 'index.php', $farm->getState( 'EntryPoint' ) );
 
 		$farmConfig = array(
 			'server' => '(?P<wiki>[a-z])\.testfarm-monoversion\.example\.org',
@@ -111,6 +111,15 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				),
 				array( 'file' => 'globalsettings.php',
 				       'key' => '*',
+				),
+				array( 'file' => 'atestfarmsettings.php',
+				       'key' => 'atestfarm',
+				),
+				array( 'file' => 'testfarmsettings.php',
+				       'key' => 'testfarm',
+				),
+				array( 'file' => 'otherfarmsettings.php',
+				       'key' => 'otherfarm',
 				),
 				array( 'file' => 'LocalSettings.php',
 				       'executable' => true,
@@ -265,7 +274,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 *
 	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Parameters must be an array
+	 * @expectedExceptionMessage State must be an array
 	 */
 	function testFailedConstruction8() {
 
@@ -307,7 +316,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 *
 	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage ExtensionRegistry parameter must be a bool
+	 * @expectedExceptionMessage Entry point must be a string
 	 */
 	function testFailedConstruction10() {
 
@@ -316,7 +325,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'ExtensionRegistry' => 'true' ) );
+				array( 'EntryPoint' => 0 ) );
 	}
 
 	/**
@@ -326,7 +335,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 *
 	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Entry point must be a string
+	 * @expectedExceptionMessage InnerMediaWiki state must be a bool
 	 */
 	function testFailedConstruction11() {
 
@@ -335,7 +344,47 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 0 ) );
+				array( 'InnerMediaWiki' => 0 ) );
+	}
+
+	/**
+	 * Test bad arguments in constructor.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 *
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Environment must be an array
+	 */
+	function testFailedConstruction12() {
+
+		$farm = new MediaWikiFarm(
+				'a.testfarm-multiversion.example.org',
+				self::$wgMediaWikiFarmConfigDir,
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array(),
+				0 );
+	}
+
+	/**
+	 * Test bad arguments in constructor.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 *
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage ExtensionRegistry parameter must be a bool
+	 */
+	function testFailedConstruction13() {
+
+		$farm = new MediaWikiFarm(
+				'a.testfarm-multiversion.example.org',
+				self::$wgMediaWikiFarmConfigDir,
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array(),
+				array( 'ExtensionRegistry' => 'true' ) );
 	}
 
 	/**
@@ -547,6 +596,13 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarm::getConfigFile
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
+	 * @uses MediaWikiFarm::compileConfiguration
+	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::activateExtensions
+	 * @uses MediaWikiFarm::detectComposer
+	 * @uses MediaWikiFarm::sortExtensions
+	 * @uses MediaWikiFarm::setEnvironment
+	 * @uses MediaWikiFarm::arrayMerge
 	 */
 	function testLoadingCorrect() {
 
@@ -577,6 +633,13 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
+	 * @uses MediaWikiFarm::compileConfiguration
+	 * @uses MediaWikiFarm::isLocalSettingsFresh
+	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::activateExtensions
+	 * @uses MediaWikiFarm::detectComposer
+	 * @uses MediaWikiFarm::sortExtensions
+	 * @uses MediaWikiFarm::setEnvironment
 	 */
 	function testLoadingSoftMissingError() {
 
@@ -617,5 +680,46 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$code = MediaWikiFarm::load( 'index.php' );
 
 		$this->assertEquals( 500, $code, 'The host was not evaluated as “hard-missing” (nonexistant farm).' );
+	}
+
+	/**
+	 * Load a YAML config file.
+	 *
+	 * @covers MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::readFile
+	 * @uses ::wfMediaWikiFarm_readYAML
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage Infinite or too long redirect detected
+	 */
+	function testYAMLConfigFile() {
+
+		$farm = new MediaWikiFarm(
+				'a.testfarm-infinite-redirect.example.org',
+				self::$wgMediaWikiFarmConfigDir . '/yaml',
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array( 'EntryPoint' => 'index.php' ) );
+	}
+
+	/**
+	 * Load a JSON config file.
+	 *
+	 * @covers MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::readFile
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage Infinite or too long redirect detected
+	 */
+	function testJSONConfigFile() {
+
+		$farm = new MediaWikiFarm(
+				'a.testfarm-infinite-redirect.example.org',
+				self::$wgMediaWikiFarmConfigDir . '/json',
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array( 'EntryPoint' => 'index.php' ) );
 	}
 }

@@ -44,9 +44,10 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test regular loading mechanisms.
 	 *
-	 * @covers MediaWikiFarm::extractSkinsAndExtensions
+	 * @covers MediaWikiFarm::compileConfiguration
 	 * @covers MediaWikiFarm::detectLoadingMechanism
 	 * @covers MediaWikiFarm::loadMediaWikiConfig
+	 * @covers MediaWikiFarm::activateExtensions
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
@@ -58,14 +59,18 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
-	 * @uses MediaWikiFarm::getMediaWikiConfig
+	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::detectComposer
+	 * @uses MediaWikiFarm::setEnvironment
+	 * @uses MediaWikiFarm::getConfigFile
 	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::composerKey
 	 */
 	function testAllLoadingMechanisms() {
 
@@ -86,6 +91,8 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				'wgUseExtensionTestExtensionBiLoading' => true,
 				'wgUseExtensionTestExtensionRequireOnce' => true,
 				'wgUseExtensionTestExtensionComposer' => true,
+				'wgUseExtensionTestExtensionComposer2' => true,
+				'wgUseExtensionTestMissingExtensionComposer' => false,
 
 				'wgUseSkinTestSkinWfLoadSkin' => true,
 				'wgUseSkinTestSkinBiLoading' => true,
@@ -98,21 +105,28 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				),
 			),
 			'extensions' => array(
-				array( 'TestSkinRequireOnce', 'skin', 'require_once', 6 ),
-				array( 'TestExtensionRequireOnce', 'extension', 'require_once', 2 ),
-				array( 'TestSkinWfLoadSkin', 'skin', 'wfLoadSkin', 4 ),
-				array( 'TestSkinBiLoading', 'skin', 'wfLoadSkin', 5 ),
-				array( 'TestSkinComposer', 'skin', 'composer', 7 ),
-				array( 'TestExtensionWfLoadExtension', 'extension', 'wfLoadExtension', 0 ),
-				array( 'TestExtensionBiLoading', 'extension', 'wfLoadExtension', 1 ),
-				array( 'TestExtensionComposer', 'extension', 'composer', 3 ),
-				array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 8 ),
+				'ExtensionTestExtensionComposer2' => array( 'TestExtensionComposer2', 'extension', 'composer', 0 ),
+				'SkinTestSkinComposer' => array( 'TestSkinComposer', 'skin', 'composer', 1 ),
+				'SkinTestSkinRequireOnce' => array( 'TestSkinRequireOnce', 'skin', 'require_once', 2 ),
+				'ExtensionTestExtensionRequireOnce' => array( 'TestExtensionRequireOnce', 'extension', 'require_once', 3 ),
+				'SkinTestSkinWfLoadSkin' => array( 'TestSkinWfLoadSkin', 'skin', 'wfLoadSkin', 4 ),
+				'SkinTestSkinBiLoading' => array( 'TestSkinBiLoading', 'skin', 'wfLoadSkin', 5 ),
+				'ExtensionTestExtensionComposer' => array( 'TestExtensionComposer', 'extension', 'wfLoadExtension', 6 ),
+				'ExtensionMediaWikiFarm' => array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 7 ),
+				'ExtensionTestExtensionWfLoadExtension' => array( 'TestExtensionWfLoadExtension', 'extension', 'wfLoadExtension', 8 ),
+				'ExtensionTestExtensionBiLoading' => array( 'TestExtensionBiLoading', 'extension', 'wfLoadExtension', 9 ),
+			),
+			'composer' => array(
+				1 => 'SkinTestSkinComposer',
+				# 'ExtensionTestExtensionComposer', # Autoloader included in TestSkinComposer autoloader
+				0 => 'ExtensionTestExtensionComposer2', # Autoloader included in TestSkinComposer autoloader but this is added before
+				                                        # in the config file (would be better to remove it but harmless anyway)
 			),
 		);
 		$this->backupGlobalVariables( array_keys( $result['settings'] ) );
 		$this->backupAndUnsetGlobalVariable( 'wgFileExtensions' );
 
-		$exists = MediaWikiFarm::load( 'index.php', 'a.testfarm-multiversion-test-extensions.example.org', array( 'ExtensionRegistry' => true ) );
+		$exists = MediaWikiFarm::load( 'index.php', 'a.testfarm-multiversion-test-extensions.example.org', array(), array( 'ExtensionRegistry' => true ) );
 		$this->assertEquals( 200, $exists );
 		$this->assertEquals( 'vstub', $wgMediaWikiFarm->getVariable( '$VERSION' ) );
 
@@ -120,6 +134,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( $result['settings'], $wgMediaWikiFarm->getConfiguration( 'settings' ) );
 		$this->assertEquals( $result['arrays'], $wgMediaWikiFarm->getConfiguration( 'arrays' ) );
 		$this->assertEquals( $result['extensions'], $wgMediaWikiFarm->getConfiguration( 'extensions' ) );
+		$this->assertEquals( $result['composer'], $wgMediaWikiFarm->getConfiguration( 'composer' ) );
 
 		$trueGlobals = array();
 		foreach( $GLOBALS as $key => $value ) {
@@ -129,6 +144,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		}
 
 		# Check that $result['settings'] (whose all values are 'true') is a subset of $trueGlobals
+		unset( $result['settings']['wgUseExtensionTestMissingExtensionComposer'] );
 		$this->assertEmpty( array_diff( array_keys( $result['settings'] ), $trueGlobals ) );
 		$this->assertTrue( array_key_exists( 'wgFileExtensions', $GLOBALS ) );
 		$this->assertEquals( $result['arrays']['wgFileExtensions'], $GLOBALS['wgFileExtensions'] );
@@ -158,14 +174,16 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
-	 * @uses MediaWikiFarm::getMediaWikiConfig
+	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::populateSettings
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
+	 * @uses MediaWikiFarm::activateExtensions
+	 * @uses MediaWikiFarm::setEnvironment
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
-	 * @uses MediaWikiFarm::extractSkinsAndExtensions
+	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::detectLoadingMechanism
 	 */
 	function testRegistrationMediaWikiFarm() {
@@ -174,11 +192,13 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
-			array( 'ExtensionRegistry' => false )
+			array(), array( 'ExtensionRegistry' => false )
 		);
 		$farm->checkExistence();
+		$farm->compileConfiguration();
 		$farm->loadMediaWikiConfig();
 
+		$this->assertArrayHasKey( 'wgAutoloadClasses', $GLOBALS );
 		$this->assertArrayHasKey( 'MediaWikiFarm', $GLOBALS['wgAutoloadClasses'] );
 		$this->assertEquals( 'src/MediaWikiFarm.php', $GLOBALS['wgAutoloadClasses']['MediaWikiFarm'] );
 	}
@@ -186,7 +206,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test exceptions in loading mechanisms.
 	 *
-	 * @covers MediaWikiFarm::extractSkinsAndExtensions
+	 * @covers MediaWikiFarm::compileConfiguration
 	 * @covers MediaWikiFarm::detectLoadingMechanism
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
@@ -199,8 +219,11 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
-	 * @uses MediaWikiFarm::getMediaWikiConfig
+	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::populateSettings
+	 * @uses MediaWikiFarm::activateExtensions
+	 * @uses MediaWikiFarm::detectComposer
+	 * @uses MediaWikiFarm::setEnvironment
 	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
@@ -209,8 +232,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::getVariable
 	 */
 	function testExceptionsLoadingMechanisms() {
-
-		global $wgMediaWikiFarm;
 
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
@@ -229,31 +250,31 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				'wgUseExtensionTestExtensionMissing' => false,
 				'wgUseSkinTestSkinMissing' => false,
 				'wgUseExtensionConfirmEditQuestyCaptcha' => false,
-				'wgUseTestExtensionMissing' => true,
-				'wgUseTestSkinMissing' => true,
 
 				'wgUseExtensionTestExtensionEmpty' => false,
 				'wgUseSkinTestSkinEmpty' => false,
-				'wgUseTestExtensionEmpty' => true,
-				'wgUseTestSkinEmpty' => true,
 			),
 			'extensions' => array(),
 		);
 		if( class_exists( 'ExtensionRegistry' ) ) {
 			$result['settings']['wgUseExtensionTestExtensionWfLoadExtension'] = true;
 			$result['settings']['wgUseSkinTestSkinWfLoadSkin'] = true;
-			$result['extensions'][] = array( 'TestSkinWfLoadSkin', 'skin', 'wfLoadSkin', 1 );
-			$result['extensions'][] = array( 'TestExtensionWfLoadExtension', 'extension', 'wfLoadExtension', 0 );
-			$result['extensions'][] = array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 2 );
+			$result['extensions'] = array(
+				'SkinTestSkinWfLoadSkin' => array( 'TestSkinWfLoadSkin', 'skin', 'wfLoadSkin', 0 ),
+				'ExtensionMediaWikiFarm' => array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 1 ),
+				'ExtensionTestExtensionWfLoadExtension' => array( 'TestExtensionWfLoadExtension', 'extension', 'wfLoadExtension', 2 ),
+			);
 		} else {
-			$result['extensions'][] = array( 'MediaWikiFarm', 'extension', 'require_once', 0 );
+			$result['extensions'] = array(
+				'ExtensionMediaWikiFarm' => array( 'MediaWikiFarm', 'extension', 'require_once', 0 ),
+			);
 		}
 
 		$exists = MediaWikiFarm::load( 'index.php', 'b.testfarm-multiversion-test-extensions.example.org' );
 		$this->assertEquals( 200, $exists );
 		$this->assertEquals( 'vstub', $wgMediaWikiFarm->getVariable( '$VERSION' ) );
 
-		$wgMediaWikiFarm->getMediaWikiConfig();
+		$wgMediaWikiFarm->compileConfiguration();
 		$this->assertEquals( $result['settings'], $wgMediaWikiFarm->getConfiguration( 'settings' ) );
 		$this->assertEquals( $result['extensions'], $wgMediaWikiFarm->getConfiguration( 'extensions' ) );
 	}
