@@ -309,6 +309,8 @@ HELP;
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testMissingHost() {
 
@@ -316,6 +318,7 @@ HELP;
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 
 		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3,
 			array( self::$mwscriptPath, '--wiki=c.testfarm-monoversion-with-file-variable-without-version.example.org', 'showJobs' )
@@ -347,6 +350,8 @@ HELP;
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testInternalProblem() {
 
@@ -354,6 +359,7 @@ HELP;
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 
 		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3,
 			array( self::$mwscriptPath, '--wiki=a.testfarm-with-badly-formatted-file-variable.example.org', 'showJobs' )
@@ -395,6 +401,8 @@ HELP;
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testMissingScript() {
 
@@ -402,6 +410,7 @@ HELP;
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
 		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
@@ -447,6 +456,8 @@ HELP;
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testSuccessfulLoading() {
 
@@ -456,6 +467,7 @@ HELP;
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 		$this->backupGlobalVariable( 'argc' );
 		$this->backupGlobalVariable( 'argv' );
 		$this->backupGlobalSubvariable( '_SERVER', 'argc' );
@@ -516,6 +528,8 @@ OUTPUT
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testRestInPeace() {
 
@@ -525,6 +539,7 @@ OUTPUT
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 		$this->backupGlobalVariable( 'argc' );
 		$this->backupGlobalVariable( 'argv' );
 		$this->backupGlobalSubvariable( '_SERVER', 'argc' );

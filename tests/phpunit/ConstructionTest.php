@@ -603,6 +603,8 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setEnvironment
 	 * @uses MediaWikiFarm::arrayMerge
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testLoadingCorrect() {
 
@@ -610,6 +612,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', self::$wgMediaWikiFarmCodeDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', 'a.testfarm-multiversion.example.org' );
 		chdir( self::$wgMediaWikiFarmCodeDir );
 
@@ -640,6 +643,8 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::detectComposer
 	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setEnvironment
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testLoadingSoftMissingError() {
 
@@ -647,6 +652,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', null );
 		$this->backupAndSetGlobalSubvariable( '_SERVER', 'SERVER_NAME', 'z.testfarm-monoversion-with-file-variable-without-version.example.org' );
 		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarmHTTP404Executed' );
@@ -668,6 +674,8 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testLoadingHardMissingError() {
 
@@ -675,6 +683,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', 'a.testfarm-nonexistant.example.org' );
 
 		$code = MediaWikiFarm::load( 'index.php' );

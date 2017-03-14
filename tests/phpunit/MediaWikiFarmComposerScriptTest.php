@@ -142,6 +142,8 @@ HELP;
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testMissingHost() {
 
@@ -149,6 +151,7 @@ HELP;
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 
 		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 2,
 			array( self::$mwcomposerPath, '--wiki=c.testfarm-monoversion-with-file-variable-without-version.example.org' )
@@ -179,6 +182,8 @@ HELP;
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testInternalProblem() {
 
@@ -186,6 +191,7 @@ HELP;
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 
 		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 2,
 			array( self::$mwcomposerPath, '--wiki=a.testfarm-with-badly-formatted-file-variable.example.org' )
@@ -236,6 +242,8 @@ HELP;
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::composerKey
 	 * @uses MediaWikiFarm::isMediaWiki
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testSuccessfulLoading() {
 
@@ -243,6 +251,7 @@ HELP;
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', dirname( __FILE__ ) . '/data/mediawiki' );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 
 		$this->backupGlobalVariable( 'argc' );
 		$this->backupGlobalVariable( 'argv' );

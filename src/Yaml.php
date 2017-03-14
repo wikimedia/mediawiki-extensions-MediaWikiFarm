@@ -29,7 +29,7 @@ if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) && is_file( dirname( __FILE__
 function wfMediaWikiFarm_readYAML( $filename ) {
 
 	if( !is_file( $filename ) ) {
-		throw new RuntimeException( 'Missing file' );
+		throw new RuntimeException( 'Missing file \'' . $filename . '\'' );
 	}
 
 	# Check YAML library was loaded
@@ -42,7 +42,7 @@ function wfMediaWikiFarm_readYAML( $filename ) {
 	try {
 		return Symfony\Component\Yaml\Yaml::parse( file_get_contents( $filename ) );
 	}
-	catch( Symfony\Component\Yaml\Exception\ParseException $e ) {}
-
-	throw new RuntimeException( 'Badly-formatted YAML file' );
+	catch( Symfony\Component\Yaml\Exception\ParseException $e ) {
+		throw new RuntimeException( 'Badly-formatted YAML file \'' . $filename . '\': ' . $e->getMessage() );
+	}
 }

@@ -64,3 +64,14 @@ $wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
  */
 $wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
 
+
+/**
+ * Syslog tag.
+ *
+ * Type: string|false.
+ *
+ * If false, no logging will be issued at all. If string, syslog is used and casual log messages
+ * will be issued in the facility 'USER', with the criticity level 'ERROR', and the tag defined
+ * by this configuration parameter.
+ */
+$wgMediaWikiFarmSyslog = 'mediawikifarm';

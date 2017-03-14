@@ -83,8 +83,8 @@ class MediaWikiFarm {
 		'composer' => array(),
 	);
 
-	/** @var array Errors */
-	protected $errors = array();
+	/** @var array Logs. */
+	public $log = array();
 
 
 
@@ -223,7 +223,8 @@ class MediaWikiFarm {
 	 */
 	static function load( $entryPoint = '', $host = null, $state = array(), $environment = array() ) {
 
-		global $wgMediaWikiFarm, $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
+		global $wgMediaWikiFarm;
+		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $wgMediaWikiFarmSyslog;
 
 		try {
 			# Initialise object
@@ -239,12 +240,14 @@ class MediaWikiFarm {
 			# Compile configuration
 			$wgMediaWikiFarm->compileConfiguration();
 		}
-		catch( Exception $e ) {
+		catch( Exception $exception ) {
 
 			if( !headers_sent() ) {
 				$httpProto = array_key_exists( 'SERVER_PROTOCOL', $_SERVER ) && $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.1' ? 'HTTP/1.1' : 'HTTP/1.0'; // @codeCoverageIgnore
 				header( "$httpProto 500 Internal Server Error" ); // @codeCoverageIgnore
 			}
+
+			self::issueLog( self::prepareLog( $wgMediaWikiFarmSyslog, $wgMediaWikiFarm, $exception ) );
 			return 500;
 		}
 
@@ -261,6 +264,8 @@ class MediaWikiFarm {
 					include $file404;
 				}
 			}
+
+			self::issueLog( self::prepareLog( $wgMediaWikiFarmSyslog, $wgMediaWikiFarm ) );
 			return 404;
 		}
 
@@ -280,6 +285,7 @@ class MediaWikiFarm {
 		# Define we are now inside MediaWiki
 		$wgMediaWikiFarm->state['InnerMediaWiki'] = true;
 
+		self::issueLog( self::prepareLog( $wgMediaWikiFarmSyslog, $wgMediaWikiFarm ) );
 		return 200;
 	}
 
@@ -363,7 +369,7 @@ class MediaWikiFarm {
 			$this->activateExtensions();
 
 			# Save Composer key if available
-			if( $this->cacheDir && !count( $this->errors ) ) {
+			if( $this->cacheDir && !array_key_exists( 'unreadable-file', $this->log ) ) {
 				self::cacheFile( $this->configuration['composer'],
 					$this->variables['$SERVER'] . '.php',
 					$this->cacheDir . '/composer'
@@ -378,7 +384,7 @@ class MediaWikiFarm {
 			$this->activateExtensions();
 
 			# Create the final LocalSettings.php
-			if( $this->cacheDir && !count( $this->errors ) ) {
+			if( $this->cacheDir && !array_key_exists( 'unreadable-file', $this->log ) ) {
 				self::cacheFile( $this->createLocalSettings( $this->configuration ),
 					$this->variables['$SERVER'] . '.php',
 					$this->cacheDir . '/LocalSettings'
@@ -450,7 +456,7 @@ class MediaWikiFarm {
 			$GLOBALS['wgExtensionCredits']['other'][] = array(
 				'path' => $this->farmDir . '/MediaWikiFarm.php',
 				'name' => 'MediaWikiFarm',
-				'version' => '0.3.0',
+				'version' => '0.4.0',
 				'author' => '[https://www.mediawiki.org/wiki/User:Seb35 Seb35]',
 				'url' => 'https://www.mediawiki.org/wiki/Extension:MediaWikiFarm',
 				'descriptionmsg' => 'mediawikifarm-desc',
@@ -503,7 +509,68 @@ class MediaWikiFarm {
 		return $this->cacheDir . '/LocalSettings/' . $this->variables['$SERVER'] . '.php';
 	}
 
+	/**
+	 * Prepare log messages and open syslog channel.
+	 *
+	 * @param string|false $wgMediaWikiFarmSyslog Syslog tag or deactivate logging.
+	 * @param MediaWikiFarm|null $wgMediaWikiFarm MediaWikiFarm object if any, in order to retrieve existing log messages.
+	 * @param Exception|Throwable|null $exception Caught exception if any.
+	 * @return string[] All log messages ready to be sent to syslog.
+	 */
+	static function prepareLog( $wgMediaWikiFarmSyslog, $wgMediaWikiFarm, $exception = null ) {
 
+		$log = array();
+		if( $wgMediaWikiFarmSyslog === false ) {
+			return $log;
+		}
+
+		if( ( $wgMediaWikiFarm instanceof MediaWikiFarm && count( $wgMediaWikiFarm->log ) ) || $exception instanceof Exception || $exception instanceof Throwable ) {
+
+			# Init logging
+			if( !is_string( $wgMediaWikiFarmSyslog ) ) {
+				$wgMediaWikiFarmSyslog = 'mediawikifarm';
+				$log[] = 'Logging parameter must be false or a string';
+			}
+			if( !openlog( $wgMediaWikiFarmSyslog, LOG_CONS, LOG_USER ) ) {
+				$log[] = 'Unable to initialise logging'; // @codeCoverageIgnore
+			}
+
+			# Log exception
+			if( $exception instanceof Exception || $exception instanceof Throwable ) {
+				$log[] = $exception->getMessage();
+			}
+
+			# Add logging issues
+			if( $wgMediaWikiFarm instanceof MediaWikiFarm ) {
+				$wgMediaWikiFarm->log = array_merge( $log, $wgMediaWikiFarm->log );
+				$log = $wgMediaWikiFarm->log;
+			}
+
+		}
+
+		return $log;
+	}
+
+	/**
+	 * Issue log messages to syslog.
+	 *
+	 * @codeCoverageIgnore
+	 *
+	 * @param string[] $log Log messages.
+	 * @return void
+	 */
+	static function issueLog( $log ) {
+
+		foreach( $log as $id => $error ) {
+			if( is_numeric( $id ) ) {
+				syslog( LOG_ERR, $error );
+			}
+		}
+
+		if( count( $log ) ) {
+			closelog();
+		}
+	}
 
 	/*
 	 * Internals
@@ -628,9 +695,9 @@ class MediaWikiFarm {
 			throw new MWFConfigurationException( 'No configuration file found' );
 		}
 		elseif( $result['redirects'] <= 0 ) {
-			throw new MWFConfigurationException( 'Infinite or too long redirect detected' );
+			throw new MWFConfigurationException( 'Infinite or too long redirect detected (host=\'' . $host . '\')' );
 		}
-		throw new MWFConfigurationException( 'No farm corresponding to this host' );
+		throw new MWFConfigurationException( 'No farm corresponding to this host (host=\'' . $host . '\')' );
 	}
 
 	/**
@@ -1273,6 +1340,7 @@ class MediaWikiFarm {
 			} elseif( $key != 'ExtensionMediaWikiFarm' ) {
 				$value = false;
 				unset( $this->configuration['extensions'][$key] );
+				$this->log[] = "Requested but missing $type $name for wiki {$this->variables['$WIKIID']} in version {$this->variables['$VERSION']}";
 			} else {
 				$status = $ExtensionRegistry ? 'wfLoadExtension' : 'require_once';
 			}
@@ -1581,6 +1649,7 @@ class MediaWikiFarm {
 		$files[] = $dir . 'FunctionsTest.php';
 		$files[] = $dir . 'InstallationIndependantTest.php';
 		$files[] = $dir . 'LoadingTest.php';
+		$files[] = $dir . 'LoggingTest.php';
 		$files[] = $dir . 'MediaWikiFarmComposerScriptTest.php';
 		$files[] = $dir . 'MediaWikiFarmScriptTest.php';
 		$files[] = $dir . 'MonoversionInstallationTest.php';
@@ -1667,6 +1736,8 @@ class MediaWikiFarm {
 					$array = wfMediaWikiFarm_readYAML( $prefixedFile );
 				}
 				catch( RuntimeException $e ) {
+					$this->log[] = $e->getMessage();
+					$this->log['unreadable-file'] = true;
 					$array = false;
 				}
 			}
@@ -1707,7 +1778,8 @@ class MediaWikiFarm {
 		# A null value is an empty file or value 'null'
 		if( ( is_null( $array ) || $array === false ) && $cachedFile && is_file( $cachedFile ) ) {
 
-			$this->errors[] = 'Unreadable file ' . $filename;
+			$this->log[] = 'Unreadable file \'' . $filename . '\'';
+			$this->log['unreadable-file'] = true;
 
 			return $this->readFile( $filename . '.php', $this->cacheDir . '/config', false );
 		}

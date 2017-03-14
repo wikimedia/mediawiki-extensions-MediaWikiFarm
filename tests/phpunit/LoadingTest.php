@@ -71,6 +71,8 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::composerKey
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testAllLoadingMechanisms() {
 
@@ -230,6 +232,8 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::prepareLog
+	 * @uses MediaWikiFarm::issueLog
 	 */
 	function testExceptionsLoadingMechanisms() {
 

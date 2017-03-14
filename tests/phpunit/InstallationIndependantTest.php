@@ -16,6 +16,9 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	/** @var MediaWikiFarm|null Test object. */
 	protected $farm = null;
 
+	/** @var boolean Assert the object was not modified. */
+	protected $shouldBeConstant = true;
+
 	/** @var MediaWikiFarm|null Control object, must never be modified by tests, should always be identical to $farm after the tests. */
 	private $control = null;
 
@@ -42,6 +45,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		if( is_null( $this->farm ) ) {
 			$this->farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion.example.org' );
 		}
+		$this->shouldBeConstant = true;
 		$this->control = clone $this->farm;
 	}
 
@@ -204,6 +208,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		$result = $this->farm->readFile( 'badsyntax.yaml', dirname( __FILE__ ) . '/data/config' );
 		$this->assertFalse( $result );
+		$this->shouldBeConstant = false;
 	}
 
 	/**
@@ -512,6 +517,8 @@ PHP;
 	 */
 	function assertPostConditions() {
 
-		$this->assertEquals( $this->control, $this->farm, 'Methods tested in InstallationIndependantTest are supposed to be constant.' );
+		if( $this->shouldBeConstant ) {
+			$this->assertEquals( $this->control, $this->farm, 'Methods tested in InstallationIndependantTest are supposed to be constant.' );
+		}
 	}
 }
