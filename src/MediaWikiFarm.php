@@ -1338,9 +1338,11 @@ class MediaWikiFarm {
 			} elseif( $value !== false && ( $status = $this->detectLoadingMechanism( $type, $name ) ) ) {
 				$value = true;
 			} elseif( $key != 'ExtensionMediaWikiFarm' ) {
+				if( $value ) {
+					$this->log[] = "Requested but missing $type $name for wiki {$this->variables['$WIKIID']} in version {$this->variables['$VERSION']}";
+				}
 				$value = false;
 				unset( $this->configuration['extensions'][$key] );
-				$this->log[] = "Requested but missing $type $name for wiki {$this->variables['$WIKIID']} in version {$this->variables['$VERSION']}";
 			} else {
 				$status = $ExtensionRegistry ? 'wfLoadExtension' : 'require_once';
 			}
