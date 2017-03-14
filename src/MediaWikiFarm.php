@@ -2,6 +2,7 @@
 /**
  * Class MediaWikiFarm.
  *
+ * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
@@ -186,6 +187,7 @@ class MediaWikiFarm {
 	 * @mediawikifarm-const
 	 *
 	 * @param string|null $key Key of the wanted section or null for the whole array.
+	 * @param string|null $key2 Subkey (specific to each entry) or null for the whole entry.
 	 * @return array MediaWiki configuration, either entire, either a part depending on the parameter.
 	 */
 	function getConfiguration( $key = null, $key2 = null ) {
@@ -219,6 +221,7 @@ class MediaWikiFarm {
 	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
 	 * @param string|null $host Host name (string) or null to use the global variables HTTP_HOST or SERVER_NAME.
 	 * @param array $state Parameters, see object property $state.
+	 * @param array $environment Environment which determines a given configuration.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
 	static function load( $entryPoint = '', $host = null, $state = array(), $environment = array() ) {

@@ -3,6 +3,8 @@
  * Validate the files 'config/farms.[yml|json|php]' against 'docs/farms-schema.json'.
  *
  * This files is mostly inspired from the README https://github.com/justinrainbow/json-schema
+ *
+ * @package MediaWikiFarm
  */
 // @codeCoverageIgnoreStart
 

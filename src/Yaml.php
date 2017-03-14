@@ -6,6 +6,7 @@
  * It was splitted from the main class MediaWikiFarm to ensure compatibility with
  * PHP 5.2 (which doesn’t understand namespaces).
  *
+ * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure

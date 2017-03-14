@@ -2,6 +2,7 @@
 /**
  * Wrapper around Composer to create as many autoloaders as MediaWiki extensions.
  *
+ * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
@@ -264,6 +265,15 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 		self::rmdirr( $tmpDir . '/mediawiki' );
 	}
 
+	/**
+	 * Mapping between a Composer key and a MediaWikiFarm key.
+	 *
+	 * The MediaWikiFarm key is the canonical MediaWiki name prefixed by "Extension" or "Skin".
+	 *
+	 * @param string $name Name of a Composer package.
+	 * @param string $type Composer type.
+	 * @return string MediaWikiFarm key.
+	 */
 	static function composer2mediawiki( $name, $type ) {
 
 		$name = explode( '/', $name );
