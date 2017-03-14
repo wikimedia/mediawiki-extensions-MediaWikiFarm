@@ -12,6 +12,7 @@
 $wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
 $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 $wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
+$wgMediaWikiFarmSyslog = 'mediawikifarm';
 
 # Check the entry point is installed in a multiversion MediaWiki farm or in the classical MediaWiki extensions directory
 if( is_file( dirname( $wgMediaWikiFarmCodeDir ) . '/includes/DefaultSettings.php' ) ) {
