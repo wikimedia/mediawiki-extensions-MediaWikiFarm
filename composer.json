@@ -27,7 +27,7 @@
 	"scripts": {
 		"validate-schema": "php ./bin/validate-schema.php",
 		"lint": "parallel-lint --exclude vendor .",
-		"phpcs": "phpcs -p -s",
+		"phpcs": "phpcs -p -s --ignore=.git",
 		"phpdoc": "[ \"`which phpdoc`\" = \"\" ] || phpdoc -d bin,src -t ./docs/code",
 		"phpunit": "which phpdbg && phpdbg -qrr `which phpunit` --strict-coverage || phpunit --strict-coverage",
 		"unit": "phpunit --no-coverage",
