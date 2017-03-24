@@ -469,9 +469,10 @@ class MediaWikiFarm {
 			$GLOBALS['wgAutoloadClasses']['MediaWikiFarm'] = 'src/MediaWikiFarm.php';
 			$GLOBALS['wgAutoloadClasses']['AbstractMediaWikiFarmScript'] = 'src/AbstractMediaWikiFarmScript.php';
 			$GLOBALS['wgAutoloadClasses']['MediaWikiFarmScript'] = 'src/MediaWikiFarmScript.php';
+			$GLOBALS['wgAutoloadClasses']['MediaWikiFarmHooks'] = 'src/Hooks.php';
 			$GLOBALS['wgAutoloadClasses']['MWFConfigurationException'] = 'src/MediaWikiFarm.php';
 			$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = array( 'i18n' );
-			$GLOBALS['wgHooks']['UnitTestsList'][] = array( 'MediaWikiFarm::onUnitTestsList' );
+			$GLOBALS['wgHooks']['UnitTestsList'][] = array( 'MediaWikiFarmHooks::onUnitTestsList' );
 		}
 	}
 
@@ -1634,33 +1635,6 @@ class MediaWikiFarm {
 		}
 
 		throw new InvalidArgumentException( 'Argument of MediaWikiFarm->replaceVariables() must be a string or an array.' );
-	}
-
-	/**
-	 * Add files for unit testing.
-	 *
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 *
-	 * @param string[] $files The test files.
-	 * @return true
-	 */
-	static function onUnitTestsList( array &$files ) {
-
-		$dir = dirname( dirname( __FILE__ ) ) . '/tests/phpunit/';
-
-		$files[] = $dir . 'ConfigurationTest.php';
-		$files[] = $dir . 'ConstructionTest.php';
-		$files[] = $dir . 'FunctionsTest.php';
-		$files[] = $dir . 'InstallationIndependantTest.php';
-		$files[] = $dir . 'LoadingTest.php';
-		$files[] = $dir . 'LoggingTest.php';
-		$files[] = $dir . 'MediaWikiFarmComposerScriptTest.php';
-		$files[] = $dir . 'MediaWikiFarmScriptTest.php';
-		$files[] = $dir . 'MonoversionInstallationTest.php';
-		$files[] = $dir . 'MultiversionInstallationTest.php';
-
-		return true;
 	}
 
 

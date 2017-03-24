@@ -85,21 +85,6 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
-	 * Test onUnitTestsList hook
-	 *
-	 * @covers MediaWikiFarm::onUnitTestsList
-	 */
-	function testOnUnitTestsListHook() {
-
-		$testFiles = glob( dirname( __FILE__ ) . '/*Test.php' );
-
-		$array = array();
-		MediaWikiFarm::onUnitTestsList( $array );
-
-		$this->assertEquals( $testFiles, $array );
-	}
-
-	/**
 	 * Test arrayMerge
 	 *
 	 * @covers MediaWikiFarm::arrayMerge

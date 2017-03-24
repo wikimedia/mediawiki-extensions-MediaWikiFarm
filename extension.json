@@ -23,13 +23,14 @@
 	},
 	"Hooks": {
 		"UnitTestsList": [
-			"MediaWikiFarm::onUnitTestsList"
+			"MediaWikiFarmHooks::onUnitTestsList"
 		]
 	},
 	"AutoloadClasses": {
 		"MediaWikiFarm": "src/MediaWikiFarm.php",
 		"AbstractMediaWikiFarmScript": "src/AbstractMediaWikiFarmScript.php",
 		"MediaWikiFarmScript": "src/MediaWikiFarmScript.php",
+		"MediaWikiFarmHooks": "src/Hooks.php",
 		"MWFConfigurationException": "src/MediaWikiFarm.php"
 	},
 	"manifest_version": 1
