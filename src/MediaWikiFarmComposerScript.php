@@ -149,7 +149,7 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 					unset( $baseComposerJson['require'][$package['name']] );
 				}
 				if( array_key_exists( 'require-dev', $baseComposerJson ) && array_key_exists( $package['name'], $baseComposerJson['require-dev'] ) ) {
-					unset( $baseComposerJson['require-dev'][$package['name']] ); // @codeCoverageIgnore
+					unset( $baseComposerJson['require-dev'][$package['name']] );
 				}
 				$dependencies[$extensions[$package['name']]] = array_key_exists( 'require', $package ) ? array_keys( $package['require'] ) : array();
 			}
