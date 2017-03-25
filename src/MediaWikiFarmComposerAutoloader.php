@@ -6,14 +6,17 @@
 // @codeCoverageIgnoreStart
 if( array_key_exists( 'wgMediaWikiFarm', $GLOBALS ) ) {
 	$extensions = $GLOBALS['wgMediaWikiFarm']->getConfiguration( 'composer' );
-	foreach( $extensions as $extension ) {
+	if( count( $extensions ) > 0 ) {
+		foreach( $extensions as $extension ) {
 
-		require_once __DIR__ . '/composer' . substr( md5( $extension ), 0, 8 ) . '/autoload_real.php';
-		call_user_func( array( 'ComposerAutoloaderInit' . substr( md5( $extension ), 0, 8 ), 'getLoader' ) );
+			require_once __DIR__ . '/composer' . substr( md5( $extension ), 0, 8 ) . '/autoload_real.php';
+			call_user_func( array( 'ComposerAutoloaderInit' . substr( md5( $extension ), 0, 8 ), 'getLoader' ) );
+		}
+		unset( $extensions );
+		unset( $extension );
+		return;
 	}
 	unset( $extensions );
-	unset( $extension );
-	return;
 }
 
 require_once __DIR__ . '/composer' . '/autoload_real.php';
