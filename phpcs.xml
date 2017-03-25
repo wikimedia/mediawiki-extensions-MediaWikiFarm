@@ -32,4 +32,5 @@
 	<arg name="extensions" value="php" />
 	<exclude-pattern>tests/perfs/results</exclude-pattern>
 	<exclude-pattern>vendor</exclude-pattern>
+	<exclude-pattern>.git</exclude-pattern>
 </ruleset>
