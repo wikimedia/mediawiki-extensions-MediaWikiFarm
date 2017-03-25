@@ -154,6 +154,12 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 				$dependencies[$extensions[$package['name']]] = array_key_exists( 'require', $package ) ? array_keys( $package['require'] ) : array();
 			}
 		}
+
+		# Remove if empty, else it would create an empty JSON list but the schema expects it is an object (PHP has no
+		# such distinction); the option JSON_FORCE_OBJECT is not appropriate because it always transforms lists to objects
+		if( array_key_exists( 'require-dev', $baseComposerJson ) && count( $baseComposerJson['require-dev'] ) == 0 ) {
+			unset( $baseComposerJson['require-dev'] );
+		}
 		asort( $extensions );
 		ksort( $dependencies );
 		if( !$quiet ) {
@@ -196,7 +202,7 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 			}
 
 			self::rmdirr( 'vendor/autoload.php' );
-			file_put_contents( 'composer.json', json_encode( $thisInstallation, JSON_FORCE_OBJECT ) );
+			file_put_contents( 'composer.json', json_encode( $thisInstallation ) );
 			system( 'composer update ' . implode( ' ', $this->argv ), $return );
 			if( $return ) {
 				// @codeCoverageIgnoreStart
@@ -216,13 +222,16 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 		# Finally the Composer set without any extension/skin
 		$thisInstallation = $baseComposerJson;
 		$thisInstallation['config']['autoloader-suffix'] = 'DEFAULT';
+		if( array_key_exists( 'require', $baseComposerJson ) && count( $baseComposerJson['require'] ) == 0 ) {
+			unset( $thisInstallation['require'] );
+		}
 
 		if( !$quiet ) {
 			echo "$icounter. Composer with empty extensions/skins set:\n"; // @codeCoverageIgnore
 		}
 
 		self::rmdirr( 'vendor/autoload.php' );
-		file_put_contents( 'composer.json', json_encode( $thisInstallation, JSON_FORCE_OBJECT ) );
+		file_put_contents( 'composer.json', json_encode( $thisInstallation ) );
 		system( 'composer update ' . implode( ' ', $this->argv ), $return );
 		if( $return ) {
 			// @codeCoverageIgnoreStart

@@ -1,4 +1,5 @@
 {
+	"keywords": [],
 	"require": {
 		"mediawiki/page-forms": "*",
 		"mediawiki/semantic-forms-select": "*",
