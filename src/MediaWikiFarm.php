@@ -234,18 +234,19 @@ class MediaWikiFarm {
 	 *
 	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
 	 * @param string|null $host Host name (string) or null to use the global variables HTTP_HOST or SERVER_NAME.
+	 * @param string|null $path Path (string) or null to use the global variables REQUEST_URI.
 	 * @param array $state Parameters, see object property $state.
 	 * @param array $environment Environment which determines a given configuration.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
-	static function load( $entryPoint = '', $host = null, $state = array(), $environment = array() ) {
+	static function load( $entryPoint = '', $host = null, $path = null, $state = array(), $environment = array() ) {
 
 		global $wgMediaWikiFarm;
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $wgMediaWikiFarmSyslog;
 
 		try {
 			# Initialise object
-			$wgMediaWikiFarm = new MediaWikiFarm( $host,
+			$wgMediaWikiFarm = new MediaWikiFarm( $host, $path,
 				$wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir,
 				array_merge( $state, array( 'EntryPoint' => $entryPoint ) ),
 				$environment
@@ -485,7 +486,7 @@ class MediaWikiFarm {
 			$GLOBALS['wgExtensionCredits']['other'][] = array(
 				'path' => $this->farmDir . '/MediaWikiFarm.php',
 				'name' => 'MediaWikiFarm',
-				'version' => '0.4.0',
+				'version' => '0.5.0',
 				'author' => '[https://www.mediawiki.org/wiki/User:Seb35 Seb35]',
 				'url' => 'https://www.mediawiki.org/wiki/Extension:MediaWikiFarm',
 				'descriptionmsg' => 'mediawikifarm-desc',
@@ -622,6 +623,7 @@ class MediaWikiFarm {
 	 * @internal
 	 *
 	 * @param string|null $host Requested host.
+	 * @param string|null $path Requested path.
 	 * @param string $configDir Configuration directory.
 	 * @param string|null $codeDir Code directory; if null, the current MediaWiki installation is used.
 	 * @param string|false $cacheDir Cache directory; if false, the cache is disabled.
@@ -631,7 +633,7 @@ class MediaWikiFarm {
 	 * @throws MWFConfigurationException When no farms.yml/php/json is found.
 	 * @throws InvalidArgumentException When wrong input arguments are passed.
 	 */
-	function __construct( $host, $configDir, $codeDir = null, $cacheDir = false, $state = array(), $environment = array() ) {
+	function __construct( $host, $path, $configDir, $codeDir = null, $cacheDir = false, $state = array(), $environment = array() ) {
 
 		# Default value for host
 		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
@@ -639,11 +641,20 @@ class MediaWikiFarm {
 		#            and it will be checked against available hosts in constructor
 		if( is_null( $host ) ) {
 			if( array_key_exists( 'HTTP_HOST', $_SERVER ) && $_SERVER['HTTP_HOST'] ) {
-				$host = $_SERVER['HTTP_HOST'];
+				$host = (string) $_SERVER['HTTP_HOST'];
 			} elseif( array_key_exists( 'SERVER_NAME', $_SERVER ) && $_SERVER['SERVER_NAME'] ) {
-				$host = $_SERVER['SERVER_NAME'];
+				$host = (string) $_SERVER['SERVER_NAME'];
 			} else {
 				throw new InvalidArgumentException( 'Undefined host' );
+			}
+		}
+
+		# Default value for path
+		if( !is_string( $path ) ) {
+			if( array_key_exists( 'REQUEST_URI', $_SERVER ) ) {
+				$path = (string) $_SERVER['REQUEST_URI'];
+			} else {
+				$path = '';
 			}
 		}
 
@@ -678,8 +689,9 @@ class MediaWikiFarm {
 			}
 		}
 
-		# Sanitise host
+		# Sanitise host and path
 		$host = preg_replace( '/[^a-zA-Z0-9\\._-]/', '', $host );
+		$path = '/' . substr( $path, 1 );
 
 		# Set parameters
 		$this->farmDir = dirname( dirname( __FILE__ ) );
@@ -717,7 +729,7 @@ class MediaWikiFarm {
 		}
 
 		# Now select the right farm amoung all farms
-		$result = $this->selectFarm( $host, false, 5 );
+		$result = $this->selectFarm( $host . $path, false, 5 );
 
 		# Success
 		if( $result['farm'] ) {
@@ -733,9 +745,9 @@ class MediaWikiFarm {
 			throw new MWFConfigurationException( 'No configuration file found' );
 		}
 		elseif( $result['redirects'] <= 0 ) {
-			throw new MWFConfigurationException( 'Infinite or too long redirect detected (host=\'' . $host . '\')' );
+			throw new MWFConfigurationException( 'Infinite or too long redirect detected (host=\'' . $host . '\', path=\'' . $path . '\')' );
 		}
-		throw new MWFConfigurationException( 'No farm corresponding to this host (host=\'' . $host . '\')' );
+		throw new MWFConfigurationException( 'No farm corresponding to this host (host=\'' . $host . '\', path=\'' . $path . '\')' );
 	}
 
 	/**
@@ -776,9 +788,22 @@ class MediaWikiFarm {
 		# For each proposed farm, check if the host matches
 		foreach( $farms as $farm => $config ) {
 
-			if( !preg_match( '/^' . $config['server'] . '$/i', $host, $matches ) ) {
+			# Cut the host from the beginning to the first slash
+			# A slash is added at the end to be sure there is a slash
+			$confighost = substr( $config['server'], 0, strpos( $config['server'] . '/', '/' ) );
+			# Added a trailing slash either unuseful if there is already a subdirectory either it will act as a separator between host and path
+			$configpath = substr( $config['server'] . '/', strlen( $confighost ) );
+			# Protect the slashes but let other characters to keep the regex
+			$configpath = str_replace( '/', '\/', $configpath );
+			# The host is case-insensitive, the path is case-sensitive
+			# The tested host must have a trailing slash because the regex has at least one slash
+			if( ! preg_match( '/^' . $confighost . '(?-i)' . $configpath . '/i', $host . '/', $matches ) ) {
 				continue;
 			}
+			# Get the resulting host; this must not be the tested host because it has the article name, etc and is less safe than
+			# the config host; this is the interpretation of the configured regex tested against the client host. Remove the
+			# last character, which is always the slash added in $configpath.
+			$host = substr( $matches[0], 0, -1 );
 
 			# Initialise variables from the host
 			$variables = array();

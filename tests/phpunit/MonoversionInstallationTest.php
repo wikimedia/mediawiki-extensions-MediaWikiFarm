@@ -33,7 +33,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 */
 	static function constructMediaWikiFarm( $host ) {
 
-		$farm = new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, null, false, array( 'EntryPoint' => 'index.php' ) );
+		$farm = new MediaWikiFarm( $host, null, self::$wgMediaWikiFarmConfigDir, null, false, array( 'EntryPoint' => 'index.php' ) );
 
 		return $farm;
 	}

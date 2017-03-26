@@ -67,6 +67,32 @@ return array(
 		),
 	),
 
+	'testfarm-multiversion-subdirectories' => array(
+
+		'server' => 'testfarm-multiversion-subdirectories\.example\.org/(?P<wiki>[a-z])',
+		'variables' => array(
+			array( 'variable' => 'wiki', ),
+		),
+		'suffix' => 'testfarm',
+		'wikiID' => '$wikitestfarm',
+		'versions' => 'versions.php',
+		'config' => array(
+			array( 'file' => 'settings.php',
+			       'key' => 'default',
+			),
+			array( 'file' => 'localsettings.php',
+			       'key' => '*testfarm',
+			       'default' => 'testfarm',
+			),
+			array( 'file' => 'globalsettings.php',
+			       'key' => '*',
+			),
+			array( 'file' => 'LocalSettings.php',
+			       'executable' => true,
+			),
+		),
+	),
+
 	'testfarm-multiversion-with-file-variable-without-version' => array(
 
 		'server' => '(?P<wiki>[a-z])\.testfarm-multiversion-with-file-variable-without-version\.example\.org',

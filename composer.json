@@ -1,7 +1,7 @@
 {
 	"name": "mediawiki-extensions/media-wiki-farm",
 	"description": "Configuration management for MediaWiki farms.",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"keywords": ["mediawiki"],
 	"homepage": "https://www.mediawiki.org/wiki/Extension:MediaWikiFarm",
 	"license": "GPL-3.0+",

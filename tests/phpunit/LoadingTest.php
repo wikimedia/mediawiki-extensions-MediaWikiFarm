@@ -154,7 +154,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$this->backupGlobalVariables( array_keys( $result['settings'] ) );
 		$this->backupAndUnsetGlobalVariable( 'wgFileExtensions' );
 
-		$exists = MediaWikiFarm::load( 'index.php', 'a.testfarm-multiversion-test-extensions.example.org', array(), array( 'ExtensionRegistry' => true ) );
+		$exists = MediaWikiFarm::load( 'index.php', 'a.testfarm-multiversion-test-extensions.example.org', null, array(), array( 'ExtensionRegistry' => true ) );
 		$this->assertEquals( 200, $exists );
 		$this->assertEquals( 'vstub', $wgMediaWikiFarm->getVariable( '$VERSION' ) );
 
@@ -218,7 +218,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		$this->backupGlobalVariable( 'wgAutoloadClasses' );
 
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
 			array(), array( 'ExtensionRegistry' => false )
 		);

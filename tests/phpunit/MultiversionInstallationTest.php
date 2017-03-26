@@ -52,7 +52,7 @@ PHP;
 	 */
 	static function constructMediaWikiFarm( $host, $entryPoint = 'index.php' ) {
 
-		$farm = new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => $entryPoint ) );
+		$farm = new MediaWikiFarm( $host, null, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => $entryPoint ) );
 
 		return $farm;
 	}
@@ -236,7 +236,7 @@ PHP;
 	 */
 	function testFamilyFarm() {
 
-		$farm = new MediaWikiFarm( 'a.a.testfarm-multiversion-with-file-versions-other-keys.example.org',
+		$farm = new MediaWikiFarm( 'a.a.testfarm-multiversion-with-file-versions-other-keys.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 		$this->assertTrue( $farm->checkExistence() );
@@ -244,7 +244,7 @@ PHP;
 		$this->assertEquals( 'aafamilytestfarm', $farm->getVariable( '$WIKIID' ) );
 		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
 
-		$farm = new MediaWikiFarm( 'b.a.testfarm-multiversion-with-file-versions-other-keys.example.org',
+		$farm = new MediaWikiFarm( 'b.a.testfarm-multiversion-with-file-versions-other-keys.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 		$this->assertTrue( $farm->checkExistence() );
@@ -252,7 +252,7 @@ PHP;
 		$this->assertEquals( 'bafamilytestfarm', $farm->getVariable( '$WIKIID' ) );
 		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
 
-		$farm = new MediaWikiFarm( 'a.b.testfarm-multiversion-with-file-versions-other-keys.example.org',
+		$farm = new MediaWikiFarm( 'a.b.testfarm-multiversion-with-file-versions-other-keys.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 		$this->assertTrue( $farm->checkExistence() );
@@ -289,7 +289,7 @@ PHP;
 	 */
 	function testDeploymedVersions() {
 
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 
@@ -297,7 +297,7 @@ PHP;
 		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
 
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 		$this->assertTrue( $farm->checkExistence() );
@@ -333,7 +333,7 @@ PHP;
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $deploymentsFile );
 
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 
@@ -372,7 +372,7 @@ PHP;
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $deploymentsFile );
 
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'maintenance/update.php' )
 			);
 		$farm->updateVersionAfterMaintenance();
@@ -423,7 +423,7 @@ PHP;
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $deploymentsFile );
 
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false, array( 'EntryPoint' => 'index.php' )
 			);
 
@@ -468,7 +468,7 @@ PHP;
 	function testCacheExistence() {
 
 		# Populate the existence cache
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
 			                   array( 'EntryPoint' => 'index.php' )
 			);
@@ -478,7 +478,7 @@ PHP;
 		$this->assertFalse( is_file( self::$wgMediaWikiFarmCacheDir . '/LocalSettings/a.testfarm-multiversion.example.org.php' ) );
 
 		# Read the existence cache
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
 			                   array( 'EntryPoint' => 'index.php' )
 			);
@@ -486,7 +486,7 @@ PHP;
 		$this->assertTrue( $farm->checkExistence() );
 
 		# Populate the configuration cache
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
 			                   array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true ),
 			                   array( 'ExtensionRegistry' => true )
@@ -502,7 +502,7 @@ PHP;
 		$this->assertTrue( touch( self::$wgMediaWikiFarmConfigDir . '/farms.php' ) );
 
 		# Check the existence cache is understood as invalidated
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org',
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
 			                   array( 'EntryPoint' => 'index.php' )
 			);

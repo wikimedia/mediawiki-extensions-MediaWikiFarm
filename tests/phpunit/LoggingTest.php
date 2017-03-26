@@ -66,6 +66,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -89,6 +90,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,

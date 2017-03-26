@@ -32,6 +32,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -87,6 +88,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-monoversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				null,
 				false,
@@ -140,6 +142,62 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
+	 * Test a successful initialisation of multiversion MediaWikiFarm selected by subdirectories with a correct configuration file farms.php.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 * @covers MediaWikiFarm::getState
+	 * @covers MediaWikiFarm::getFarmConfiguration
+	 * @covers MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::readFile
+	 */
+	function testSuccessfulConstructionMultiversionSubdirectories() {
+
+		$farm = new MediaWikiFarm(
+				'testfarm-multiversion-subdirectories.example.org',
+				'/a',
+				self::$wgMediaWikiFarmConfigDir,
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array( 'EntryPoint' => 'index.php' ) );
+
+		$this->assertEquals( 'testfarm-multiversion-subdirectories.example.org/a', $farm->getVariable( '$SERVER' ) );
+
+		$this->assertEquals( 'index.php', $farm->getState( 'EntryPoint' ) );
+		$this->assertNull( $farm->getState( 'nonexistant' ) );
+
+		$farmConfig = array(
+			'server' => 'testfarm-multiversion-subdirectories\.example\.org/(?P<wiki>[a-z])',
+			'variables' => array(
+				array( 'variable' => 'wiki', ),
+			),
+			'suffix' => 'testfarm',
+			'wikiID' => '$wikitestfarm',
+			'versions' => 'versions.php',
+			'coreconfig' => array(
+				'farms.php',
+			),
+			'config' => array(
+				array( 'file' => 'settings.php',
+				       'key' => 'default',
+				),
+				array( 'file' => 'localsettings.php',
+				       'key' => '*testfarm',
+				       'default' => 'testfarm',
+				),
+				array( 'file' => 'globalsettings.php',
+				       'key' => '*',
+				),
+				array( 'file' => 'LocalSettings.php',
+				       'executable' => true,
+				),
+			),
+		);
+
+		$this->assertEquals( $farmConfig, $farm->getFarmConfiguration() );
+	}
+
+	/**
 	 * Test when there is no configuration file farms.yml/json/php.
 	 *
 	 * @covers MediaWikiFarm::__construct
@@ -155,6 +213,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -174,6 +233,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				0,
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -193,6 +253,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				0,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -214,6 +275,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -233,6 +295,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				0,
 				false,
@@ -252,6 +315,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir . '/farms.php',
 				false,
@@ -271,6 +335,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				0,
@@ -290,6 +355,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -332,6 +398,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -351,6 +418,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -370,6 +438,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -390,6 +459,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -398,7 +468,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
-	 * Test successful construction with global variable.
+	 * Test successful construction with global variable for the host.
 	 *
 	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::__construct
@@ -413,6 +483,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				null,
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -422,7 +493,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
-	 * Test successful construction with global variable.
+	 * Test successful construction with global variable for the host.
 	 *
 	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::__construct
@@ -437,12 +508,144 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				null,
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
 				array( 'EntryPoint' => 'index.php' ) );
 
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
+	}
+
+	/**
+	 * Test successful construction with global variable for the path.
+	 *
+	 * @backupGlobals enabled
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 * @covers MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::readFile
+	 */
+	function testSuccessfulConstructionWithGlobalVariable3() {
+
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', 'a.testfarm-multiversion.example.org' );
+		$this->backupAndUnsetGlobalSubvariable( '_SERVER', 'SERVER_NAME' );
+		$this->backupAndSetGlobalSubvariable( '_SERVER', 'REQUEST_URI', '' );
+
+		$farm = new MediaWikiFarm(
+				null,
+				null,
+				self::$wgMediaWikiFarmConfigDir,
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array( 'EntryPoint' => 'index.php' ) );
+
+		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
+	}
+
+	/**
+	 * Test a normal path is correctly recognised.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::readFile
+	 */
+	function testNormalPath() {
+
+		$farm = new MediaWikiFarm(
+				'a.testfarm-multiversion.example.org',
+				'/',
+				self::$wgMediaWikiFarmConfigDir,
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array( 'EntryPoint' => 'index.php' ) );
+
+		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
+	}
+
+	/**
+	 * Test a normal path is correctly recognised.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::readFile
+	 */
+	function testNormalPath2() {
+
+		$farm = new MediaWikiFarm(
+				'a.testfarm-multiversion.example.org',
+				'/wiki/Main_Page',
+				self::$wgMediaWikiFarmConfigDir,
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array( 'EntryPoint' => 'index.php' ) );
+
+		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
+	}
+
+	/**
+	 * Test when the path is written in the server name.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::readFile
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage No farm corresponding to this host
+	 */
+	function testFailedPath() {
+
+		$farm = new MediaWikiFarm(
+				'testfarm-multiversion-subdirectories.example.org/a',
+				'',
+				self::$wgMediaWikiFarmConfigDir,
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array( 'EntryPoint' => 'index.php' ) );
+	}
+
+	/**
+	 * Test when the path is written in the server name.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::readFile
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage No farm corresponding to this host
+	 */
+	function testFailedPath2() {
+
+		$farm = new MediaWikiFarm(
+				'testfarm-multiversion-subdirectories.example.or',
+				'g/a',
+				self::$wgMediaWikiFarmConfigDir,
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array( 'EntryPoint' => 'index.php' ) );
+	}
+
+	/**
+	 * Test when the path is written in the server name.
+	 *
+	 * @covers MediaWikiFarm::__construct
+	 * @covers MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::readFile
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage No farm corresponding to this host
+	 */
+	function testFailedPath3() {
+
+		$farm = new MediaWikiFarm(
+				'testfarm-multiversion-subdirectories.example.org',
+				'/A',
+				self::$wgMediaWikiFarmConfigDir,
+				self::$wgMediaWikiFarmCodeDir,
+				false,
+				array( 'EntryPoint' => 'index.php' ) );
 	}
 
 	/**
@@ -459,6 +662,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				self::$wgMediaWikiFarmCacheDir,
@@ -482,6 +686,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -512,6 +717,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-monoversion.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				null,
 				false,
@@ -539,6 +745,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion-redirect.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -561,6 +768,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-infinite-redirect.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -581,6 +789,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-missing.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -728,6 +937,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-infinite-redirect.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir . '/yaml',
 				self::$wgMediaWikiFarmCodeDir,
 				false,
@@ -748,6 +958,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-infinite-redirect.example.org',
+				null,
 				self::$wgMediaWikiFarmConfigDir . '/json',
 				self::$wgMediaWikiFarmCodeDir,
 				false,

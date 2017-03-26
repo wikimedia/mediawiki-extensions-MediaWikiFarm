@@ -59,7 +59,7 @@ In a (non-redirect) farm, three subkeys are required, 'server', 'family', and 'w
 Server
 ------
 
-The most important subkey is 'server': it is a regular expression of the server name/domain name. There should be only one regex, which matchs a given server name. It is recommanded to use named patterns in the regex to capture parts of the server name to construct the wikiID and suffix.
+The most important subkey is 'server': it is a regular expression of the server name/domain name and possibly of the subdirectory (or even multiple subdirectories). There should be only one regex, which matchs a given server name. It is recommanded to use named patterns in the regex to capture parts of the server name to construct the wikiID and suffix.
 
 Redirect
 --------

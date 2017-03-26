@@ -19,8 +19,8 @@
 					"properties": {
 						"server": {
 							"type": "string",
-							"description": "Regular expression of the server names.",
-							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_|-]+$"
+							"description": "Regular expression of the server name and subdirectory.",
+							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\/<>.*?+_|-]+$"
 						},
 						"variables": {
 							"type": "array",
@@ -119,8 +119,8 @@
 					"properties": {
 						"server": {
 							"type": "string",
-							"description": "Regular expression of the server name.",
-							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\<>.*?+_|-]+$"
+							"description": "Regular expression of the server name and subdirectory.",
+							"pattern": "^[a-zA-Z0-9\\[\\]\\(\\)\\\\/<>.*?+_|-]+$"
 						},
 						"redirect": {
 							"type": "string",

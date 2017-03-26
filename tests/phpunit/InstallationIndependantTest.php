@@ -40,7 +40,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	static function constructMediaWikiFarm( $host ) {
 
-		return new MediaWikiFarm( $host, self::$wgMediaWikiFarmConfigDir, null, false );
+		return new MediaWikiFarm( $host, null, self::$wgMediaWikiFarmConfigDir, null, false );
 	}
 
 	/**
@@ -304,7 +304,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testNoCache() {
 
-		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, false );
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', null, self::$wgMediaWikiFarmConfigDir, null, false );
 
 		$farm->readFile( 'testreading.json', self::$wgMediaWikiFarmConfigDir );
 
@@ -325,7 +325,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testCacheFile() {
 
-		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir );
+		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', null, self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir );
 
 		copy( self::$wgMediaWikiFarmConfigDir . '/testreading.json', self::$wgMediaWikiFarmConfigDir . '/testreading2.json' );
 
@@ -498,7 +498,7 @@ PHP;
 
 		$this->assertEquals( $localSettings, $this->farm->createLocalSettings( $configuration, "# Pre-config\n", "# Post-config\n" ) );
 
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false );
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false );
 		$extensionJson = var_export( dirname( dirname( dirname( __FILE__ ) ) ) . '/extension.json', true );
 		$localSettings2 = str_replace( 'wfLoadExtension( \'MediaWikiFarm\' );', "wfLoadExtension( 'MediaWikiFarm', $extensionJson );", $localSettings );
 		$this->assertEquals( $localSettings2, $farm->createLocalSettings( $configuration, "# Pre-config\n", "# Post-config\n" ) );

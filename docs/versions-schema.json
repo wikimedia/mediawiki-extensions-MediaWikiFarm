@@ -21,7 +21,7 @@
 						"$SERVER": {
 							"type": "string",
 							"description": "Server host (must be the same as the first key in the hierarchy).",
-							"pattern": "^[a-zA-Z0-9\\._-]+$"
+							"pattern": "^[a-zA-Z0-9\\./_-]+$"
 						},
 						"$SUFFIX": {
 							"type": "string",
