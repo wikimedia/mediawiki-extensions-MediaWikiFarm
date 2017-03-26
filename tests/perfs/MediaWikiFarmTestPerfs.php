@@ -1,4 +1,12 @@
 <?php
+/**
+ * Class MediaWikiFarmTestPerfs.
+ *
+ * @package MediaWikiFarm\Tests
+ * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
+ * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
+ * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
+ */
 
 // @codeCoverageIgnoreStart
 if( $_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1' ) {
@@ -8,6 +16,9 @@ if( $_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1' )
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 // @codeCoverageIgnoreEnd
 
+/**
+ * Class used in lieu et place of the main class in order to test perfs.
+ */
 class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 
 	/** @var float Beginning of time count. */

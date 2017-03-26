@@ -1,42 +1,69 @@
 {
 	"name": "mediawiki-extensions/media-wiki-farm",
 	"description": "Configuration management for MediaWiki farms.",
+	"version": "0.4.0",
 	"keywords": ["mediawiki"],
-	"homepage": "https://www.seb35.fr",
+	"homepage": "https://www.mediawiki.org/wiki/Extension:MediaWikiFarm",
+	"license": "GPL-3.0+",
 	"authors": [
 		{
 			"name": "Sébastien Beyou",
 			"homepage": "https://www.seb35.fr"
 		}
 	],
-	"license": "GPL-3.0+",
+	"support": {
+		"issues": "https://phabricator.wikimedia.org/tag/mediawiki-extensions-mediawikifarm",
+		"wiki": "https://www.mediawiki.org/wiki/Extension:MediaWikiFarm",
+		"source": "https://phabricator.wikimedia.org/diffusion/EMWF"
+	},
+
+
 	"require": {
 		"php": ">=5.2",
 		"symfony/yaml": "^2.0 || ^3.0"
 	},
 	"require-dev": {
 		"justinrainbow/json-schema": "~3.0",
-		"phpunit/phpunit": "~4.8",
+		"phpunit/phpunit": "^3.4 || ^4.0 || ^5.0 || ^6.0",
 		"jakub-onderka/php-parallel-lint": "*",
 		"phpmd/phpmd": "*",
 		"mediawiki/mediawiki-codesniffer": "*"
 	},
 	"suggest": {
-		"phpdocumentor/phpdocumentor": "*"
+		"phpdocumentor/phpdocumentor": "phpDocumentor2 (^2.8) is supported for code documentation; you should install it as PHAR because of version contraints."
 	},
+
+
 	"scripts": {
 		"validate-schema": "php ./bin/validate-schema.php",
+
 		"lint": "parallel-lint --exclude vendor .",
-		"phpcs": "phpcs -p -s",
-		"phpdoc": "[ \"`which phpdoc`\" = \"\" ] || phpdoc -d bin,src -t ./docs/code",
-		"phpunit": "which phpdbg && phpdbg -qrr `which phpunit` --strict-coverage || phpunit --strict-coverage",
 		"unit": "phpunit --no-coverage",
+		"phpunit": "which phpdbg && phpdbg -qrr `which phpunit` --strict-coverage || phpunit --strict-coverage",
+		"phpcs": "phpcs -p -s",
+		"phpdoc": "[ \"`which phpdoc`\" = \"\" ] || php7.1 `which phpdoc` --target=./docs/code --cache-folder=./docs/code/cache --directory=. --ignore='vendor/*,docs/*,tests/phpunit/data/*' --title=MediaWikiFarm --defaultpackagename='\\' --template=responsive-twig --parseprivate",
 		"test": [
 			"composer lint",
 			"composer unit",
 			"composer phpunit",
 			"composer phpcs",
 			"composer phpdoc"
+		],
+
+		"lint5": "php5 `which parallel-lint` -p php5 --exclude vendor .",
+		"unit5": "php5 `which phpunit` --no-coverage",
+		"phpunit5": "which php5dbg && php5dbg -qrr `which phpunit` --strict-coverage || php5 `which phpunit` --strict-coverage",
+		"phpcs5": "php5 `which phpcs` -p -s",
+		"test5": [
+			"composer lint5",
+			"composer unit5",
+			"composer phpunit5",
+			"composer phpcs5"
+		],
+
+		"lint5.2": "for file in `find bin src tests www -name '*.php'`; do php5.2 -l $file; done",
+		"test5.2": [
+			"composer lint5.2"
 		]
 	}
 }

@@ -1,9 +1,19 @@
 <?php
+/**
+ * Class ConstructionTest.
+ *
+ * @package MediaWikiFarm\Tests
+ * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
+ * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
+ * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
+ */
 
 require_once 'MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
+ * Test object construction.
+ *
  * @group MediaWikiFarm
  */
 class ConstructionTest extends MediaWikiFarmTestCase {
@@ -477,13 +487,13 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				false,
 				array( 'EntryPoint' => 'index.php' ) );
 
-		/** Check code directory. */
+		# Check code directory
 		$this->assertEquals( self::$wgMediaWikiFarmCodeDir, $farm->getCodeDir() );
 
-		/** Check cache directory. */
+		# Check cache directory
 		$this->assertFalse( $farm->getCacheDir() );
 
-		/** Check executable file [farm]/src/main.php. */
+		# Check executable file [farm]/src/main.php
 		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $farm->getConfigFile() );
 	}
 
@@ -507,13 +517,13 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				false,
 				array( 'EntryPoint' => 'index.php' ) );
 
-		/** Check code directory. */
+		# Check code directory
 		$this->assertNull( $farm->getCodeDir() );
 
-		/** Check cache directory. */
+		# Check cache directory
 		$this->assertFalse( $farm->getCacheDir() );
 
-		/** Check executable file [farm]/src/main.php. */
+		# Check executable file [farm]/src/main.php
 		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $farm->getConfigFile() );
 	}
 
@@ -614,7 +624,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 		$this->backupAndSetGlobalSubvariable( '_SERVER', 'HTTP_HOST', 'a.testfarm-multiversion.example.org' );
-		chdir( self::$wgMediaWikiFarmCodeDir );
+		$cwd = getcwd();
 
 		$code = MediaWikiFarm::load( 'index.php' );
 
@@ -622,6 +632,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $GLOBALS['wgMediaWikiFarm']->getVariable( '$SERVER' ) );
 		$this->assertEquals( self::$wgMediaWikiFarmCodeDir . '/vstub', getcwd() );
 		$this->assertEquals( $GLOBALS['wgMediaWikiFarmCodeDir'] . '/' . $GLOBALS['wgMediaWikiFarm']->getVariable( '$VERSION' ), getcwd() );
+
+		# For PHPUnit 3.4 which does not restore the current path
+		if( getcwd() != $cwd ) {
+			chdir( $cwd );
+		}
 	}
 
 	/**
@@ -645,6 +660,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setEnvironment
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarm::getFarmConfiguration
 	 */
 	function testLoadingSoftMissingError() {
 
@@ -659,7 +675,13 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		$code = MediaWikiFarm::load( 'index.php' );
 
+		$wgMediaWikiFarm = array_key_exists( 'wgMediaWikiFarm', $GLOBALS ) ? $GLOBALS['wgMediaWikiFarm'] : null;
+		$this->assertNotNull( $wgMediaWikiFarm );
+
 		$this->assertEquals( 404, $code, 'The host was not evaluated as “soft-missing” (existing farm, nonexistant wiki).' );
+		$farmConfig = $wgMediaWikiFarm->getFarmConfiguration();
+		$this->assertEquals( 'phpunitHTTP404.php', $wgMediaWikiFarm->replaceVariables( $farmConfig['HTTP404'] ) );
+
 		$this->assertTrue(
 			array_key_exists( 'wgMediaWikiFarmHTTP404Executed', $GLOBALS ) && $GLOBALS['wgMediaWikiFarmHTTP404Executed'] === true,
 			'The PHP file corresponding to HTTP errors “404 Not Found” was not executed.'

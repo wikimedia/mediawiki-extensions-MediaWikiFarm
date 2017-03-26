@@ -13,6 +13,7 @@ The extension MediaWikiFarm empowers MediaWiki in managing farms of wikis, a far
     scripts
     performance
     internals
+    tests
 
 
 sysadmin: conversion de localsettings

@@ -1,13 +1,39 @@
 <?php
+/**
+ * Class LoadingTest.
+ *
+ * @package MediaWikiFarm\Tests
+ * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
+ * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
+ * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
+ */
 
 require_once 'MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 if( !function_exists( 'wfLoadExtension' ) ) {
+	/**
+	 * Placeholder for wfLoadExtension when standalone PHPUnit is executed.
+	 *
+	 * @package MediaWiki\Tests
+	 *
+	 * @param string $ext Extension name.
+	 * @param string|null $path Absolute path of the extension.json file.
+	 * @return void
+	 */
 	function wfLoadExtension( $ext, $path = null ) {}
 }
 
 if( !function_exists( 'wfLoadSkin' ) ) {
+	/**
+	 * Placeholder for wfLoadSkin when standalone PHPUnit is executed.
+	 *
+	 * @package MediaWiki\Tests
+	 *
+	 * @param string $skin Skin name.
+	 * @param string|null $path Absolute path of the skin.json file.
+	 * @return void
+	 */
 	function wfLoadSkin( $skin, $path = null ) {}
 }
 
@@ -147,7 +173,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		# Check that $result['settings'] (whose all values are 'true') is a subset of $trueGlobals
 		unset( $result['settings']['wgUseExtensionTestMissingExtensionComposer'] );
-		$this->assertEmpty( array_diff( array_keys( $result['settings'] ), $trueGlobals ) );
+		$this->assertEquals( array(), array_diff( array_keys( $result['settings'] ), $trueGlobals ) );
 		$this->assertTrue( array_key_exists( 'wgFileExtensions', $GLOBALS ) );
 		$this->assertEquals( $result['arrays']['wgFileExtensions'], $GLOBALS['wgFileExtensions'] );
 

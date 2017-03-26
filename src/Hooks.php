@@ -10,8 +10,6 @@
 
 /**
  * MediaWiki hooks.
- *
- * @package MediaWikiFarm
  */
 class MediaWikiFarmHooks {
 

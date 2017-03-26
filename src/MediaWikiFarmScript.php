@@ -1,6 +1,6 @@
 <?php
 /**
- * Wrapper around MediaWiki scripts.
+ * Class MediaWikiFarmScript.
  *
  * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
@@ -13,6 +13,8 @@ require_once dirname( __FILE__ ) . '/AbstractMediaWikiFarmScript.php';
 // @codeCoverageIgnoreEnd
 
 /**
+ * Wrapper around MediaWiki scripts.
+ *
  * This class contains the major part of the script utility, mainly in the main() method.
  * Using a class instead of a raw script it better for testability purposes and to use
  * less global variables (in fact none; the only global variable written are for
@@ -26,6 +28,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 	/**
 	 * Create the object with a copy of $argc and $argv.
 	 *
+	 * @api
 	 * @param int $argc Number of input arguments.
 	 * @param string[] $argv Input arguments.
 	 * @return MediaWikiFarmScript
@@ -63,6 +66,8 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 	 *
 	 * This function return true in case of success (else false), but a more detailled status should be indicated in
 	 * the object property 'status'.
+	 *
+	 * @api
 	 *
 	 * @return bool If false, there was an error in the program.
 	 */
@@ -138,6 +143,8 @@ Script:  {$this->script}
 
 	/**
 	 * Post-execution of the main script, only needed in the case 'maintenance/update.php' is run (see main documentation).
+	 *
+	 * @api
 	 *
 	 * @return void.
 	 */

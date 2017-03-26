@@ -2,6 +2,7 @@
 /**
  * Entry point index.php in the context of a multiversion MediaWiki farm.
  *
+ * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
@@ -53,6 +54,12 @@ switch( MediaWikiFarmTestPerfs::getEntryPointProfile( 'index.php' ) ) {
 		$wgMediaWikiFarmMetadata = include_once dirname( __FILE__ ) . '/results/metadata.php';
 
 		chdir( $wgMediaWikiFarmMetadata['IP'] );
+		/**
+		 * Definition of a specific file in lieu of LocalSettings.php for performance tests.
+		 *
+		 * @since MediaWiki 1.17
+		 * @package MediaWiki\Tests
+		 */
 		define( 'MW_CONFIG_FILE', $wgMediaWikiFarmMetadata['MW_CONFIG_FILE'] );
 		require 'index.php';
 }

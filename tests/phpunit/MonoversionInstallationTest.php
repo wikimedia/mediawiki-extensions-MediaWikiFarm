@@ -1,9 +1,20 @@
 <?php
+/**
+ * Class MonoversionInstallationTest.
+ *
+ * @package MediaWikiFarm\Tests
+ * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
+ * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
+ * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
+ */
+
 
 require_once 'MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
+ * Class testing the extension installed in monoversion mode.
+ *
  * @group MediaWikiFarm
  * @covers MediaWikiFarm
  */
@@ -64,7 +75,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 
 		$this->farm->checkExistence();
 
-		/** Check variables. */
+		# Check variables
 		$this->assertEquals(
 			array(
 				'$wiki' => 'a',
@@ -132,7 +143,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 */
 	function testEdgeCasesConfigFile() {
 
-		/** Check a config file without defined variables. */
+		# Check a config file without defined variables
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-novariables.example.org' );
 		$farm->checkExistence();
 	}
@@ -185,7 +196,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
-	 * Test memoisation of checkExistence()
+	 * Test memoisation of checkExistence().
 	 *
 	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
 	 */
@@ -196,7 +207,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
-	 * Test memoisation of checkHostVariables()
+	 * Test memoisation of checkHostVariables().
 	 *
 	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
 	 */

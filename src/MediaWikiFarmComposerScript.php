@@ -1,6 +1,6 @@
 <?php
 /**
- * Wrapper around Composer to create as many autoloaders as MediaWiki extensions.
+ * Class MediaWikiFarmComposerScript.
  *
  * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
@@ -13,6 +13,8 @@ require_once dirname( __FILE__ ) . '/AbstractMediaWikiFarmScript.php';
 // @codeCoverageIgnoreEnd
 
 /**
+ * Wrapper around Composer to create as many autoloaders as MediaWiki extensions.
+ *
  * This class contains the major part of the script utility, mainly in the main() method.
  * Using a class instead of a raw script it better for testability purposes and to use
  * less global variables (in fact none; the only global variable written are for
@@ -22,6 +24,8 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 
 	/**
 	 * Create the object with a copy of $argc and $argv.
+	 *
+	 * @api
 	 *
 	 * @param int $argc Number of input arguments.
 	 * @param string[] $argv Input arguments.
@@ -56,6 +60,8 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 	 * Main program for the script.
 	 *
 	 * Although it returns void, the 'status' property says if there was an error or not.
+	 *
+	 * @api
 	 *
 	 * @return void.
 	 */
@@ -278,6 +284,8 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 	 * Mapping between a Composer key and a MediaWikiFarm key.
 	 *
 	 * The MediaWikiFarm key is the canonical MediaWiki name prefixed by "Extension" or "Skin".
+	 *
+	 * @internal
 	 *
 	 * @param string $name Name of a Composer package.
 	 * @param string $type Composer type.

@@ -1,6 +1,6 @@
 <?php
 /**
- * Script class.
+ * Class AbstractMediaWikiFarmScript.
  *
  * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
@@ -13,6 +13,8 @@ require_once dirname( __FILE__ ) . '/MediaWikiFarm.php';
 // @codeCoverageIgnoreEnd
 
 /**
+ * Base class for CLI scripts.
+ *
  * This class contains the major part of the script utility, mainly in the main() method.
  * Using a class instead of a raw script it better for testability purposes and to use
  * less global variables (in fact none; the only global variable written are for
@@ -48,6 +50,8 @@ abstract class AbstractMediaWikiFarmScript {
 	/**
 	 * Create the object with a copy of $argc and $argv.
 	 *
+	 * @api
+	 *
 	 * @param int $argc Number of input arguments.
 	 * @param string[] $argv Input arguments.
 	 * @return AbstractMediaWikiFarmScript
@@ -62,6 +66,8 @@ abstract class AbstractMediaWikiFarmScript {
 	 * Get a command line parameter.
 	 *
 	 * The parameter can be removed from the list.
+	 *
+	 * @internal
 	 *
 	 * @param string|integer $name Parameter name or position (from 0).
 	 * @param bool $shift Remove this parameter from the list?
@@ -114,6 +120,8 @@ abstract class AbstractMediaWikiFarmScript {
 	/**
 	 * Display help.
 	 *
+	 * @api
+	 *
 	 * @param bool $long Show extended usage.
 	 * @return void.
 	 */
@@ -137,6 +145,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 * declared as global will be affected (but obviously the variables using $GLOBALS in these files); this
 	 * mitigate the risk of declaring too soon some globals.
 	 *
+	 * @api
 	 * @codeCoverageIgnore
 	 *
 	 * @return void.
@@ -172,6 +181,8 @@ abstract class AbstractMediaWikiFarmScript {
 	 * Perhaps in the future some other globals will be changed, like in $_SERVER: PWD, PHP_SELF,
 	 * SCRIPT_NAME, SCRIPT_FILENAME, PATH_TRANSLATED, if it is needed.
 	 *
+	 * @api
+	 *
 	 * @return void.
 	 */
 	function exportArguments() {
@@ -187,6 +198,8 @@ abstract class AbstractMediaWikiFarmScript {
 
 	/**
 	 * Main program for the script, preliminary part.
+	 *
+	 * @internal
 	 *
 	 * @return bool If false, the main program should return.
 	 */
@@ -207,12 +220,16 @@ abstract class AbstractMediaWikiFarmScript {
 	 * This function return true in case of success (else false), but a more detailled status should be indicated in
 	 * the object property 'status'.
 	 *
+	 * @api
+	 *
 	 * @return bool If false, there was an error in the program.
 	 */
 	abstract function main();
 
 	/**
 	 * Post-execution of the main script, only needed in the case 'maintenance/update.php' is run (see main documentation).
+	 *
+	 * @api
 	 *
 	 * @return void.
 	 */
@@ -226,6 +243,8 @@ abstract class AbstractMediaWikiFarmScript {
 
 	/**
 	 * Recursively delete a directory.
+	 *
+	 * @api
 	 *
 	 * @param string $dir Directory path.
 	 * @param bool $deleteDir Delete the root directory (or leave it empty).
@@ -256,6 +275,8 @@ abstract class AbstractMediaWikiFarmScript {
 
 	/**
 	 * Recursively copy a directory.
+	 *
+	 * @api
 	 *
 	 * @param string $source Source path, can be a normal file or a directory.
 	 * @param string $dest Destination path, should be a directory.

@@ -1,4 +1,12 @@
 <?php
+/**
+ * Class ConfigurationTest.
+ *
+ * @package MediaWikiFarm\Tests
+ * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
+ * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
+ * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
+ */
 
 require_once 'MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';

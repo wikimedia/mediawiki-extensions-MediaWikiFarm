@@ -1,10 +1,11 @@
 <?php
 /**
- * Abstract class MediaWikiFarmTestCase with basic stuff for tests.
+ * Class MediaWikiFarmTestCase.
  *
+ * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
+ * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/AbstractMediaWikiFarmScript.php';
@@ -14,9 +15,34 @@ require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/AbstractMediaWiki
 # When executing PHPUnit alone, this class does not exist
 if( !class_exists( 'MediaWikiTestCase' ) ) {
 
-	class MediaWikiTestCase extends PHPUnit_Framework_TestCase {}
+	# PHPUnit ≥ 6.0
+	if( class_exists( 'PHPUnit\Framework\TestCase' ) ) {
+
+		/**
+		 * Placeholder for MediaWikiTestCase when standalone PHPUnit is executed.
+		 *
+		 * @package MediaWiki\Tests
+		 */
+		class MediaWikiTestCase extends PHPUnit\Framework\TestCase {}
+	}
+
+	# PHPUnit < 6.0
+	elseif( class_exists( 'PHPUnit_Framework_TestCase' ) ) {
+
+		/**
+		 * Placeholder for MediaWikiTestCase when standalone PHPUnit is executed.
+		 *
+		 * @package MediaWiki\Tests
+		 */
+		class MediaWikiTestCase extends PHPUnit_Framework_TestCase {} // @codingStandardsIgnoreLine Generic.Classes.DuplicateClassName.Found
+	}
 }
 
+/**
+ * Abstract class with basic stuff for tests.
+ *
+ * @group MediaWikiFarm
+ */
 abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
 	/** @var string Configuration directory for tests. */
@@ -37,9 +63,9 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	/**
 	 * Construct the test case.
 	 *
-	 * @param string $name Name of the test case.
+	 * @param string|null $name Name of the test case.
 	 * @param array $data
-	 * @param string $dataname
+	 * @param string $dataName
 	 * @return MediaWikiFarmTestCase
 	 */
 	public function __construct( $name = null, array $data = array(), $dataName = '' ) {

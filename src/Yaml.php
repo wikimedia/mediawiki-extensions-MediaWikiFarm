@@ -1,7 +1,6 @@
 <?php
-
 /**
- * Helper program returning the parsed content of a YAML file.
+ * Function wfMediaWikiFarm_readYAML.
  *
  * It was splitted from the main class MediaWikiFarm to ensure compatibility with
  * PHP 5.2 (which doesn’t understand namespaces).

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class MediaWikiFarm.
+ * Classes MediaWikiFarm and MWFConfigurationException.
  *
  * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
@@ -12,13 +12,17 @@
  */
 
 /**
- * Exception triggered when a configuration file is missing, badly formatted, or does not respect the schema,
- * or when server does not pass HTTP_HOST to PHP.
+ * Exception triggered when a configuration file is “wrong” or other internal issue.
+ *
+ * A wrong file can be a missing file, a badly-formatted file, or a file which does not respect
+ * the schema. An internal issue can be when the webserver does not pass HTTP_HOST to PHP.
  */
 class MWFConfigurationException extends RuntimeException {}
 
 
 /**
+ * Main runtime class.
+ *
  * This class computes the configuration of a specific wiki from a set of configuration files.
  * The configuration is composed of the list of authorised wikis and different configuration
  * files, possibly with different permissions. Files can be written in YAML, JSON, or PHP.
@@ -96,6 +100,8 @@ class MediaWikiFarm {
 	/**
 	 * Get the inner state.
 	 *
+	 * @api
+	 *
 	 * @param string $key Parameter name.
 	 * @return mixed|null Requested state or null if nonexistant.
 	 */
@@ -109,6 +115,7 @@ class MediaWikiFarm {
 	/**
 	 * Get code directory, where subdirectories are MediaWiki versions.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *
@@ -121,6 +128,7 @@ class MediaWikiFarm {
 	/**
 	 * Get cache directory.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *
@@ -136,6 +144,7 @@ class MediaWikiFarm {
 	 * This is the farm configuration extracted from the farm configuration file, unchanged.
 	 * Variables are the alter-ego variable adapted to the current request.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *
@@ -153,6 +162,7 @@ class MediaWikiFarm {
 	 *   - uppercase keys: variables from the farm configuration adapted to the current request.
 	 * All keys are prefixed by '$'.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 *
 	 * @return string[] Request variables.
@@ -164,6 +174,7 @@ class MediaWikiFarm {
 	/**
 	 * Get a variable related to the current request.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 *
 	 * @param string $varname Variable name (prefixed with '$').
@@ -184,6 +195,7 @@ class MediaWikiFarm {
 	 *   - 'composer': list of Composer-installed extensions and skins (e.g. 0 => 'ExtensionSemanticMediaWiki');
 	 *   - 'execFiles': list of PHP files to execute at the end.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 *
 	 * @param string|null $key Key of the wanted section or null for the whole array.
@@ -217,6 +229,8 @@ class MediaWikiFarm {
 	 * In multiversion installations, this function is called very early during the loading,
 	 * even before MediaWiki is loaded (first function called by multiversion-dedicated entry points
 	 * like `www/index.php`).
+	 *
+	 * @api
 	 *
 	 * @param string $entryPoint Name of the entry point, e.g. 'index.php', 'load.php'…
 	 * @param string|null $host Host name (string) or null to use the global variables HTTP_HOST or SERVER_NAME.
@@ -282,6 +296,12 @@ class MediaWikiFarm {
 
 		# Define config file to avoid creating a stub LocalSettings.php
 		if( !defined( 'MW_CONFIG_FILE' ) ) {
+			/**
+			 * Definition of a specific file in lieu of LocalSettings.php.
+			 *
+			 * @since MediaWiki 1.17
+			 * @package MediaWiki
+			 */
 			define( 'MW_CONFIG_FILE', $wgMediaWikiFarm->getConfigFile() ); // @codeCoverageIgnore
 		}
 
@@ -306,6 +326,8 @@ class MediaWikiFarm {
 	 *   - a wikiID can be computed, and
 	 *   - a version is found and does exist, and
 	 *   - the various properties of the wiki are defined.
+	 *
+	 * @api
 	 *
 	 * @return bool The wiki does exist.
 	 * @throws MWFConfigurationException
@@ -348,6 +370,8 @@ class MediaWikiFarm {
 
 	/**
 	 * Compile configuration as much as it can.
+	 *
+	 * @api
 	 */
 	function compileConfiguration() {
 
@@ -416,6 +440,8 @@ class MediaWikiFarm {
 	 * would work is if the extension declares their global variables with
 	 * $GLOBALS['wgMyExtensionMyParameter'], but it is quite rare.
 	 *
+	 * @api
+	 *
 	 * @return void
 	 */
 	function loadMediaWikiConfig() {
@@ -479,6 +505,8 @@ class MediaWikiFarm {
 	/**
 	 * Synchronise the version in the 'expected version' and deployment files.
 	 *
+	 * @api
+	 *
 	 * @return void
 	 */
 	function updateVersionAfterMaintenance() {
@@ -500,6 +528,7 @@ class MediaWikiFarm {
 	 * Additionally, it returns either the "template" LocalSettings.php (src/main.php)
 	 * or the cached per-wiki LocalSettings.php depending if the cache is fresh.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 *
 	 * @return string File where is loaded the configuration.
@@ -515,6 +544,8 @@ class MediaWikiFarm {
 
 	/**
 	 * Prepare log messages and open syslog channel.
+	 *
+	 * @internal
 	 *
 	 * @param string|false $wgMediaWikiFarmSyslog Syslog tag or deactivate logging.
 	 * @param MediaWikiFarm|null $wgMediaWikiFarm MediaWikiFarm object if any, in order to retrieve existing log messages.
@@ -558,6 +589,7 @@ class MediaWikiFarm {
 	/**
 	 * Issue log messages to syslog.
 	 *
+	 * @internal
 	 * @codeCoverageIgnore
 	 *
 	 * @param string[] $log Log messages.
@@ -586,6 +618,8 @@ class MediaWikiFarm {
 	 * This constructor sets the directories (configuration and code) and select the right
 	 * farm depending of the host (when there are multiple farms). In case of error (unreadable
 	 * directory or file, or unrecognized host), an InvalidArgumentException is thrown.
+	 *
+	 * @internal
 	 *
 	 * @param string|null $host Requested host.
 	 * @param string $configDir Configuration directory.
@@ -709,6 +743,7 @@ class MediaWikiFarm {
 	 *
 	 * Constant function (do not write any object property).
 	 *
+	 * @internal
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *
@@ -772,6 +807,7 @@ class MediaWikiFarm {
 	 * This function generates strange code coverage, some lines (e.g. $this->variables['$VERSION']) are indicated as covered,
 	 * but its parent “if” is not.
 	 *
+	 * @internal
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 *
@@ -845,6 +881,7 @@ class MediaWikiFarm {
 	 *
 	 * Depending of the installation mode, use a cache file, search the version in a file, or does nothing for monoversion case.
 	 *
+	 * @internal
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 *
@@ -935,6 +972,7 @@ class MediaWikiFarm {
 	 *
 	 * These can reuse previously-computed variables: URL variables (lowercase), '$WIKIID', '$SUFFIX', '$VERSION', '$CODE'.
 	 *
+	 * @internal
 	 * @mediawikifarm-idempotent
 	 *
 	 * @return void
@@ -947,6 +985,8 @@ class MediaWikiFarm {
 
 	/**
 	 * Update the version in the deployment file.
+	 *
+	 * @internal
 	 *
 	 * @param string $version The new version, should be the version found in the 'expected version' file.
 	 * @return void
@@ -977,6 +1017,7 @@ class MediaWikiFarm {
 	/**
 	 * Is the cache configuration file LocalSettings.php for the requested wiki fresh?
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 *
 	 * @return bool The cached configuration file LocalSettings.php for the requested wiki is fresh.
@@ -1037,6 +1078,7 @@ class MediaWikiFarm {
 	 * MW is not aware of the default array value of the target MW, so it is
 	 * safer to only manipulate the known difference.
 	 *
+	 * @internal
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 *
@@ -1271,6 +1313,8 @@ class MediaWikiFarm {
 	 * For now, the only environment variable is ExtensionRegistry (is the MediaWiki version
 	 * capable of loading extensions/skins with wfLoadExtension/wfLoadSkin?).
 	 *
+	 * @internal
+	 *
 	 * @return void
 	 */
 	function setEnvironment() {
@@ -1302,6 +1346,8 @@ class MediaWikiFarm {
 	 * but not PF, PF would not be wfLoadExtension’ed – since unknown from MediaWikiFarm – and the
 	 * wfLoadExtension’s SFS issues a fatal error since PF is not wfLoadExtension’ed, even if it is
 	 * Composer-installed).
+	 *
+	 * @internal
 	 *
 	 * @return void
 	 */
@@ -1385,6 +1431,7 @@ class MediaWikiFarm {
 	 *
 	 * This use the backend-generated key; without it, no extension can be loaded with Composer in MediaWikiFarm.
 	 *
+	 * @internal
 	 * @mediawikifarm-const
 	 *
 	 * @param string $type Type, in ['extension', 'skin'].
@@ -1404,6 +1451,7 @@ class MediaWikiFarm {
 	/**
 	 * Detection of the loading mechanism of extensions and skins.
 	 *
+	 * @internal
 	 * @mediawikifarm-const
 	 *
 	 * @param string $type Type, in ['extension', 'skin'].
@@ -1439,6 +1487,8 @@ class MediaWikiFarm {
 	 *
 	 * The extensions are sorted first by loading mechanism, then, for Composer-managed
 	 * extensions, according to their dependency order.
+	 *
+	 * @internal
 	 *
 	 * @param array $a First element.
 	 * @param array $b Second element.
@@ -1493,6 +1543,8 @@ class MediaWikiFarm {
 	 * cached file [cache]/[farm]/config-VERSION-SUFFIX-WIKIID.php, but comparison with
 	 * a classical LocalSettings.php was proven to be quicker. Additionally debug will
 	 * be easier since a LocalSettings.php is easier to read than a 2D array.
+	 *
+	 * @internal
 	 *
 	 * @param array $configuration Array with the schema defined for $this->configuration.
 	 * @param string $preconfig PHP code to be added at the top of the file.
@@ -1583,6 +1635,8 @@ class MediaWikiFarm {
 	/**
 	 * Set a wiki property and replace placeholders (property name version).
 	 *
+	 * @internal
+	 *
 	 * @param string $name Name of the property.
 	 * @param bool $mandatory This variable is mandatory.
 	 * @return void
@@ -1612,6 +1666,8 @@ class MediaWikiFarm {
 	 * Replace variables in a string.
 	 *
 	 * Constant function (do not write any object property).
+	 *
+	 * @internal
 	 *
 	 * @param string|string[] $value Value of the property.
 	 * @return string|string[] Input where variables were replaced.
@@ -1648,6 +1704,7 @@ class MediaWikiFarm {
 	 *
 	 * The choice between the format depends on the extension: php, yml, yaml, json, dblist, serialised.
 	 *
+	 * @internal
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
@@ -1780,6 +1837,7 @@ class MediaWikiFarm {
 	/**
 	 * Create a cache file.
 	 *
+	 * @internal
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *
@@ -1828,6 +1886,7 @@ class MediaWikiFarm {
 	 * (every MediaWiki from 1.1 to (at least) 1.27 has such a file) and probably has a few, if
 	 * any, false positives (another software which has the very same file).
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *
@@ -1840,13 +1899,15 @@ class MediaWikiFarm {
 
 	/**
 	 * Merge multiple arrays together.
+	 *
 	 * On encountering duplicate keys, merge the two, but ONLY if they're arrays.
 	 * PHP's array_merge_recursive() merges ANY duplicate values into arrays,
-	 * which is not fun
+	 * which is not fun.
 	 * This function is almost the same as SiteConfiguration::arrayMerge, with the
 	 * difference an existing scalar value has precedence EVEN if evaluated to false,
 	 * in order to override permissions array with removed rights.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 * @SuppressWarning(PHPMD.StaticAccess)
@@ -1886,6 +1947,7 @@ class MediaWikiFarm {
 	 * try to recognise a list when the array diff has exactly the keys 0, 1, 2, 3,…
 	 * but there could be false positives.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 * @SuppressWarning(PHPMD.StaticAccess)
@@ -1918,6 +1980,7 @@ class MediaWikiFarm {
 	 * Extension names should follow the form 'ExtensionMyWonderfulExtension';
 	 * Skin names should follow the form 'SkinMyWonderfulSkin'.
 	 *
+	 * @api
 	 * @mediawikifarm-const
 	 * @mediawikifarm-idempotent
 	 *

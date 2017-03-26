@@ -1,8 +1,19 @@
 <?php
+/**
+ * CLI script for performance tests.
+ *
+ * @package MediaWikiFarm\Tests
+ * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
+ * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
+ * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
+ */
 
 if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
 	exit;
 }
+
+# Include library
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/AbstractMediaWikiFarmScript.php';
 
 # Default MediaWikiFarm configuration
 $wgMediaWikiFarmCodeDir = dirname( dirname( dirname( dirname( __FILE__ ) ) ) );
@@ -17,26 +28,9 @@ $host = $argv[1];
 $sampleSize = count( $argv ) > 2 ? intval( $argv[2] ) : 100;
 $profiles = 2;
 
-// @codingStandardsIgnoreStart MediaWiki.NamingConventions.PrefixedGlobalFunctions.wfPrefix
-function rmdirr( $dir, $deleteDir = true ) {
-	if( !is_dir( $dir ) ) {
-		return;
-	}
-	$files = array_diff( scandir( $dir ), array( '.', '..' ) );
-	foreach( $files as $file ) {
-		if( is_dir( $dir . '/' . $file ) ) {
-			rmdirr( $dir . '/' . $file );
-		} else {
-			unlink( $dir . '/' . $file );
-		}
-	}
-	if( $deleteDir ) {
-		rmdir( $dir );
-	}
-}
-// @codingStandardsIgnoreEnd MediaWiki.NamingConventions.PrefixedGlobalFunctions.wfPrefix
-rmdirr( $wgMediaWikiFarmCacheDir );
-rmdirr( 'results', false );
+# Delete cache and previous results
+AbstractMediaWikiFarmScript::rmdirr( $wgMediaWikiFarmCacheDir );
+AbstractMediaWikiFarmScript::rmdirr( 'results', false );
 if( is_string( $wgMediaWikiFarmCacheDir ) && is_dir( $wgMediaWikiFarmCacheDir ) ) {
 	echo "Error: Unable to delete cache directory '$wgMediaWikiFarmCacheDir'.\n";
 	exit( 1 );
