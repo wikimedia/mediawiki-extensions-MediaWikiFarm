@@ -41,7 +41,7 @@
 		"unit": "phpunit --no-coverage",
 		"phpunit": "which phpdbg && phpdbg -qrr `which phpunit` --strict-coverage || phpunit --strict-coverage",
 		"phpcs": "phpcs -p -s",
-		"phpdoc": "[ \"`which phpdoc`\" = \"\" ] || php7.1 `which phpdoc` --target=./docs/code --cache-folder=./docs/code/cache --directory=. --ignore='vendor/*,docs/*,tests/phpunit/data/*' --title=MediaWikiFarm --defaultpackagename='\\' --template=responsive-twig --parseprivate",
+		"phpdoc": "[ \"`which phpdoc`\" = \"\" ] || php `which phpdoc` --target=./docs/code --cache-folder=./docs/code/cache --directory=. --ignore='vendor/*,docs/*,tests/phpunit/data/*' --title=MediaWikiFarm --defaultpackagename='\\' --template=responsive-twig --parseprivate",
 		"test": [
 			"composer lint",
 			"composer unit",
