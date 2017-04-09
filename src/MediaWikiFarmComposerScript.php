@@ -36,11 +36,11 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 		parent::__construct( $argc, $argv );
 
 		$this->shortUsage = "
-    Usage: php {$this->argv[0]} --wiki=hostname …
+    Usage: php {$this->argv[0]} …
 
-    Parameters:
+    You must be inside a Composer-managed MediaWiki directory.
 
-      - hostname: hostname of the wiki, e.g. \"mywiki.example.org\"
+    Parameters: regular Composer parameters
 ";
 
 		$fullPath = realpath( $this->argv[0] );
@@ -50,7 +50,6 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
     |
     | Return codes:
     | 0 = success
-    | 1 = missing wiki (similar to HTTP 404)
     | 4 = user error, like a missing parameter (similar to HTTP 400)
     | 5 = internal error in farm configuration (similar to HTTP 500)
 ";
@@ -72,15 +71,11 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 			return false;
 		}
 
-		# Get wiki
-		$this->host = $this->getParam( 'wiki' );
-		if( is_null( $this->host ) ) {
-			$this->usage();
-			$this->status = 4;
-			return false;
-		}
+		# Get current directory
+		$cwd = getcwd();
 		$this->getParam( 0 );
 
+		# Get 'quiet' argument
 		$quiet = false;
 		foreach( $this->argv as $arg ) {
 			if( $arg == '-q' ) {
@@ -88,17 +83,11 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 			}
 		}
 
-		# Initialise the requested version
-		$code = MediaWikiFarm::load( '', $this->host );
-		if( $code == 404 ) {
-			$this->status = 1;
-			return false;
-		} elseif( $code == 500 ) {
-			$this->status = 5;
+		if( !MediaWikiFarm::isMediaWiki( $cwd ) || !is_file( 'composer.json' ) ) {
+			$this->usage();
+			$this->status = 4;
 			return false;
 		}
-
-		$wgMediaWikiFarm = $GLOBALS['wgMediaWikiFarm'];
 
 		# Backup composer.json and copy MediaWiki directory in temporary dir to
 		# change its vendor directory and extensions without breaking current
@@ -108,9 +97,7 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 		if( !$tmpDir ) {
 			$tmpDir = '/tmp';
 		}
-		self::copyr( getcwd(), $tmpDir . '/mediawiki', true, array( '/extensions', '/skins', '/vendor', '/composer\.lock' ) );
-
-		$oldCwd = getcwd();
+		self::copyr( $cwd, $tmpDir . '/mediawiki', true, array( '/extensions', '/skins', '/vendor', '/composer\.lock' ) );
 		chdir( $tmpDir . '/mediawiki' );
 
 		# Update complete dependencies from Composer
@@ -120,7 +107,7 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 		system( 'composer update ' . implode( ' ', $this->argv ), $return );
 		if( $return ) {
 			// @codeCoverageIgnoreStart
-			chdir( $oldCwd );
+			chdir( $cwd );
 			self::rmdirr( $tmpDir . '/mediawiki' );
 			$this->status = 5;
 			return false;
@@ -212,7 +199,7 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 			system( 'composer update ' . implode( ' ', $this->argv ), $return );
 			if( $return ) {
 				// @codeCoverageIgnoreStart
-				chdir( $oldCwd );
+				chdir( $cwd );
 				self::rmdirr( $tmpDir . '/mediawiki' );
 				$this->status = 5;
 				return false;
@@ -241,7 +228,7 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 		system( 'composer update ' . implode( ' ', $this->argv ), $return );
 		if( $return ) {
 			// @codeCoverageIgnoreStart
-			chdir( $oldCwd );
+			chdir( $cwd );
 			self::rmdirr( $tmpDir . '/mediawiki' );
 			$this->status = 5;
 			return false;
@@ -257,26 +244,24 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 		copy( dirname( __FILE__ ) . '/MediaWikiFarmComposerAutoloader.php', 'vendor-composer/autoload.php' );
 
 		# Copy the directories back to the original MediaWiki: vendor, extensions, and skins
-		self::copyr( 'vendor-composer', $wgMediaWikiFarm->getVariable( '$CODE' ) . '/vendor', true );
+		self::copyr( 'vendor-composer', $cwd . '/vendor', true );
+		self::copyr( 'composer.lock', $cwd );
 		if( is_dir( 'extensions-composer' ) ) {
 			$files = array_diff( scandir( 'extensions-composer' ), array( '.', '..' ) );
 			foreach( $files as $file ) {
-				self::copyr( 'extensions-composer/' . $file, $wgMediaWikiFarm->getVariable( '$CODE' ) . '/extensions/' . $file, true );
+				self::copyr( 'extensions-composer/' . $file, $cwd . '/extensions/' . $file, true );
 			}
 		}
-		if( is_dir( 'skins' ) ) {
+		if( is_dir( 'skins-composer' ) ) {
 			$files = array_diff( scandir( 'skins-composer' ), array( '.', '..' ) );
 			foreach( $files as $file ) {
-				self::copyr( 'skins-composer/' . $file, $wgMediaWikiFarm->getVariable( '$CODE' ) . '/skins/' . $file, true );
+				self::copyr( 'skins-composer/' . $file, $cwd . '/skins/' . $file, true );
 			}
 		}
-		if( is_file( $wgMediaWikiFarm->getVariable( '$CODE' ) . '/composer.lock' ) ) {
-			unlink( $wgMediaWikiFarm->getVariable( '$CODE' ) . '/composer.lock' ); // @codeCoverageIgnore
-		}
 		$phpDependencies = "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn " . var_export( $dependencies, true ) . ';';
-		file_put_contents( $wgMediaWikiFarm->getVariable( '$CODE' ) . '/vendor/MediaWikiExtensions.php', $phpDependencies );
+		file_put_contents( $cwd . '/vendor/MediaWikiExtensions.php', $phpDependencies );
 
-		chdir( $oldCwd );
+		chdir( $cwd );
 		self::rmdirr( $tmpDir . '/mediawiki' );
 	}
 

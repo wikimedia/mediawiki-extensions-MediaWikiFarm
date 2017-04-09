@@ -40,22 +40,22 @@ class MediaWikiFarmComposerScriptTest extends MediaWikiFarmTestCase {
 
 		self::$shortHelp = <<<HELP
 
-    Usage: php $mwcomposerPath --wiki=hostname …
+    Usage: php $mwcomposerPath …
 
-    Parameters:
+    You must be inside a Composer-managed MediaWiki directory.
 
-      - hostname: hostname of the wiki, e.g. "mywiki.example.org"
+    Parameters: regular Composer parameters
 
 
 HELP;
 
 		self::$longHelp = <<<HELP
 
-    Usage: php $mwcomposerPath --wiki=hostname …
+    Usage: php $mwcomposerPath …
 
-    Parameters:
+    You must be inside a Composer-managed MediaWiki directory.
 
-      - hostname: hostname of the wiki, e.g. "mywiki.example.org"
+    Parameters: regular Composer parameters
 
     | For easier use, you can alias it in your shell:
     |
@@ -63,7 +63,6 @@ HELP;
     |
     | Return codes:
     | 0 = success
-    | 1 = missing wiki (similar to HTTP 404)
     | 4 = user error, like a missing parameter (similar to HTTP 400)
     | 5 = internal error in farm configuration (similar to HTTP 500)
 
@@ -106,7 +105,7 @@ HELP;
 	}
 
 	/**
-	 * Test missing '--wiki' argument.
+	 * Test when we are not in a Composer-managed MediaWiki directory.
 	 *
 	 * @covers MediaWikiFarmComposerScript::main
 	 * @uses MediaWikiFarmComposerScript::__construct
@@ -114,103 +113,21 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript::usage
 	 * @uses AbstractMediaWikiFarmScript::premain
 	 * @uses AbstractMediaWikiFarmScript::getParam
+	 * @uses MediaWikiFarm::isMediaWiki
 	 */
-	function testMissingArgumentWiki() {
+	function testWrongDirectory() {
 
 		$this->expectOutputString( self::$shortHelp );
+		$cwd = getcwd();
+		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub2' );
 
 		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 1, array( self::$mwcomposerPath ) );
 
 		$wgMediaWikiFarmComposerScript->main();
 
 		$this->assertEquals( 4, $wgMediaWikiFarmComposerScript->status );
-	}
 
-	/**
-	 * Test missing host.
-	 *
-	 * @backupGlobals enabled
-	 * @covers MediaWikiFarmComposerScript::main
-	 * @uses MediaWikiFarmComposerScript::__construct
-	 * @uses AbstractMediaWikiFarmScript::__construct
-	 * @uses AbstractMediaWikiFarmScript::premain
-	 * @uses AbstractMediaWikiFarmScript::getParam
-	 * @uses MediaWikiFarm::load
-	 * @uses MediaWikiFarm::__construct
-	 * @uses MediaWikiFarm::selectFarm
-	 * @uses MediaWikiFarm::checkExistence
-	 * @uses MediaWikiFarm::checkHostVariables
-	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarm::isLocalSettingsFresh
-	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
-	 * @uses MediaWikiFarm::sortExtensions
-	 * @uses MediaWikiFarm::setVariable
-	 * @uses MediaWikiFarm::replaceVariables
-	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::prepareLog
-	 * @uses MediaWikiFarm::issueLog
-	 */
-	function testMissingHost() {
-
-		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
-
-		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 2,
-			array( self::$mwcomposerPath, '--wiki=c.testfarm-monoversion-with-file-variable-without-version.example.org' )
-		);
-
-		$wgMediaWikiFarmComposerScript->main();
-
-		$this->assertEquals( 1, $wgMediaWikiFarmComposerScript->status );
-		$this->assertEquals( 'c.testfarm-monoversion-with-file-variable-without-version.example.org', $wgMediaWikiFarmComposerScript->host );
-		$this->assertEquals( 0, $wgMediaWikiFarmComposerScript->argc );
-		$this->assertEquals( array(), $wgMediaWikiFarmComposerScript->argv );
-	}
-
-	/**
-	 * Test internal problem.
-	 *
-	 * @backupGlobals enabled
-	 * @covers MediaWikiFarmComposerScript::main
-	 * @uses MediaWikiFarmComposerScript::__construct
-	 * @uses AbstractMediaWikiFarmScript::__construct
-	 * @uses AbstractMediaWikiFarmScript::premain
-	 * @uses AbstractMediaWikiFarmScript::getParam
-	 * @uses MediaWikiFarm::load
-	 * @uses MediaWikiFarm::__construct
-	 * @uses MediaWikiFarm::selectFarm
-	 * @uses MediaWikiFarm::checkExistence
-	 * @uses MediaWikiFarm::checkHostVariables
-	 * @uses MediaWikiFarm::setVariable
-	 * @uses MediaWikiFarm::replaceVariables
-	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::prepareLog
-	 * @uses MediaWikiFarm::issueLog
-	 */
-	function testInternalProblem() {
-
-		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
-
-		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 2,
-			array( self::$mwcomposerPath, '--wiki=a.testfarm-with-badly-formatted-file-variable.example.org' )
-		);
-
-		$wgMediaWikiFarmComposerScript->main();
-
-		$this->assertEquals( 5, $wgMediaWikiFarmComposerScript->status );
-		$this->assertEquals( 'a.testfarm-with-badly-formatted-file-variable.example.org', $wgMediaWikiFarmComposerScript->host );
-		$this->assertEquals( 0, $wgMediaWikiFarmComposerScript->argc );
-		$this->assertEquals( array(), $wgMediaWikiFarmComposerScript->argv );
+		chdir( $cwd );
 	}
 
 	/**
@@ -268,27 +185,33 @@ HELP;
 
 		$this->expectOutputString( '' );
 
-		AbstractMediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir . '/vstub', self::$wgMediaWikiFarmCodeDir . '/vstub3' );
+		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCodeDir . '/vstub3' );
+		AbstractMediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir . '/vstub', self::$wgMediaWikiFarmCodeDir . '/vstub3', true );
+		$cwd = getcwd();
 		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub3' );
 
-		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 3, array( self::$mwcomposerPath, '--wiki=y.testfarm-multiversion.example.org', '-q' ) );
+		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 2, array( self::$mwcomposerPath, '-q' ) );
 
 		# This function is the main procedure, it runs Composer in background 7 times so it can take 20-25 seconds
 		$wgMediaWikiFarmComposerScript->main();
 
 		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor' ) );
 		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/composer' ) );
-		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/composerc4538db9' ) ); // SemanticMediaWiki
-		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/composer56cb950e' ) ); // PageForms
-		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/composer2a684956' ) ); // SemanticFormsSelect
+		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/composerc4538db9' ) ); # SemanticMediaWiki
+		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/composer56cb950e' ) ); # PageForms
+		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/composer2a684956' ) ); # SemanticFormsSelect
 		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/composer/installers' ) );
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/autoload.php' ) );
+
+		# There is no composer.lock in this specific example
+		// $this->assertTrue( is_file( self::$wgMediaWikiFarmCodeDir . '/vstub3/composer.lock' ) );
 		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/skins/chameleon' ) );
 		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/extensions/PageForms' ) );
 		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/extensions/SemanticFormsSelect' ) );
 		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/extensions/SemanticMediaWiki' ) );
 
 		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCodeDir . '/vstub3' );
+		chdir( $cwd );
 	}
 	/**/
 }
