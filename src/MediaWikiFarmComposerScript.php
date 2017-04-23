@@ -62,7 +62,7 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 	 *
 	 * @api
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	function main() {
 

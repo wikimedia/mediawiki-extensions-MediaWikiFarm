@@ -63,7 +63,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * Start the counter.
 	 *
 	 * @param string $name Name of the counter.
-	 * @return void.
+	 * @return void
 	 */
 	static function startCounter( $name ) {
 
@@ -74,7 +74,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * Stop the counter.
 	 *
 	 * @param string $name Name of the counter.
-	 * @return void.
+	 * @return void
 	 */
 	static function stopCounter( $name ) {
 
@@ -85,7 +85,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	/**
 	 * Write down results and select the next profile.
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	static function writeResults() {
 
@@ -174,7 +174,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * This function is very similar to its parent but is performance-spied.
 	 *
 	 * @param bool $force Whether to force loading in $this->configuration even if there is a LocalSettings.php
-	 * @return void.
+	 * @return void
 	 */
 	function getMediaWikiConfig( $force = false ) {
 

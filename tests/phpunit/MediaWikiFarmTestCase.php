@@ -54,6 +54,9 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	/** @var string Cache directory for tests. */
 	public static $wgMediaWikiFarmCacheDir = '';
 
+	/** @var string Syslog tag for tests. */
+	public static $wgMediaWikiFarmSyslog = '';
+
 	/** @var array Array with boolean values if a given backuped global previously existed. */
 	public $backupMWFGlobalsExist = array();
 
@@ -107,6 +110,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
 		self::$wgMediaWikiFarmCodeDir = dirname( __FILE__ ) . '/data/mediawiki';
 		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';
+		self::$wgMediaWikiFarmSyslog = 'mediawikifarm';
 
 		# Move http404.php to current directory - @todo: should be improved
 		copy( self::$wgMediaWikiFarmConfigDir . '/http404.php', 'phpunitHTTP404.php' );

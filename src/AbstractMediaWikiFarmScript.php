@@ -65,7 +65,7 @@ abstract class AbstractMediaWikiFarmScript {
 	/**
 	 * Get a command line parameter.
 	 *
-	 * The parameter can be removed from the list.
+	 * Optionally the parameter can be removed from the list.
 	 *
 	 * @internal
 	 *
@@ -99,7 +99,7 @@ abstract class AbstractMediaWikiFarmScript {
 
 		# Search a positional parameter
 		elseif( is_int( $name ) ) {
-			if( $name >= $this->argc ) {
+			if( $name < 0 || $name >= $this->argc ) {
 				return null;
 			}
 			$value = $this->argv[$name];
@@ -123,7 +123,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @api
 	 *
 	 * @param bool $long Show extended usage.
-	 * @return void.
+	 * @return void
 	 */
 	function usage( $long = false ) {
 
@@ -148,7 +148,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @api
 	 * @codeCoverageIgnore
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	function load() {
 
@@ -158,6 +158,7 @@ abstract class AbstractMediaWikiFarmScript {
 		$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
 		$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 		$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
+		$wgMediaWikiFarmSyslog = 'mediawikifarm';
 
 		if( is_file( dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/includes/DefaultSettings.php' ) ) {
 
@@ -183,7 +184,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * @api
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	function exportArguments() {
 
@@ -231,7 +232,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * @api
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	function restInPeace() {}
 
@@ -242,13 +243,13 @@ abstract class AbstractMediaWikiFarmScript {
 	 * ----------------- */
 
 	/**
-	 * Recursively delete a directory.
+	 * Delete recursively a directory or a file.
 	 *
 	 * @api
 	 *
-	 * @param string $dir Directory path.
-	 * @param bool $deleteDir Delete the root directory (or leave it empty).
-	 * @return void.
+	 * @param string $dir Directory or file path.
+	 * @param bool $deleteDir Delete the root directory? (Else leave it empty.)
+	 * @return void
 	 */
 	static function rmdirr( $dir, $deleteDir = true ) {
 
@@ -281,12 +282,12 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @param string $source Source path, can be a normal file or a directory.
 	 * @param string $dest Destination path, should be a directory.
 	 * @param bool $force If true, delete the destination directory before beginning.
-	 * @param string[] $blacklist Regular expression to blacklist some files; if begins
+	 * @param string[] $blacklist Regular expressions to blacklist some files; if it begins
 	 *                 with '/', only files from the root directory will be considered.
-	 * @param string[] $whitelist Regular expression to whitelist only some files; if begins
+	 * @param string[] $whitelist Regular expression to whitelist only some files; if it begins
 	 *                 with '/', only files from the root directory will be considered.
 	 * @param string $base Internal parameter to track the base directory.
-	 * @return void.
+	 * @return void
 	 */
 	static function copyr( $source, $dest, $force = false, $blacklist = array(), $whitelist = null, $base = '' ) {
 

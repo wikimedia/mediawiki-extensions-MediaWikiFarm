@@ -146,7 +146,7 @@ Script:  {$this->script}
 	 *
 	 * @api
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	function restInPeace() {
 

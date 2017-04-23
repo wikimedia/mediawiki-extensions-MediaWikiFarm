@@ -19,6 +19,7 @@ require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/AbstractMediaWiki
 $wgMediaWikiFarmCodeDir = dirname( dirname( dirname( dirname( __FILE__ ) ) ) );
 $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 $wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
+$wgMediaWikiFarmSyslog = 'mediawikifarm';
 
 # Override default MediaWikiFarm configuration
 @include_once dirname( dirname( dirname( __FILE__ ) ) ) . '/config/MediaWikiFarmDirectories.php';
