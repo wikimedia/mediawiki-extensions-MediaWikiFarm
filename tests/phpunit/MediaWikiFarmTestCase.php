@@ -93,6 +93,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 				'wgParamDefinitions',
 				'wgParser',
 				'wgFlowActions',
+				'wgReadOnly', // T163640 - bug in PHPUnit subprogram global-state (issue #10)
 			)
 		);
 	}

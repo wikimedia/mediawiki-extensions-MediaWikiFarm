@@ -712,7 +712,8 @@ class MediaWikiFarm {
 			$fresh = true;
 			$myfreshness = filemtime( $this->cacheDir . '/wikis/' . $host . '.php' );
 			foreach( $result['$CORECONFIG'] as $coreconfig ) {
-				if( filemtime( $this->configDir . '/' . $coreconfig ) > $myfreshness ) {
+				if( !is_file( $this->configDir . '/' . $coreconfig ) ||
+				    filemtime( $this->configDir . '/' . $coreconfig ) > $myfreshness ) {
 					$fresh = false;
 					break;
 				}
@@ -723,8 +724,14 @@ class MediaWikiFarm {
 				unset( $result['$CORECONFIG'] );
 				$this->variables = $result;
 				return;
-			} elseif( is_file( $this->cacheDir . '/LocalSettings/' . $host . '.php' ) ) {
-				unlink( $this->cacheDir . '/LocalSettings/' . $host . '.php' );
+			} else {
+				unlink( $this->cacheDir . '/wikis/' . $host . '.php' );
+				if( is_file( $this->cacheDir . '/LocalSettings/' . $host . '.php' ) ) {
+					unlink( $this->cacheDir . '/LocalSettings/' . $host . '.php' );
+				}
+				if( is_file( $this->cacheDir . '/composer/' . $host . '.php' ) ) {
+					unlink( $this->cacheDir . '/composer/' . $host . '.php' );
+				}
 			}
 		}
 
