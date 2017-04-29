@@ -35,6 +35,7 @@
 
 
 	"scripts": {
+		"fix": "phpcbf",
 		"validate-schema": "php ./bin/validate-schema.php",
 
 		"lint": "parallel-lint --exclude vendor .",
