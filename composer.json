@@ -27,7 +27,8 @@
 		"phpunit/phpunit": "^3.4 || ^4.0 || ^5.0 || ^6.0",
 		"jakub-onderka/php-parallel-lint": "*",
 		"phpmd/phpmd": "*",
-		"mediawiki/mediawiki-codesniffer": "*"
+		"mediawiki/mediawiki-codesniffer": "*",
+		"jakub-onderka/php-console-highlighter": "0.3.2"
 	},
 	"suggest": {
 		"phpdocumentor/phpdocumentor": "phpDocumentor2 (^2.8) is supported for code documentation; you should install it as PHAR because of version contraints."
