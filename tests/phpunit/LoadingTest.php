@@ -71,12 +71,14 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * Test regular loading mechanisms.
 	 *
 	 * @covers MediaWikiFarm::compileConfiguration
-	 * @covers MediaWikiFarm::detectLoadingMechanism
 	 * @covers MediaWikiFarm::loadMediaWikiConfig
-	 * @covers MediaWikiFarm::activateExtensions
+	 * @covers MediaWikiFarmConfiguration::detectLoadingMechanism
+	 * @covers MediaWikiFarmConfiguration::activateExtensions
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getFarmConfiguration
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
@@ -86,19 +88,21 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
 	 * @uses MediaWikiFarm::getConfigFile
-	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
-	 * @uses MediaWikiFarm::composerKey
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::composerKey
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 */
 	function testAllLoadingMechanisms() {
 
@@ -194,6 +198,8 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getFarmConfiguration
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
@@ -203,16 +209,18 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarm::populateSettings
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::setEnvironment
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarm::detectLoadingMechanism
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::detectLoadingMechanism
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 */
 	function testRegistrationMediaWikiFarm() {
 
@@ -235,10 +243,12 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * Test exceptions in loading mechanisms.
 	 *
 	 * @covers MediaWikiFarm::compileConfiguration
-	 * @covers MediaWikiFarm::detectLoadingMechanism
+	 * @covers MediaWikiFarmConfiguration::detectLoadingMechanism
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getFarmConfiguration
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
@@ -248,11 +258,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
-	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
@@ -260,6 +265,13 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 */
 	function testExceptionsLoadingMechanisms() {
 

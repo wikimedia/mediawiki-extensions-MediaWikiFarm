@@ -305,20 +305,26 @@ HELP;
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getConfiguration
+	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
-	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
-	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 */
 	function testMissingHost() {
 
@@ -400,17 +406,23 @@ HELP;
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
-	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
-	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getConfiguration
+	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 */
 	function testMissingScript() {
 
@@ -454,11 +466,6 @@ HELP;
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
-	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
-	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getVariable
@@ -466,6 +473,17 @@ HELP;
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getConfiguration
+	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 */
 	function testSuccessfulLoading() {
 
@@ -525,12 +543,7 @@ OUTPUT
 	 * @uses MediaWikiFarm::setVersion
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarm::populateSettings
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
-	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getVariable
@@ -538,6 +551,17 @@ OUTPUT
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getConfiguration
+	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 */
 	function testRestInPeace() {
 

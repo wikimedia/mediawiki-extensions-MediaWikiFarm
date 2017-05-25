@@ -67,8 +67,8 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * Construct the test case.
 	 *
 	 * @param string|null $name Name of the test case.
-	 * @param array $data
-	 * @param string $dataName
+	 * @param array $data Data for data providers.
+	 * @param string $dataName Name of the data for data providers.
 	 * @return MediaWikiFarmTestCase
 	 */
 	public function __construct( $name = null, array $data = array(), $dataName = '' ) {

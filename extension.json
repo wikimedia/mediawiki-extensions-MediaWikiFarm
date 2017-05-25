@@ -29,6 +29,7 @@
 	},
 	"AutoloadClasses": {
 		"MediaWikiFarm": "src/MediaWikiFarm.php",
+		"MediaWikiFarmConfiguration": "src/MediaWikiFarmConfiguration.php",
 		"AbstractMediaWikiFarmScript": "src/AbstractMediaWikiFarmScript.php",
 		"MediaWikiFarmScript": "src/MediaWikiFarmScript.php",
 		"MediaWikiFarmHooks": "src/Hooks.php",
