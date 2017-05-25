@@ -184,13 +184,13 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 
 			$thisInstallation = $baseComposerJson;
 			$thisInstallation['require'][$composerName] = $installable[$composerName];
-			$thisInstallation['config']['autoloader-suffix'] = MediaWikiFarm::composerKey( $name );
+			$thisInstallation['config']['autoloader-suffix'] = MediaWikiFarmConfiguration::composerKey( $name );
 
 			if( !$quiet ) {
 				// @codeCoverageIgnoreStart
 				echo $icounter . '. Composer set for ';
 				echo lcfirst( preg_replace( '/^(Extension|Skin)/', '$1 ', $extensions[$composerName] ) ) . ' (';
-				echo MediaWikiFarm::composerKey( $name ) . "):\n";
+				echo MediaWikiFarmConfiguration::composerKey( $name ) . "):\n";
 				// @codeCoverageIgnoreEnd
 			}
 
@@ -206,7 +206,7 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 				// @codeCoverageIgnoreEnd
 			}
 
-			self::copyr( 'vendor/composer', 'vendor-composer/composer' . MediaWikiFarm::composerKey( $name ),
+			self::copyr( 'vendor/composer', 'vendor-composer/composer' . MediaWikiFarmConfiguration::composerKey( $name ),
 			             true, array(), array( '/autoload_.*\.php', '/ClassLoader\.php', '/installed\.json' )
 			);
 			$icounter++;

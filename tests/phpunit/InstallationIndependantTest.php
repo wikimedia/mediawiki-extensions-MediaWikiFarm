@@ -404,10 +404,11 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test the writing of the file LocalSettings.php.
 	 *
-	 * @covers MediaWikiFarm::createLocalSettings
-	 * @covers MediaWikiFarm::writeArrayAssignment
+	 * @covers MediaWikiFarmConfiguration::createLocalSettings
+	 * @covers MediaWikiFarmConfiguration::writeArrayAssignment
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarm::getCodeDir
 	 * @uses MediaWikiFarm::readFile
 	 */
 	function testCreateLocalSettings() {
@@ -496,26 +497,30 @@ include 'freeLS.php';
 
 PHP;
 
-		$this->assertEquals( $localSettings, $this->farm->createLocalSettings( $configuration, "# Pre-config\n", "# Post-config\n" ) );
+		$this->assertEquals( $localSettings,
+			MediaWikiFarmConfiguration::createLocalSettings( $configuration, (bool) $this->farm->getCodeDir(), "# Pre-config\n", "# Post-config\n" )
+		);
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false );
 		$extensionJson = var_export( dirname( dirname( dirname( __FILE__ ) ) ) . '/extension.json', true );
 		$localSettings2 = str_replace( 'wfLoadExtension( \'MediaWikiFarm\' );', "wfLoadExtension( 'MediaWikiFarm', $extensionJson );", $localSettings );
-		$this->assertEquals( $localSettings2, $farm->createLocalSettings( $configuration, "# Pre-config\n", "# Post-config\n" ) );
+		$this->assertEquals( $localSettings2,
+			MediaWikiFarmConfiguration::createLocalSettings( $configuration, (bool) $farm->getCodeDir(), "# Pre-config\n", "# Post-config\n" )
+		);
 	}
 
 	/**
 	 * Test Composer key.
 	 *
-	 * @covers MediaWikiFarm::composerKey
+	 * @covers MediaWikiFarmConfiguration::composerKey
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 */
 	function testComposerKey() {
 
-		$this->assertEquals( 'c4538db9', MediaWikiFarm::composerKey( 'ExtensionSemanticMediaWiki' ) );
-		$this->assertEquals( '', MediaWikiFarm::composerKey( '' ) );
+		$this->assertEquals( 'c4538db9', MediaWikiFarmConfiguration::composerKey( 'ExtensionSemanticMediaWiki' ) );
+		$this->assertEquals( '', MediaWikiFarmConfiguration::composerKey( '' ) );
 	}
 
 	/**

@@ -153,11 +153,6 @@ HELP;
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
-	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
-	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::getConfigFile
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
@@ -165,10 +160,15 @@ HELP;
 	 * @uses MediaWikiFarm::updateVersion
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
-	 * @uses MediaWikiFarm::composerKey
 	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::composerKey
 	 */
 	function testSuccessfulLoading() {
 
@@ -213,5 +213,4 @@ HELP;
 		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCodeDir . '/vstub3' );
 		chdir( $cwd );
 	}
-	/**/
 }

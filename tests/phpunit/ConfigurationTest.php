@@ -24,13 +24,19 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test compiling a configuration.
 	 *
-	 * @covers MediaWikiFarm::populateSettings
 	 * @covers MediaWikiFarm::compileConfiguration
-	 * @covers MediaWikiFarm::detectLoadingMechanism
 	 * @covers MediaWikiFarm::getConfiguration
 	 * @covers MediaWikiFarm::replaceVariables
-	 * @covers MediaWikiFarm::activateExtensions
+	 * @covers MediaWikiFarmConfiguration::setComposer
+	 * @covers MediaWikiFarmConfiguration::setEnvironment
+	 * @covers MediaWikiFarmConfiguration::getConfiguration
+	 * @covers MediaWikiFarmConfiguration::populateSettings
+	 * @covers MediaWikiFarmConfiguration::detectLoadingMechanism
+	 * @covers MediaWikiFarmConfiguration::activateExtensions
 	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
@@ -41,6 +47,9 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::arrayMerge
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
 	function testHighlevelConfiguration() {
@@ -109,7 +118,8 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		$this->assertTrue( $farm->checkExistence() );
 
-		$this->assertTrue( $farm->populateSettings() );
+		$configurationObject = $farm->getConfiguration( null );
+		$this->assertTrue( $configurationObject->populateSettings() );
 
 		$this->assertNull( $farm->getConfiguration( 'nonexistant' ) );
 		$this->assertNull( $farm->getConfiguration( 'settings', 'nonexistant' ) );
@@ -127,14 +137,19 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * Test the different extensions/skins loading mechanisms.
 	 *
 	 * @covers MediaWikiFarm::compileConfiguration
-	 * @covers MediaWikiFarm::populateSettings
-	 * @covers MediaWikiFarm::activateExtensions
-	 * @covers MediaWikiFarm::detectComposer
-	 * @covers MediaWikiFarm::detectLoadingMechanism
-	 * @covers MediaWikiFarm::setEnvironment
-	 * @covers MediaWikiFarm::sortExtensions
-	 * @covers MediaWikiFarm::createLocalSettings
+	 * @covers MediaWikiFarmConfiguration::setComposer
+	 * @covers MediaWikiFarmConfiguration::setEnvironment
+	 * @covers MediaWikiFarmConfiguration::populateSettings
+	 * @covers MediaWikiFarmConfiguration::activateExtensions
+	 * @covers MediaWikiFarmConfiguration::detectComposer
+	 * @covers MediaWikiFarmConfiguration::detectLoadingMechanism
+	 * @covers MediaWikiFarmConfiguration::sortExtensions
+	 * @covers MediaWikiFarmConfiguration::createLocalSettings
+	 * @covers MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
@@ -147,8 +162,10 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::composerKey
 	 * @uses MediaWikiFarm::isMediaWiki
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmConfiguration::composerKey
 	 */
 	function testLoadingMechanisms() {
 
@@ -214,19 +231,20 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::compileConfiguration
 	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @covers MediaWikiFarm::compileConfiguration
-	 * @covers MediaWikiFarm::populateSettings
-	 * @covers MediaWikiFarm::detectLoadingMechanism
-	 * @covers MediaWikiFarm::createLocalSettings
-	 * @covers MediaWikiFarm::writeArrayAssignment
 	 * @covers MediaWikiFarm::getConfigFile
 	 * @covers MediaWikiFarm::cacheFile
+	 * @covers MediaWikiFarmConfiguration::setComposer
+	 * @covers MediaWikiFarmConfiguration::setEnvironment
+	 * @covers MediaWikiFarmConfiguration::populateSettings
+	 * @covers MediaWikiFarmConfiguration::detectLoadingMechanism
+	 * @covers MediaWikiFarmConfiguration::createLocalSettings
+	 * @covers MediaWikiFarmConfiguration::writeArrayAssignment
 	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
-	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
@@ -237,6 +255,13 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::isMediaWiki
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmConfiguration::setComposer
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
 	function testLoadMediaWikiConfigMultiversion() {
@@ -277,19 +302,21 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::compileConfiguration
 	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @covers MediaWikiFarm::compileConfiguration
-	 * @covers MediaWikiFarm::populateSettings
-	 * @covers MediaWikiFarm::activateExtensions
-	 * @covers MediaWikiFarm::detectLoadingMechanism
-	 * @covers MediaWikiFarm::createLocalSettings
-	 * @covers MediaWikiFarm::writeArrayAssignment
 	 * @covers MediaWikiFarm::getConfigFile
 	 * @covers MediaWikiFarm::cacheFile
+	 * @covers MediaWikiFarmConfiguration::setComposer
+	 * @covers MediaWikiFarmConfiguration::setEnvironment
+	 * @covers MediaWikiFarmConfiguration::activateExtensions
+	 * @covers MediaWikiFarmConfiguration::populateSettings
+	 * @covers MediaWikiFarmConfiguration::detectLoadingMechanism
+	 * @covers MediaWikiFarmConfiguration::createLocalSettings
+	 * @covers MediaWikiFarmConfiguration::writeArrayAssignment
 	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::setEnvironment
-	 * @uses MediaWikiFarm::sortExtensions
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
@@ -297,8 +324,14 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::composerKey
 	 * @uses MediaWikiFarm::arrayMerge
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmConfiguration::setComposer
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::composerKey
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
 	function testLoadMediaWikiConfigMonoversion() {
@@ -330,8 +363,13 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test the sorting of extensions/skins.
 	 *
-	 * @covers MediaWikiFarm::sortExtensions
+	 * @covers MediaWikiFarmConfiguration::sortExtensions
+	 * @covers MediaWikiFarmConfiguration::setComposer
+	 * @covers MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
@@ -343,6 +381,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::cacheFile
 	 * @uses MediaWikiFarm::isMediaWiki
+	 * @uses MediaWikiFarmConfiguration::__construct
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
 	function testSort() {
@@ -352,9 +391,10 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => false )
 		);
 		$farm->checkExistence();
+		$configuration = $farm->getConfiguration( null );
 
 		$this->assertEquals( -100,
-			$farm->sortExtensions(
+			$configuration->sortExtensions(
 				array( 'IrrealSkinComposerForTesting', 'skin', 'composer', 0 ),
 				array( 'FictiveSkinComposerForTesting', 'skin', 'composer', 100 )
 			),
@@ -362,7 +402,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		);
 
 		$this->assertEquals( 1,
-			$farm->sortExtensions(
+			$configuration->sortExtensions(
 				array( 'UnknownExtensionComposerForTesting', 'extension', 'composer', 100 ),
 				array( 'IrrealSkinComposerForTesting', 'skin', 'composer', 0 )
 			),
@@ -370,7 +410,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		);
 
 		$this->assertEquals( 100,
-			$farm->sortExtensions(
+			$configuration->sortExtensions(
 				array( 'UnknownSkinComposerForTesting', 'skin', 'composer', 100 ),
 				array( 'IrrealSkinComposerForTesting', 'skin', 'composer', 0 )
 			),
@@ -378,7 +418,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		);
 
 		$this->assertEquals( 1,
-			$farm->sortExtensions(
+			$configuration->sortExtensions(
 				array( 'TestSkinComposer', 'skin', 'composer', 100 ),
 				array( 'TestExtensionComposer', 'extension', 'composer', 0 )
 			),
@@ -386,7 +426,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		);
 
 		$this->assertEquals( -1,
-			$farm->sortExtensions(
+			$configuration->sortExtensions(
 				array( 'TestExtensionComposer', 'extension', 'composer', 0 ),
 				array( 'TestSkinComposer', 'skin', 'composer', 100 )
 			),
@@ -394,7 +434,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		);
 
 		$this->assertEquals( 1,
-			$farm->sortExtensions(
+			$configuration->sortExtensions(
 				array( 'Wonderfun', 'extension', 'require_once', 0 ),
 				array( 'Wonderfun', 'skin', 'require_once', 100 )
 			),
@@ -402,7 +442,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		);
 
 		$this->assertEquals( 11,
-			$farm->sortExtensions(
+			$configuration->sortExtensions(
 				array( 'Wonderfun', 'extension', 'wfLoadExtension', 0 ),
 				array( 'Wonderfun', 'skin', 'require_once', 100 )
 			),
@@ -410,7 +450,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		);
 
 		$this->assertEquals( -100,
-			$farm->sortExtensions(
+			$configuration->sortExtensions(
 				array( 'Wonderfun', 'extension', 'wfLoadExtension', 0 ),
 				array( 'Wonderful', 'extension', 'wfLoadExtension', 100 )
 			),

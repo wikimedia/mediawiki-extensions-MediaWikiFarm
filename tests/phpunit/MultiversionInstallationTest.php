@@ -340,7 +340,6 @@ PHP;
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
 		$this->assertTrue( $farm->checkExistence() );
 		$this->assertEquals( 'vstub', $farm->getVariable( '$VERSION' ) );
-
 	}
 
 	/**

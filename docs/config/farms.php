@@ -16,7 +16,9 @@ return array(
 	),
 );
 
+// @codingStandardsIgnoreStart MediaWiki.Commenting.IllegalSingleLineComment.MissingCommentEndding
 /*
+
 return array(
 
 	# Configuration similar to the Wikimedia farm
@@ -94,4 +96,5 @@ return array(
 		'redirect' => '$client-$wiki.example.com',
 	),
 );
+
 */

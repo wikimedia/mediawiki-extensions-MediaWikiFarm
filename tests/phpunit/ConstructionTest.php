@@ -676,10 +676,14 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
+	 * @covers MediaWikiFarm::getFarmDir
 	 * @covers MediaWikiFarm::getCodeDir
 	 * @covers MediaWikiFarm::getCacheDir
 	 * @covers MediaWikiFarm::getConfigFile
+	 * @covers MediaWikiFarm::getConfiguration
 	 * @covers MediaWikiFarm::isLocalSettingsFresh
+	 * @covers MediaWikiFarmConfiguration::__construct
+	 * @covers MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarm::readFile
 	 */
 	function testCheckBasicObjectPropertiesMultiversion() {
@@ -692,6 +696,9 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				false,
 				array( 'EntryPoint' => 'index.php' ) );
 
+		# Check farm directory
+		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ), $farm->getFarmDir() );
+
 		# Check code directory
 		$this->assertEquals( self::$wgMediaWikiFarmCodeDir, $farm->getCodeDir() );
 
@@ -700,6 +707,17 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 
 		# Check executable file [farm]/src/main.php
 		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $farm->getConfigFile() );
+
+		$this->assertEquals(
+			array(
+				'settings' => array(),
+				'arrays' => array(),
+				'extensions' => array(),
+				'execFiles' => array(),
+				'composer' => array(),
+			),
+			$farm->getConfiguration()
+		);
 	}
 
 	/**
@@ -805,6 +823,9 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getConfiguration
+	 * @uses MediaWikiFarm::getFarmConfiguration
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
@@ -816,14 +837,16 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::getConfigFile
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::sortExtensions
-	 * @uses MediaWikiFarm::setEnvironment
 	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 */
 	function testLoadingCorrect() {
 
@@ -854,6 +877,10 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::getConfigDir
+	 * @uses MediaWikiFarm::getConfiguration
+	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::checkExistence
@@ -862,14 +889,16 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
-	 * @uses MediaWikiFarm::populateSettings
-	 * @uses MediaWikiFarm::activateExtensions
-	 * @uses MediaWikiFarm::detectComposer
-	 * @uses MediaWikiFarm::sortExtensions
-	 * @uses MediaWikiFarm::setEnvironment
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
 	 * @uses MediaWikiFarm::getFarmConfiguration
+	 * @uses MediaWikiFarmConfiguration::__construct
+	 * @uses MediaWikiFarmConfiguration::populateSettings
+	 * @uses MediaWikiFarmConfiguration::activateExtensions
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmConfiguration::sortExtensions
+	 * @uses MediaWikiFarmConfiguration::setEnvironment
+	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 */
 	function testLoadingSoftMissingError() {
 
