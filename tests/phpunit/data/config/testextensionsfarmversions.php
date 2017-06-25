@@ -5,4 +5,5 @@ return array(
 	'btestextensionsfarm' => 'vstub',
 	'ctestextensionsfarm' => 'vstub',
 	'dtestextensionsfarm' => 'vstub',
+	'etestextensionsfarm' => 'vstub',
 );

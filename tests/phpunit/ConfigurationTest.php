@@ -223,6 +223,21 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$this->assertTrue( $settings['wgUseSkinTestSkinBiLoading'] );
 		$this->assertContains( array( 'TestExtensionBiLoading', 'extension', 'require_once', 1 ), $extensions );
 		$this->assertContains( array( 'TestSkinBiLoading', 'skin', 'require_once', 0 ), $extensions );
+
+		# Now with imposed loading mechanism (2)
+		$farm = new MediaWikiFarm( 'e.testfarm-multiversion-test-extensions.example.org', null,
+			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false,
+			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
+		);
+
+		$farm->checkExistence();
+		$farm->compileConfiguration();
+		$settings = $farm->getConfiguration( 'settings' );
+		$extensions = $farm->getConfiguration( 'extensions' );
+		$this->assertTrue( $settings['wgUseExtensionTestExtensionBiLoading'] );
+		$this->assertTrue( $settings['wgUseSkinTestSkinBiLoading'] );
+		$this->assertContains( array( 'TestExtensionBiLoading', 'extension', 'wfLoadExtension', 2 ), $extensions );
+		$this->assertContains( array( 'TestSkinBiLoading', 'skin', 'wfLoadSkin', 0 ), $extensions );
 	}
 
 	/**

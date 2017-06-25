@@ -9,6 +9,7 @@ return array(
 		'atestextensionsfarm' => true,
 		'ctestextensionsfarm' => 'require_once',
 		'dtestextensionsfarm' => 'require_once',
+		'etestextensionsfarm' => true,
 	),
 	'wgUseExtensionTestExtensionRequireOnce' => array(
 		'atestextensionsfarm' => true,
@@ -40,6 +41,7 @@ return array(
 	'wgUseSkinTestSkinBiLoading' => array(
 		'atestextensionsfarm' => true,
 		'dtestextensionsfarm' => 'require_once',
+		'etestextensionsfarm' => true,
 	),
 	'wgUseSkinTestSkinRequireOnce' => array(
 		'atestextensionsfarm' => true,
@@ -69,5 +71,11 @@ return array(
 	),
 	'wgUseSkinTestSkinEmpty' => array(
 		'btestextensionsfarm' => true,
+	),
+	'wgExtensionDirectory' => array(
+		'etestextensionsfarm' => dirname( dirname( __FILE__ ) ) . '/mediawiki/vstub/extensions',
+	),
+	'wgStyleDirectory' => array(
+		'etestextensionsfarm' => dirname( dirname( __FILE__ ) ) . '/mediawiki/vstub/skins',
 	),
 );

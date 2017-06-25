@@ -507,6 +507,19 @@ PHP;
 		$this->assertEquals( $localSettings2,
 			MediaWikiFarmConfiguration::createLocalSettings( $configuration, (bool) $farm->getCodeDir(), "# Pre-config\n", "# Post-config\n" )
 		);
+
+		# Test with wgExtensionDirectory and wgStyleDirectory
+		$configuration['settings']['wgExtensionDirectory'] = '/mediawiki/extensions';
+		$configuration['settings']['wgStyleDirectory'] = '/mediawiki/skins';
+		$this->assertEquals(
+			str_replace(
+				array( '$IP/extensions', '$IP/skins', "'127.0.0.1:11211',\n);" ),
+				array( '/mediawiki/extensions', '/mediawiki/skins',
+				"'127.0.0.1:11211',\n);\n\$wgExtensionDirectory = '/mediawiki/extensions';\n\$wgStyleDirectory = '/mediawiki/skins';" ),
+				$localSettings2
+			),
+			MediaWikiFarmConfiguration::createLocalSettings( $configuration, (bool) $farm->getCodeDir(), "# Pre-config\n", "# Post-config\n" )
+		);
 	}
 
 	/**

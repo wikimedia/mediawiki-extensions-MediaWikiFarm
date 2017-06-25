@@ -27,11 +27,27 @@ if( !isset( $wgVersion ) ) {
 # Compile MediaWiki configuration
 $wgMediaWikiFarm->compileConfiguration();
 
-# Load extensions and skins with the require_once mechanism
+# Load skins with the require_once mechanism
 foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $key => $extension ) {
 
-	if( $extension[2] == 'require_once' && $key != 'ExtensionMediaWikiFarm' ) {
-		require_once "$IP/{$extension[1]}s/{$extension[0]}/{$extension[0]}.php";
+	if( $extension[1] == 'skin' && $extension[2] == 'require_once' ) {
+		if( array_key_exists( 'wgStyleDirectory', $wgMediaWikiFarm->getConfiguration( 'settings' ) ) ) {
+			require_once $wgMediaWikiFarm->getConfiguration( 'settings', 'wgStyleDirectory' ) . "/{$extension[0]}/{$extension[0]}.php";
+		} else {
+			require_once "$IP/skins/{$extension[0]}/{$extension[0]}.php";
+		}
+	}
+}
+
+# Load extensions with the require_once mechanism
+foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $key => $extension ) {
+
+	if( $extension[1] == 'extension' && $extension[2] == 'require_once' && $key != 'ExtensionMediaWikiFarm' ) {
+		if( array_key_exists( 'wgExtensionDirectory', $wgMediaWikiFarm->getConfiguration( 'settings' ) ) ) {
+			require_once $wgMediaWikiFarm->getConfiguration( 'settings', 'wgExtensionDirectory' ) . "/{$extension[0]}/{$extension[0]}.php";
+		} else {
+			require_once "$IP/extensions/{$extension[0]}/{$extension[0]}.php";
+		}
 	}
 }
 

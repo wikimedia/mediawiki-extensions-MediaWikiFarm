@@ -513,12 +513,21 @@ class MediaWikiFarmConfiguration {
 	 */
 	function detectLoadingMechanism( $type, $name ) {
 
-		if( !is_dir( $this->farm->getVariable( '$CODE' ).'/'.$type.'s/'.$name ) ) {
+		# Search base directory
+		$base = $this->farm->getVariable( '$CODE' ) . '/' . $type . 's';
+		if( $type == 'extension' && array_key_exists( 'wgExtensionDirectory', $this->configuration['settings'] ) ) {
+			$base = $this->configuration['settings']['wgExtensionDirectory'];
+		}
+		elseif( $type == 'skin' && array_key_exists( 'wgStyleDirectory', $this->configuration['settings'] ) ) {
+			$base = $this->configuration['settings']['wgStyleDirectory'];
+		}
+
+		if( !is_dir( $base . '/' . $name ) ) {
 			return null;
 		}
 
 		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
-		if( $this->environment['ExtensionRegistry'] && is_file( $this->farm->getVariable( '$CODE' ).'/'.$type.'s/'.$name.'/'.$type.'.json' ) ) {
+		if( $this->environment['ExtensionRegistry'] && is_file( $base . '/' . $name . '/' . $type . '.json' ) ) {
 			return 'wfLoad' . ucfirst( $type );
 		}
 
@@ -528,7 +537,7 @@ class MediaWikiFarmConfiguration {
 		}
 
 		# A MyExtension.php file is in the directory -> assume it is the loading mechanism
-		elseif( is_file( $this->farm->getVariable( '$CODE' ).'/'.$type.'s/'.$name.'/'.$name.'.php' ) ) {
+		elseif( is_file( $base . '/' . $name . '/' . $name . '.php' ) ) {
 			return 'require_once';
 		}
 
@@ -607,6 +616,18 @@ class MediaWikiFarmConfiguration {
 	 */
 	static function createLocalSettings( $configuration, $isMonoversion, $preconfig = '', $postconfig = '' ) {
 
+		# Prepare paths
+		$path = array(
+			'extension' => '$IP/extensions',
+			'skin' => '$IP/skins',
+		);
+		if( array_key_exists( 'wgExtensionDirectory', $configuration['settings'] ) ) {
+			$path['extension'] = $configuration['settings']['wgExtensionDirectory'];
+		}
+		if( array_key_exists( 'wgStyleDirectory', $configuration['settings'] ) ) {
+			$path['skin'] = $configuration['settings']['wgStyleDirectory'];
+		}
+
 		$localSettings = "<?php\n";
 
 		if( $preconfig ) {
@@ -626,7 +647,7 @@ class MediaWikiFarmConfiguration {
 		);
 		foreach( $configuration['extensions'] as $key => $extension ) {
 			if( $extension[2] == 'require_once' && ( $key != 'ExtensionMediaWikiFarm' || !$isMonoversion ) ) {
-				$extensions[$extension[1]]['require_once'] .= "require_once \"\$IP/{$extension[1]}s/{$extension[0]}/{$extension[0]}.php\";\n";
+				$extensions[$extension[1]]['require_once'] .= "require_once \"{$path[$extension[1]]}/{$extension[0]}/{$extension[0]}.php\";\n";
 			} elseif( $key == 'ExtensionMediaWikiFarm' && $extension[2] == 'wfLoadExtension' && $isMonoversion ) {
 				$extensions['extension']['wfLoadExtension'] .= "wfLoadExtension( 'MediaWikiFarm', " .
 					var_export( dirname( dirname( __FILE__ ) ) . '/extension.json', true ) . " );\n";

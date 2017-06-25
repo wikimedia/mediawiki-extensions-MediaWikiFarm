@@ -510,9 +510,8 @@ class MediaWikiFarm {
 		}
 
 		# Register this extension MediaWikiFarm to appear in Special:Version
-		if( array_key_exists( 'ExtensionMediaWikiFarm', $this->getConfiguration( 'extensions' ) ) &&
-		     $this->getConfiguration( 'extensions', 'ExtensionMediaWikiFarm' )[2] == 'require_once' &&
-		     $this->codeDir ) {
+		$extMediaWikiFarm = $this->getConfiguration( 'extensions', 'ExtensionMediaWikiFarm' );
+		if( $extMediaWikiFarm && $extMediaWikiFarm[2] == 'require_once' && $this->codeDir ) {
 			$GLOBALS['wgExtensionCredits']['other'][] = array(
 				'path' => $this->farmDir . '/MediaWikiFarm.php',
 				'name' => 'MediaWikiFarm',
