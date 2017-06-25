@@ -271,7 +271,9 @@ class MediaWikiFarm {
 			$exists = $wgMediaWikiFarm->checkExistence();
 
 			# Compile configuration
-			$wgMediaWikiFarm->compileConfiguration();
+			if( $exists ) {
+				$wgMediaWikiFarm->compileConfiguration();
+			}
 		}
 		catch( Exception $exception ) {
 
@@ -720,6 +722,9 @@ class MediaWikiFarm {
 		# Sanitise host and path
 		$host = preg_replace( '/[^a-zA-Z0-9\\._-]/', '', $host );
 		$path = '/' . substr( $path, 1 );
+		if( $path === '/' ) {
+			$path = '';
+		}
 
 		# Set parameters
 		$this->farmDir = dirname( dirname( __FILE__ ) );
@@ -742,9 +747,9 @@ class MediaWikiFarm {
 
 		# Shortcut loading
 		// @codingStandardsIgnoreLine
-		if( $this->cacheDir && ( $result = $this->readFile( $host . '.php', $this->cacheDir . '/wikis', false ) ) ) {
+		if( $this->cacheDir && ( $result = $this->readFile( $host . ( $path ? $path : '' ) . '.php', $this->cacheDir . '/wikis', false ) ) ) {
 			$fresh = true;
-			$myfreshness = filemtime( $this->cacheDir . '/wikis/' . $host . '.php' );
+			$myfreshness = filemtime( $this->cacheDir . '/wikis/' . $host . ( $path ? $path : '' ) . '.php' );
 			foreach( $result['$CORECONFIG'] as $coreconfig ) {
 				if( !is_file( $this->configDir . '/' . $coreconfig ) ||
 				    filemtime( $this->configDir . '/' . $coreconfig ) > $myfreshness ) {
@@ -759,12 +764,12 @@ class MediaWikiFarm {
 				$this->variables = $result;
 				return;
 			} else {
-				unlink( $this->cacheDir . '/wikis/' . $host . '.php' );
-				if( is_file( $this->cacheDir . '/LocalSettings/' . $host . '.php' ) ) {
-					unlink( $this->cacheDir . '/LocalSettings/' . $host . '.php' );
+				unlink( $this->cacheDir . '/wikis/' . $host . ( $path ? $path : '' ) . '.php' );
+				if( is_file( $this->cacheDir . '/LocalSettings/' . $host . ( $path ? $path : '' ) . '.php' ) ) {
+					unlink( $this->cacheDir . '/LocalSettings/' . $host . ( $path ? $path : '' ) . '.php' );
 				}
-				if( is_file( $this->cacheDir . '/composer/' . $host . '.php' ) ) {
-					unlink( $this->cacheDir . '/composer/' . $host . '.php' );
+				if( is_file( $this->cacheDir . '/composer/' . $host . ( $path ? $path : '' ) . '.php' ) ) {
+					unlink( $this->cacheDir . '/composer/' . $host . ( $path ? $path : '' ) . '.php' );
 				}
 			}
 		}

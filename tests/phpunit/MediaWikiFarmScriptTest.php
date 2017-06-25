@@ -503,7 +503,7 @@ HELP;
 
 		$this->expectOutputString( <<<OUTPUT
 
-Wiki:    a.testfarm-monoversion.example.org (wikiID: atestfarm; suffix: testfarm)
+Wiki:    testfarm-multiversion-subdirectories.example.org/a (wikiID: atestfarm; suffix: testfarm)
 Version: current: $IP
 Script:  maintenance/showJobs.php
 
@@ -511,12 +511,13 @@ Script:  maintenance/showJobs.php
 OUTPUT
 		);
 
-		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3, array( self::$mwscriptPath, '--wiki=a.testfarm-monoversion.example.org', 'showJobs' ) );
+		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3, array( self::$mwscriptPath, '--wiki=testfarm-multiversion-subdirectories.example.org/a', 'showJobs' ) );
 
 		$wgMediaWikiFarmScript->main();
 
 		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
-		$this->assertEquals( 'a.testfarm-monoversion.example.org', $wgMediaWikiFarmScript->host );
+		$this->assertEquals( 'testfarm-multiversion-subdirectories.example.org', $wgMediaWikiFarmScript->host );
+		$this->assertEquals( '/a', $wgMediaWikiFarmScript->path );
 		$this->assertEquals( 'maintenance/showJobs.php', $wgMediaWikiFarmScript->script );
 		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
 		$this->assertEquals( array( 'maintenance/showJobs.php' ), $wgMediaWikiFarmScript->argv );

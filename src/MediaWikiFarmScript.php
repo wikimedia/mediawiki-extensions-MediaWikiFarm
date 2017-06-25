@@ -80,10 +80,17 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 
 		# Get wiki
 		$this->host = $this->getParam( 'wiki' );
+		$this->path = '';
+		$host = $this->host;
 		if( is_null( $this->host ) ) {
 			$this->usage();
 			$this->status = 4;
 			return false;
+		}
+		$posSlash = strpos( $this->host, '/' );
+		if( $posSlash !== false ) {
+			$this->path = substr( $this->host, $posSlash );
+			$this->host = substr( $this->host, 0, $posSlash );
 		}
 
 		# Get script
@@ -104,7 +111,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 
 
 		# Initialise the requested version
-		$code = MediaWikiFarm::load( $this->script, $this->host );
+		$code = MediaWikiFarm::load( $this->script, $this->host, $this->path );
 		if( $code == 404 ) {
 			$this->status = 1;
 			return false;
@@ -128,7 +135,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 		$version = $wgMediaWikiFarm->getVariable( '$VERSION' ) ? $wgMediaWikiFarm->getVariable( '$VERSION' ) : 'current';
 		$code = $wgMediaWikiFarm->getVariable( '$CODE' );
 		echo "
-Wiki:    {$this->host} (wikiID: $wikiID; suffix: $suffix)
+Wiki:    $host (wikiID: $wikiID; suffix: $suffix)
 Version: $version: $code
 Script:  {$this->script}
 
