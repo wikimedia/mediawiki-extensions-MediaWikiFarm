@@ -806,7 +806,7 @@ class MediaWikiFarm {
 	 *
 	 * @param string $host Requested host.
 	 * @param array $farms All farm configurations.
-	 * @param integer $redirects Number of remaining internal redirects before error.
+	 * @param int $redirects Number of remaining internal redirects before error.
 	 * @return array
 	 */
 	function selectFarm( $host, $farms, $redirects ) {

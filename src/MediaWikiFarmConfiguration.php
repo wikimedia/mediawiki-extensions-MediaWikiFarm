@@ -253,7 +253,7 @@ class MediaWikiFarmConfiguration {
 							$settingsArray[$setting] = array();
 							$prioritiesArray[$setting] = 0;
 						}
-						$thisSetting =  &$settingsArray[$setting];
+						$thisSetting = &$settingsArray[$setting];
 						$thisPriority = &$prioritiesArray[$setting];
 					} else {
 						$settingIsArray = false;
@@ -261,7 +261,7 @@ class MediaWikiFarmConfiguration {
 							$settings[$setting] = null;
 							$priorities[$setting] = 0;
 						}
-						$thisSetting =  &$settings[$setting];
+						$thisSetting = &$settings[$setting];
 						$thisPriority = &$priorities[$setting];
 						if( substr( $setting, 0, 14 ) == 'wgUseExtension' ) {
 							$extensions['Extension' . substr( $rawSetting, 14 )] = array( substr( $rawSetting, 14 ), 'extension', null, count( $extensions ) );
@@ -489,7 +489,7 @@ class MediaWikiFarmConfiguration {
 	 *
 	 * @param string $type Type, in ['extension', 'skin'].
 	 * @param string $name Name of the extension/skin.
-	 * @return boolean The extension/skin is Composer-managed (at least for its installation).
+	 * @return bool The extension/skin is Composer-managed (at least for its installation).
 	 */
 	function detectComposer( $type, $name ) {
 
@@ -609,7 +609,7 @@ class MediaWikiFarmConfiguration {
 	 * @internal
 	 *
 	 * @param array $configuration Array with the schema defined for $this->configuration.
-	 * @param boolean $isMonoversion Is MediaWikiFarm configured for monoversion?
+	 * @param bool $isMonoversion Is MediaWikiFarm configured for monoversion?
 	 * @param string $preconfig PHP code to be added at the top of the file.
 	 * @param string $postconfig PHP code to be added at the end of the file.
 	 * @return string Content of the file LocalSettings.php.

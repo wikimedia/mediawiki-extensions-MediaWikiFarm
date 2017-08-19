@@ -91,6 +91,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 			$this->backupGlobalsBlacklist,
 			array(
 				'factory',
+				'parserMemc',
 				'wgExtensionFunctions',
 				'wgHooks',
 				'wgParamDefinitions',

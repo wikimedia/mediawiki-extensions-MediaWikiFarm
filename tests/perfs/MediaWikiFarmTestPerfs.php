@@ -155,7 +155,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * This function is very similar to its parent but adds counters in the file.
 	 *
 	 * @param array $configuration Array with the schema defined for $this->configuration.
-	 * @param boolean $isMonoversion Is MediaWikiFarm configured for monoversion?
+	 * @param bool $isMonoversion Is MediaWikiFarm configured for monoversion?
 	 * @param string $preconfig PHP code to be added at the top of the file.
 	 * @param string $postconfig PHP code to be added at the end of the file.
 	 * @return string Content of the file LocalSettings.php.
@@ -179,10 +179,10 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 */
 	function getMediaWikiConfig( $force = false ) {
 
-		MediaWikiFarmTestPerfs::startCounter( 'compilation' );
+		self::startCounter( 'compilation' );
 
 		parent::getMediaWikiConfig( $force );
 
-		MediaWikiFarmTestPerfs::stopCounter( 'compilation' );
+		self::stopCounter( 'compilation' );
 	}
 }

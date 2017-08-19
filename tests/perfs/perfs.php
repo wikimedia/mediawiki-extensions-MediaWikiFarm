@@ -38,11 +38,11 @@ if( is_string( $wgMediaWikiFarmCacheDir ) && is_dir( $wgMediaWikiFarmCacheDir ) 
 }
 
 # Run
-for( $i=0; $i<$sampleSize; $i++ ) {
+for( $i = 0; $i < $sampleSize; $i++ ) {
 	if( $i > 0 && $i % 100 == 0 ) {
 		echo "\n";
 	}
-	for( $j=0; $j<$profiles; $j++ ) {
+	for( $j = 0; $j < $profiles; $j++ ) {
 		file_get_contents( $host );
 		usleep( rand( 3, 20 ) );
 	}

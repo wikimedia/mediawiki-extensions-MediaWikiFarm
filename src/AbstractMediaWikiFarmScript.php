@@ -90,7 +90,7 @@ abstract class AbstractMediaWikiFarmScript {
 					break;
 				}
 				elseif( $this->argv[$posArg] == '--'.$name && $posArg < $this->argc - 1 ) {
-					$value = $this->argv[$posArg+1];
+					$value = $this->argv[$posArg + 1];
 					$nbArgs = 2;
 					break;
 				}
@@ -111,7 +111,7 @@ abstract class AbstractMediaWikiFarmScript {
 		if( $shift ) {
 
 			$this->argc -= $nbArgs;
-			$this->argv = array_merge( array_slice( $this->argv, 0, $posArg ), array_slice( $this->argv, $posArg+$nbArgs ) );
+			$this->argv = array_merge( array_slice( $this->argv, 0, $posArg ), array_slice( $this->argv, $posArg + $nbArgs ) );
 		}
 
 		return $value;

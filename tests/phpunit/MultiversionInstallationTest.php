@@ -462,6 +462,7 @@ PHP;
 	 * Test cache of checkExistence().
 	 *
 	 * @medium
+	 * @uses MediaWikiFarmConfiguration
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
 	function testCacheExistence() {
