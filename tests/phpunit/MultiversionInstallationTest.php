@@ -177,7 +177,7 @@ PHP;
 	 * Test edge cases when reading config file: missing defined variables, missing versions file.
 	 *
 	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage Undefined key 'variables' in the farm configuration
+	 * @expectedExceptionMessage Missing key 'versions' in farm configuration.
 	 */
 	function testEdgeCasesConfigFile() {
 
@@ -197,11 +197,14 @@ PHP;
 
 	/**
 	 * Test a nonexistant host in a farm with a file variable without version defined inside.
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage No version declared for this wiki.
 	 */
 	function testVariableFileWithoutVersionMissingVersion() {
 
 		$farm = self::constructMediaWikiFarm( 'b.testfarm-multiversion-with-file-variable-without-version.example.org' );
-		$this->assertFalse( $farm->checkExistence() );
+		$farm->checkExistence();
 	}
 
 	/**
@@ -229,6 +232,32 @@ PHP;
 
 		$farm = self::constructMediaWikiFarm( 'c.testfarm-multiversion.example.org' );
 		$this->assertFalse( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test a nonexistant host in a farm with a file variable with version defined inside.
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @codingStandardsIgnoreLine Generic.Files.LineLength.TooLong
+	 * @expectedExceptionMessage Only explicitly-defined wikis declared in existence lists are allowed to use the “default versions” mechanism (suffix) in multiversion mode.
+	 */
+	function testVersionDefaultFamily() {
+
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-version-default-family.example.org' );
+		$farm->checkExistence();
+	}
+
+	/**
+	 * Test a nonexistant host in a farm with a file variable with version defined inside.
+	 *
+	 * @expectedException MWFConfigurationException
+	 * @codingStandardsIgnoreLine Generic.Files.LineLength.TooLong
+	 * @expectedExceptionMessage Only explicitly-defined wikis declared in existence lists are allowed to use the “default versions” mechanism (default) in multiversion mode.
+	 */
+	function testVersionDefaultDefault() {
+
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-version-default-default.example.org' );
+		$farm->checkExistence();
 	}
 
 	/**

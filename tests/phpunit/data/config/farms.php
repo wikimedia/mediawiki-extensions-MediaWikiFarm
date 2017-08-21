@@ -32,7 +32,8 @@ return array(
 
 		'server' => '(?P<wiki>[a-z])\.testfarm-monoversion\.example\.org',
 		'variables' => array(
-			array( 'variable' => 'wiki', ),
+			array( 'variable' => 'wiki',
+			       'file' => 'varwiki.php', ),
 		),
 		'suffix' => 'testfarm',
 		'wikiID' => '$wikitestfarm',
@@ -153,6 +154,22 @@ return array(
 		),
 	),
 
+	'testfarm-multiversion-with-version-default-family' => array(
+
+		'server' => '(?P<wiki>[a-z])\.testfarm-multiversion-with-version-default-family\.example\.org',
+		'suffix' => 'testfarm',
+		'wikiID' => '$wikitestfarm',
+		'versions' => 'versions-default.php',
+	),
+
+	'testfarm-multiversion-with-version-default-default' => array(
+
+		'server' => '(?P<wiki>[a-z])\.testfarm-multiversion-with-version-default-default\.example\.org',
+		'suffix' => 'testotherfarm',
+		'wikiID' => '$wikitestotherfarm',
+		'versions' => 'versions-default.php',
+	),
+
 	'testfarm-monoversion-with-file-variable-with-version' => array(
 
 		'server' => '(?P<wiki>[a-z])\.testfarm-monoversion-with-file-variable-with-version\.example\.org',
@@ -263,11 +280,11 @@ return array(
 
 		'server' => '(?P<wiki>[a-z])\.testfarm-with-bad-type-nonmandatory\.example\.org',
 		'variables' => array(
-			array( 'variable' => 'wiki', ),
+			array( 'variable' => 'wiki',
+		               'file' => 'varwikiversions.php', ),
 		),
 		'suffix' => '$wiki',
 		'wikiID' => '$wikitestfarm',
-		'versions' => 'versions.php',
 		'data' => 0,
 	),
 

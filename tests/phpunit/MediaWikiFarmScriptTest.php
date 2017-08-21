@@ -477,6 +477,8 @@ HELP;
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getFarmConfiguration
 	 * @uses MediaWikiFarm::getVariable
+	 * @uses MediaWikiFarm::isMediaWiki
+	 * @uses MediaWikiFarm::updateVersion
 	 * @uses MediaWikiFarmConfiguration::__construct
 	 * @uses MediaWikiFarmConfiguration::populateSettings
 	 * @uses MediaWikiFarmConfiguration::activateExtensions
@@ -491,20 +493,19 @@ HELP;
 
 		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', null );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', self::$wgMediaWikiFarmCodeDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 		$this->backupGlobalVariable( 'argc' );
 		$this->backupGlobalVariable( 'argv' );
 		$this->backupGlobalSubvariable( '_SERVER', 'argc' );
 		$this->backupGlobalSubvariable( '_SERVER', 'argv' );
-		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
-		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub' );
+		$IP = self::$wgMediaWikiFarmCodeDir . '/vstub';
 
 		$this->expectOutputString( <<<OUTPUT
 
 Wiki:    testfarm-multiversion-subdirectories.example.org/a (wikiID: atestfarm; suffix: testfarm)
-Version: current: $IP
+Version: vstub: $IP
 Script:  maintenance/showJobs.php
 
 

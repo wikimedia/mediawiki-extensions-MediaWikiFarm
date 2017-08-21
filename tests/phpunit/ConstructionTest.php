@@ -101,7 +101,8 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$farmConfig = array(
 			'server' => '(?P<wiki>[a-z])\.testfarm-monoversion\.example\.org',
 			'variables' => array(
-				array( 'variable' => 'wiki', ),
+				array( 'variable' => 'wiki',
+			               'file' => 'varwiki.php', ),
 			),
 			'suffix' => 'testfarm',
 			'wikiID' => '$wikitestfarm',

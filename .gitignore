@@ -12,9 +12,13 @@
 /vendor
 
 # Tests
-/tests/phpunit/data/config/deployments.php
-/tests/phpunit/data/config/testdeploymentsfarmversions.php
+/phpunitHTTP404.php
 /tests/perfs/results
+/tests/phpunit/data/config/badsyntax.json
+/tests/phpunit/data/config/deployments.php
+/tests/phpunit/data/config/empty.json
+/tests/phpunit/data/config/testdeploymentsfarmversions.php
+/tests/phpunit/data/mediawiki/vstub3
 
 # Compiled code documentation
 /docs/code

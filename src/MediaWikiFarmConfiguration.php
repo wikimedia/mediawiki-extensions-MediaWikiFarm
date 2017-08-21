@@ -435,7 +435,7 @@ class MediaWikiFarmConfiguration {
 			} elseif( $value === 'require_once' || $value === 'wfLoad' . ucfirst( $type ) ) {
 				$status = $value;
 				$value = true;
-			// @codingStandardsIgnoreLine
+			// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
 			} elseif( $value !== false && ( $status = $this->detectLoadingMechanism( $type, $name ) ) ) {
 				$value = true;
 			} elseif( $key != 'ExtensionMediaWikiFarm' ) {

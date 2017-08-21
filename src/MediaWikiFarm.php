@@ -359,7 +359,8 @@ class MediaWikiFarm {
 		}
 
 		# Replace variables in the host name and possibly retrieve the version
-		if( !$this->checkHostVariables() ) {
+		$explicitExistence = $this->checkHostVariables();
+		if( $explicitExistence === false ) {
 			return false;
 		}
 
@@ -368,7 +369,7 @@ class MediaWikiFarm {
 		$this->setVariable( 'wikiID', true );
 
 		# Set the version of the wiki
-		if( !$this->setVersion() ) {
+		if( !$this->setVersion( (bool) $explicitExistence ) ) {
 			return false;
 		}
 
@@ -745,7 +746,7 @@ class MediaWikiFarm {
 		}
 
 		# Shortcut loading
-		// @codingStandardsIgnoreLine
+		// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
 		if( $this->cacheDir && ( $result = $this->readFile( $host . ( $path ? $path : '' ) . '.php', $this->cacheDir . '/wikis', false ) ) ) {
 			$fresh = true;
 			$myfreshness = filemtime( $this->cacheDir . '/wikis/' . $host . ( $path ? $path : '' ) . '.php' );
@@ -817,7 +818,7 @@ class MediaWikiFarm {
 
 		# Read the farms configuration
 		if( !$farms ) {
-			// @codingStandardsIgnoreStart
+			// @codingStandardsIgnoreStart MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
 			if( $farms = $this->readFile( 'farms.yml', $this->configDir ) ) {
 				$this->farmConfig['coreconfig'][] = 'farms.yml';
 			} elseif( $farms = $this->readFile( 'farms.php', $this->configDir ) ) {
@@ -827,7 +828,7 @@ class MediaWikiFarm {
 			} else {
 				return array( 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => false, 'redirects' => $redirects );
 			}
-			// @codingStandardsIgnoreEnd
+			// @codingStandardsIgnoreEnd MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
 		}
 
 		# For each proposed farm, check if the host matches
@@ -881,9 +882,8 @@ class MediaWikiFarm {
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 *
-	 * @return bool The wiki exists.
-	 * @throws MWFConfigurationException When the farm configuration doesn’t define 'variables' or when a file defining the
-	 *         existing values for a variable is missing or badly formatted.
+	 * @return bool|null If true, the wiki exists; if false, the wiki does not exist; if null, the wiki might exist if defined latter.
+	 * @throws MWFConfigurationException When a file defining the existing values for a variable is missing or badly formatted.
 	 * @throws InvalidArgumentException
 	 */
 	function checkHostVariables() {
@@ -892,8 +892,13 @@ class MediaWikiFarm {
 			return true;
 		}
 
+		$explicitExistence = null;
+		$explicitExistenceUnderScrutiny = false;
 		if( !array_key_exists( 'variables', $this->farmConfig ) ) {
-			throw new MWFConfigurationException( 'Undefined key \'variables\' in the farm configuration' );
+			return null;
+		}
+		if( !array_key_exists( 'wikiID', $this->farmConfig ) ) {
+			throw new MWFConfigurationException( "Missing key 'wikiID' in farm configuration." );
 		}
 
 		# For each variable, in the given order, check if the variable exists, check if the
@@ -901,15 +906,18 @@ class MediaWikiFarm {
 		foreach( $this->farmConfig['variables'] as $variable ) {
 
 			$key = $variable['variable'];
+			$explicitExistenceUnderScrutiny = strpos( '$' . strtolower( $key ), $this->farmConfig['wikiID'] ) !== false;
 
 			# If the variable doesn’t exist, continue
 			if( !array_key_exists( '$' . strtolower( $key ), $this->variables ) ) {
+				$explicitExistence = $explicitExistenceUnderScrutiny ? false : $explicitExistence;
 				continue;
 			}
 			$value = $this->variables[ '$' . strtolower( $key ) ];
 
 			# If every values are correct, continue
 			if( !array_key_exists( 'file', $variable ) || !is_string( $variable['file'] ) ) {
+				$explicitExistence = $explicitExistenceUnderScrutiny ? false : $explicitExistence;
 				continue;
 			}
 
@@ -928,6 +936,7 @@ class MediaWikiFarm {
 				if( !in_array( $value, $choices ) ) {
 					return false;
 				}
+				$explicitExistence = $explicitExistence === null ? true : $explicitExistence;
 
 			# …or a dictionary with wiki identifiers and corresponding version information
 			} else {
@@ -940,10 +949,11 @@ class MediaWikiFarm {
 
 					$this->variables['$VERSION'] = (string) $choices[$value];
 				}
+				$explicitExistence = $explicitExistence === null ? true : $explicitExistence;
 			}
 		}
 
-		return true;
+		return $explicitExistence === true ? true : null;
 	}
 
 	/**
@@ -955,11 +965,12 @@ class MediaWikiFarm {
 	 * @SuppressWarnings(PHPMD.ElseExpression)
 	 * @SuppressWarnings(PHPMD.CyclomaticComplexity)
 	 *
+	 * @param bool $explicitExistence The wiki was explicitely defined as existent in a previous file.
 	 * @return bool The version was set, and the wiki could exist.
 	 * @throws MWFConfigurationException When the file defined by 'versions' is missing or badly formatted.
 	 * @throws LogicException
 	 */
-	function setVersion() {
+	function setVersion( $explicitExistence = false ) {
 
 		global $IP;
 
@@ -997,7 +1008,7 @@ class MediaWikiFarm {
 		# Multiversion mode – version is given in a ‘versions’ file
 		elseif( is_string( $this->codeDir ) && is_null( $this->variables['$VERSION'] ) ) {
 
-			$this->setVariable( 'versions' );
+			$this->setVariable( 'versions', true );
 			$versions = $this->readFile( $this->variables['$VERSIONS'], $this->configDir );
 			if( !is_array( $versions ) ) {
 				throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $this->variables['$VERSIONS'] .
@@ -1010,13 +1021,23 @@ class MediaWikiFarm {
 				$this->variables['$VERSION'] = $versions[$this->variables['$WIKIID']];
 			}
 			elseif( array_key_exists( $this->variables['$SUFFIX'], $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$SUFFIX']] ) ) {
+				if( !$explicitExistence ) {
+					throw new MWFConfigurationException( 'Only explicitly-defined wikis declared in existence lists ' .
+						'are allowed to use the “default versions” mechanism (suffix) in multiversion mode.' );
+				}
 				$this->variables['$VERSION'] = $versions[$this->variables['$SUFFIX']];
 			}
 			elseif( array_key_exists( 'default', $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions['default'] ) ) {
+				if( !$explicitExistence ) {
+					throw new MWFConfigurationException( 'Only explicitly-defined wikis declared in existence lists ' .
+						'are allowed to use the “default versions” mechanism (default) in multiversion mode.' );
+				}
 				$this->variables['$VERSION'] = $versions['default'];
 			}
-
 			else {
+				if( $explicitExistence ) {
+					throw new MWFConfigurationException( 'No version declared for this wiki.' );
+				}
 				return false;
 			}
 
@@ -1029,6 +1050,11 @@ class MediaWikiFarm {
 		}
 		# Monoversion mode
 		elseif( is_null( $this->codeDir ) ) {
+
+			# Verify the explicit existence of the wiki
+			if( !$explicitExistence ) {
+				throw new MWFConfigurationException( 'Only explicitly-defined wikis declared in existence lists are allowed in monoversion mode.' );
+			}
 
 			$this->variables['$VERSION'] = '';
 			$this->variables['$CODE'] = $IP;
