@@ -152,7 +152,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 */
 	function load() {
 
-		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $IP;
+		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $wgMediaWikiFarmSyslog, $IP;
 
 		# Default values
 		$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
