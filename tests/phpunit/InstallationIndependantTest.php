@@ -8,7 +8,7 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
-require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
@@ -74,7 +74,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		$result = $this->farm->readFile( 'testreading.yml', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'testreading.yml', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
 			array(
 				'element1',
@@ -92,7 +92,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testSuccessfulReadingPHP() {
 
-		$result = $this->farm->readFile( 'testreading.php', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'testreading.php', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
 			array(
 				'element1',
@@ -110,7 +110,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testSuccessfulReadingJSON() {
 
-		$result = $this->farm->readFile( 'testreading.json', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'testreading.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
 			array(
 				'element1',
@@ -128,7 +128,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testSuccessfulReadingSER() {
 
-		$result = $this->farm->readFile( 'testreading.ser', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'testreading.ser', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
 			array(
 				'element1',
@@ -146,7 +146,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testSuccessfulReadingDblist() {
 
-		$result = $this->farm->readFile( 'testreading.dblist', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'testreading.dblist', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
 			array(
 				'element1',
@@ -164,7 +164,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testReadMissingFile() {
 
-		$result = $this->farm->readFile( 'missingfile.yml', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'missingfile.yml', self::$wgMediaWikiFarmConfigDir );
 		$this->assertFalse( $result );
 	}
 
@@ -177,10 +177,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testUnrecognisedFormatReadFile() {
 
-		$result = $this->farm->readFile( 'wrongformat.txt', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'wrongformat.txt', self::$wgMediaWikiFarmConfigDir );
 		$this->assertFalse( $result );
 
-		$result = $this->farm->readFile( 'wrongformat', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'wrongformat', self::$wgMediaWikiFarmConfigDir );
 		$this->assertFalse( $result );
 	}
 
@@ -214,7 +214,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		$result = $this->farm->readFile( 'badsyntax.yaml', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'badsyntax.yaml', self::$wgMediaWikiFarmConfigDir );
 		$this->assertFalse( $result );
 		$this->shouldBeConstant = false;
 	}
@@ -228,7 +228,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testBadSyntaxFileReadingJSON() {
 
-		$result = $this->farm->readFile( 'badsyntax.json', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'badsyntax.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertFalse( $result );
 	}
 
@@ -248,7 +248,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		$result = $this->farm->readFile( 'empty.yml', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'empty.yml', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals( false, $result );
 	}
 
@@ -261,7 +261,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testEmptyFileReadingJSON() {
 
-		$result = $this->farm->readFile( 'empty.json', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'empty.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals( array(), $result );
 	}
 
@@ -274,7 +274,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testEmptyFileReadingSER() {
 
-		$result = $this->farm->readFile( 'empty.ser', dirname( __FILE__ ) . '/data/config' );
+		$result = $this->farm->readFile( 'empty.ser', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals( array(), $result );
 	}
 
@@ -287,7 +287,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testBadContentReadFile() {
 
-		$result = $this->farm->readFile( dirname( __FILE__ ) . '/data/config/string.json' );
+		$result = $this->farm->readFile( self::$wgMediaWikiFarmConfigDir . '/string.json' );
 		$this->assertFalse( $result );
 	}
 
@@ -502,7 +502,7 @@ PHP;
 		);
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false );
-		$extensionJson = var_export( dirname( dirname( dirname( __FILE__ ) ) ) . '/extension.json', true );
+		$extensionJson = var_export( self::$wgMediaWikiFarmFarmDir . '/extension.json', true );
 		$localSettings2 = str_replace( 'wfLoadExtension( \'MediaWikiFarm\' );', "wfLoadExtension( 'MediaWikiFarm', $extensionJson );", $localSettings );
 		$this->assertEquals( $localSettings2,
 			MediaWikiFarmConfiguration::createLocalSettings( $configuration, (bool) $farm->getCodeDir(), "# Pre-config\n", "# Post-config\n" )

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class MediaWikiFarmComposerScript.
+ * Class MediaWikiFarmScriptComposer.
  *
  * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
@@ -20,7 +20,7 @@ require_once dirname( __FILE__ ) . '/AbstractMediaWikiFarmScript.php';
  * less global variables (in fact none; the only global variable written are for
  * compatibility purposes, e.g. PHPUnit expects $_SERVER['argv']).
  */
-class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
+class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 
 	/**
 	 * Create the object with a copy of $argc and $argv.
@@ -241,7 +241,7 @@ class MediaWikiFarmComposerScript extends AbstractMediaWikiFarmScript {
 		self::rmdirr( 'vendor-composer/composer-init', true );
 
 		# Put autoloader indirection
-		copy( dirname( __FILE__ ) . '/MediaWikiFarmComposerAutoloader.php', 'vendor-composer/autoload.php' );
+		copy( dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmComposerAutoloader.php', 'vendor-composer/autoload.php' );
 
 		# Copy the directories back to the original MediaWiki: vendor, extensions, and skins
 		self::copyr( 'vendor-composer', $cwd . '/vendor', true );

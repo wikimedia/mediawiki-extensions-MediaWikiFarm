@@ -9,7 +9,7 @@
  */
 
 // @codeCoverageIgnoreStart
-require_once dirname( __FILE__ ) . '/MediaWikiFarm.php';
+require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarm.php';
 // @codeCoverageIgnoreEnd
 
 /**
@@ -155,22 +155,23 @@ abstract class AbstractMediaWikiFarmScript {
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $wgMediaWikiFarmSyslog, $IP;
 
 		# Default values
-		$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
+		$farmDir = dirname( dirname( dirname( __FILE__ ) ) );
+		$wgMediaWikiFarmCodeDir = dirname( $farmDir );
 		$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 		$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
 		$wgMediaWikiFarmSyslog = 'mediawikifarm';
 
-		if( is_file( dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/includes/DefaultSettings.php' ) ) {
+		if( is_file( dirname( dirname( $farmDir ) ) . '/includes/DefaultSettings.php' ) ) {
 
-			$IP = dirname( dirname( dirname( dirname( __FILE__ ) ) ) );
+			$IP = dirname( dirname( $farmDir ) );
 			require "$IP/LocalSettings.php";
 		}
 
 		# Specific values
-		@include_once dirname( dirname( __FILE__ ) ) . '/config/MediaWikiFarmDirectories.php';
+		@include_once $farmDir . '/config/MediaWikiFarmDirectories.php';
 
 		# Load MediaWikiFarm class symbol
-		require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
+		require_once $farmDir . '/src/MediaWikiFarm.php';
 	}
 
 	/**

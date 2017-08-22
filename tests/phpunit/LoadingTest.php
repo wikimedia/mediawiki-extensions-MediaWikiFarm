@@ -8,7 +8,7 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
-require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 if( !function_exists( 'wfLoadExtension' ) ) {
@@ -108,10 +108,10 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', dirname( __FILE__ ) . '/data/mediawiki' );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', self::$wgMediaWikiFarmCodeDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
-		$this->backupAndSetGlobalVariable( 'wgExtensionDirectory', dirname( __FILE__ ) . '/data/mediawiki/vstub/extensions' );
-		$this->backupAndSetGlobalVariable( 'wgStyleDirectory', dirname( __FILE__ ) . '/data/mediawiki/vstub/skins' );
+		$this->backupAndSetGlobalVariable( 'wgExtensionDirectory', self::$wgMediaWikiFarmCodeDir . '/vstub/extensions' );
+		$this->backupAndSetGlobalVariable( 'wgStyleDirectory', self::$wgMediaWikiFarmCodeDir . '/vstub/skins' );
 		$wgMediaWikiFarm = &$GLOBALS['wgMediaWikiFarm'];
 		$wgExtensionDirectory = $GLOBALS['wgExtensionDirectory'];
 		$wgStyleDirectory = $GLOBALS['wgStyleDirectory'];
@@ -183,7 +183,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		# Check that extensions+skins are in ExtensionRegistry queue
 		if( class_exists( 'ExtensionRegistry' ) ) {
-			$this->assertContains( dirname( dirname( dirname( __FILE__ ) ) ) . '/extension.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
+			$this->assertContains( self::$wgMediaWikiFarmFarmDir . '/extension.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
 			$this->assertContains( $wgExtensionDirectory . '/TestExtensionWfLoadExtension/extension.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
 			$this->assertContains( $wgExtensionDirectory . '/TestExtensionBiLoading/extension.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
 			$this->assertContains( $wgStyleDirectory . '/TestSkinWfLoadSkin/skin.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
@@ -277,7 +277,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', dirname( __FILE__ ) . '/data/mediawiki' );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', self::$wgMediaWikiFarmCodeDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
 		$wgMediaWikiFarm = &$GLOBALS['wgMediaWikiFarm'];
 

@@ -8,7 +8,7 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
-require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
@@ -29,7 +29,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 		parent::setUpBeforeClass();
 
 		if( version_compare( PHP_VERSION, '5.3.0' ) >= 0 ) {
-			require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/Yaml.php';
+			require_once self::$wgMediaWikiFarmFarmDir . '/src/Yaml.php';
 		}
 	}
 
@@ -52,7 +52,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		wfMediaWikiFarm_readYAML( dirname( __FILE__ ) . '/data/config/testreading.yml' );
+		wfMediaWikiFarm_readYAML( self::$wgMediaWikiFarmConfigDir . '/testreading.yml' );
 	}*/
 
 
@@ -72,7 +72,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		wfMediaWikiFarm_readYAML( dirname( __FILE__ ) . '/data/config/missingfile.yml' );
+		wfMediaWikiFarm_readYAML( self::$wgMediaWikiFarmConfigDir . '/missingfile.yml' );
 	}
 
 	/**
@@ -91,7 +91,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		wfMediaWikiFarm_readYAML( dirname( __FILE__ ) . '/data/config/badsyntax.yaml' );
+		wfMediaWikiFarm_readYAML( self::$wgMediaWikiFarmConfigDir . '/badsyntax.yaml' );
 	}
 
 	/**

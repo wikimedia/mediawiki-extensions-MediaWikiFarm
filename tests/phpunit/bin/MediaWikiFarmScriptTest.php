@@ -8,9 +8,9 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
-require_once 'MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarmScript.php';
+require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/src/MediaWikiFarm.php';
+require_once dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/src/bin/MediaWikiFarmScript.php';
 
 /**
  * Tests about class Script.
@@ -36,7 +36,7 @@ class MediaWikiFarmScriptTest extends MediaWikiFarmTestCase {
 		parent::setUpBeforeClass();
 
 		# Set test configuration parameters
-		self::$mwscriptPath = $mwscriptPath = dirname( dirname( dirname( __FILE__ ) ) ) . '/bin/mwscript.php';
+		self::$mwscriptPath = $mwscriptPath = self::$wgMediaWikiFarmFarmDir . '/bin/mwscript.php';
 
 		self::$shortHelp = <<<HELP
 
@@ -240,7 +240,7 @@ HELP;
 
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 
-		self::$mwscriptPath = dirname( dirname( dirname( __FILE__ ) ) ) . '/bin/mwscript.php';
+		self::$mwscriptPath = self::$wgMediaWikiFarmFarmDir . '/bin/mwscript.php';
 		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3, array( self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org', 'showJobs' ) );
 
 		$wgMediaWikiFarmScript->load();
@@ -613,26 +613,28 @@ OUTPUT
 	 */
 	function testRecursiveCopyAndDelete() {
 
+		$destDir = dirname( dirname( __FILE__ ) ) . '/data/copie';
+
 		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3, array( self::$mwscriptPath, '--wiki=a.testfarm-monoversion.example.org', 'showJobs' ) );
 
 		MediaWikiFarmScript::copyr(
-			self::$wgMediaWikiFarmCodeDir . '/vstub', dirname( __FILE__ ) . '/data/copie',
+			self::$wgMediaWikiFarmCodeDir . '/vstub', $destDir,
 			true, array( '/skins/TestSkinEmpty', 'TestSkinRequireOnce' ) );
-		MediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir . '/vstub/includes/DefaultSettings.php', dirname( __FILE__ ) . '/data/copie/newdir', true );
-		$this->assertTrue( is_file( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php' ) );
-		$this->assertTrue( is_file( dirname( __FILE__ ) . '/data/copie/newdir/DefaultSettings.php' ) );
-		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie/skins/TestSkinEmpty' ) );
-		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie/skins/TestSkinRequireOnce' ) );
+		MediaWikiFarmScript::copyr( self::$wgMediaWikiFarmCodeDir . '/vstub/includes/DefaultSettings.php', $destDir . '/newdir', true );
+		$this->assertTrue( is_file( $destDir . '/includes/DefaultSettings.php' ) );
+		$this->assertTrue( is_file( $destDir . '/newdir/DefaultSettings.php' ) );
+		$this->assertFalse( file_exists( $destDir . '/skins/TestSkinEmpty' ) );
+		$this->assertFalse( file_exists( $destDir . '/skins/TestSkinRequireOnce' ) );
 
-		MediaWikiFarmScript::rmdirr( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php', true );
-		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php' ) );
+		MediaWikiFarmScript::rmdirr( $destDir . '/includes/DefaultSettings.php', true );
+		$this->assertFalse( file_exists( $destDir . '/includes/DefaultSettings.php' ) );
 
 		MediaWikiFarmScript::copyr(
-			self::$wgMediaWikiFarmCodeDir . '/vstub', dirname( __FILE__ ) . '/data/copie',
+			self::$wgMediaWikiFarmCodeDir . '/vstub', $destDir,
 			true, array(), array( '/', '/includes', '/includes/.*' ) );
-		$this->assertTrue( is_file( dirname( __FILE__ ) . '/data/copie/includes/DefaultSettings.php' ) );
+		$this->assertTrue( is_file( $destDir . '/includes/DefaultSettings.php' ) );
 
-		MediaWikiFarmScript::rmdirr( dirname( __FILE__ ) . '/data/copie', true );
-		$this->assertFalse( file_exists( dirname( __FILE__ ) . '/data/copie' ) );
+		MediaWikiFarmScript::rmdirr( $destDir, true );
+		$this->assertFalse( file_exists( $destDir ) );
 	}
 }

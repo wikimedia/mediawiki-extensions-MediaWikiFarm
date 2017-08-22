@@ -8,7 +8,7 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
-require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
@@ -698,7 +698,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				array( 'EntryPoint' => 'index.php' ) );
 
 		# Check farm directory
-		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ), $farm->getFarmDir() );
+		$this->assertEquals( self::$wgMediaWikiFarmFarmDir, $farm->getFarmDir() );
 
 		# Check code directory
 		$this->assertEquals( self::$wgMediaWikiFarmCodeDir, $farm->getCodeDir() );
@@ -707,7 +707,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$this->assertFalse( $farm->getCacheDir() );
 
 		# Check executable file [farm]/src/main.php
-		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $farm->getConfigFile() );
+		$this->assertEquals( self::$wgMediaWikiFarmFarmDir . '/src/main.php', $farm->getConfigFile() );
 
 		$this->assertEquals(
 			array(
@@ -749,7 +749,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$this->assertFalse( $farm->getCacheDir() );
 
 		# Check executable file [farm]/src/main.php
-		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $farm->getConfigFile() );
+		$this->assertEquals( self::$wgMediaWikiFarmFarmDir . '/src/main.php', $farm->getConfigFile() );
 	}
 
 	/**

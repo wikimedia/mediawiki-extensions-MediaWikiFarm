@@ -8,7 +8,7 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
-require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/Hooks.php';
 
 /**
@@ -25,7 +25,10 @@ class MediaWikiFarmHooksTest extends MediaWikiFarmTestCase {
 	 */
 	function testOnUnitTestsList() {
 
-		$testFiles = glob( dirname( __FILE__ ) . '/*Test.php' );
+		$testFiles = array_merge(
+			glob( dirname( __FILE__ ) . '/*Test.php' ),
+			glob( dirname( __FILE__ ) . '/*/*Test.php' )
+		);
 
 		$array = array();
 		MediaWikiFarmHooks::onUnitTestsList( $array );

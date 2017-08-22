@@ -8,7 +8,7 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
-require_once 'MediaWikiFarmTestCase.php';
+require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
 /**
@@ -107,7 +107,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 			),
 			'composer' => array(),
 			'execFiles' => array(
-				0 => dirname( __FILE__ ) . '/data/config/LocalSettings.php',
+				0 => self::$wgMediaWikiFarmConfigDir . '/LocalSettings.php',
 			),
 		);
 
@@ -171,7 +171,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		# First, without ExtensionRegistry
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-test-extensions.example.org', null,
-			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false,
+			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
 			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => false )
 		);
 
@@ -184,7 +184,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		# Now with ExtensionRegistry
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-test-extensions.example.org', null,
-			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false,
+			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
 			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
 		);
 
@@ -197,7 +197,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		# Now with imposed loading mechanism (1)
 		$farm = new MediaWikiFarm( 'c.testfarm-multiversion-test-extensions.example.org', null,
-			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false,
+			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
 			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
 		);
 
@@ -211,7 +211,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		# Now with imposed loading mechanism (2)
 		$farm = new MediaWikiFarm( 'd.testfarm-multiversion-test-extensions.example.org', null,
-			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false,
+			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
 			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
 		);
 
@@ -226,7 +226,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		# Now with imposed loading mechanism (2)
 		$farm = new MediaWikiFarm( 'e.testfarm-multiversion-test-extensions.example.org', null,
-			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', false,
+			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
 			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
 		);
 
@@ -282,12 +282,12 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	function testLoadMediaWikiConfigMultiversion() {
 
 		$farm = new MediaWikiFarm( 'b.testfarm-multiversion-test-extensions.example.org', null,
-			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', self::$wgMediaWikiFarmCacheDir,
+			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
 			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true )
 		);
 
 		$this->assertTrue( $farm->checkExistence() );
-		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $farm->getConfigFile() );
+		$this->assertEquals( self::$wgMediaWikiFarmFarmDir . '/src/main.php', $farm->getConfigFile() );
 
 		# First load
 		$farm->compileConfiguration();
@@ -300,7 +300,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		# Re-load to use config cache
 		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir . '/versions.php' );
 		$farm = new MediaWikiFarm( 'b.testfarm-multiversion-test-extensions.example.org', null,
-			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', self::$wgMediaWikiFarmCacheDir,
+			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
 			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true )
 		);
 		$this->assertTrue( $farm->checkExistence() );
@@ -357,7 +357,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		);
 
 		$this->assertTrue( $farm->checkExistence() );
-		$this->assertEquals( dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php', $farm->getConfigFile() );
+		$this->assertEquals( self::$wgMediaWikiFarmFarmDir . '/src/main.php', $farm->getConfigFile() );
 
 		# First load
 		$farm->compileConfiguration();
@@ -402,7 +402,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	function testSort() {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-test-extensions.example.org', null,
-			self::$wgMediaWikiFarmConfigDir, dirname( __FILE__ ) . '/data/mediawiki', self::$wgMediaWikiFarmCacheDir,
+			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
 			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => false )
 		);
 		$farm->checkExistence();

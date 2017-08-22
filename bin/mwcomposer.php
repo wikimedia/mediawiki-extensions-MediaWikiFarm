@@ -15,16 +15,16 @@ if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
 }
 
 # Load classes
-require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarmComposerScript.php';
+require_once dirname( dirname( __FILE__ ) ) . '/src/bin/MediaWikiFarmScriptComposer.php';
 
 # Prepare environment
-$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( $argc, $argv );
+$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( $argc, $argv );
 
-$wgMediaWikiFarmComposerScript->load();
+$wgMediaWikiFarmScriptComposer->load();
 
-$wgMediaWikiFarmComposerScript->main();
+$wgMediaWikiFarmScriptComposer->main();
 
-if( $wgMediaWikiFarmComposerScript->status != 200 ) {
-	exit( $wgMediaWikiFarmComposerScript->status );
+if( $wgMediaWikiFarmScriptComposer->status != 200 ) {
+	exit( $wgMediaWikiFarmScriptComposer->status );
 }
 // @codeCoverageIgnoreEnd

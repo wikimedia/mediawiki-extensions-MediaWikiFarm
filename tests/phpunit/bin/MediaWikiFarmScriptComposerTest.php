@@ -1,6 +1,6 @@
 <?php
 /**
- * Class MediaWikiFarmComposerScriptTest.
+ * Class MediaWikiFarmScriptComposerTest.
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
@@ -8,16 +8,16 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
-require_once 'MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarmComposerScript.php';
+require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/src/MediaWikiFarm.php';
+require_once dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/src/bin/MediaWikiFarmScriptComposer.php';
 
 /**
  * Tests about class Composer Script.
  *
  * @group MediaWikiFarm
  */
-class MediaWikiFarmComposerScriptTest extends MediaWikiFarmTestCase {
+class MediaWikiFarmScriptComposerTest extends MediaWikiFarmTestCase {
 
 	/** @var string Path to [farm]/bin/mwscript.php. */
 	public static $mwcomposerPath = '';
@@ -36,7 +36,7 @@ class MediaWikiFarmComposerScriptTest extends MediaWikiFarmTestCase {
 		parent::setUpBeforeClass();
 
 		# Set test configuration parameters
-		self::$mwcomposerPath = $mwcomposerPath = dirname( dirname( dirname( __FILE__ ) ) ) . '/bin/mwcomposer.php';
+		self::$mwcomposerPath = $mwcomposerPath = self::$wgMediaWikiFarmFarmDir . '/bin/mwcomposer.php';
 
 		self::$shortHelp = <<<HELP
 
@@ -73,22 +73,22 @@ HELP;
 	/**
 	 * Test construction.
 	 *
-	 * @covers MediaWikiFarmComposerScript::__construct
+	 * @covers MediaWikiFarmScriptComposer::__construct
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 */
 	function testConstruction() {
 
-		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 1, array( self::$mwcomposerPath ) );
+		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 1, array( self::$mwcomposerPath ) );
 
-		$this->assertEquals( 1, $wgMediaWikiFarmComposerScript->argc );
-		$this->assertEquals( array( self::$mwcomposerPath ), $wgMediaWikiFarmComposerScript->argv );
+		$this->assertEquals( 1, $wgMediaWikiFarmScriptComposer->argc );
+		$this->assertEquals( array( self::$mwcomposerPath ), $wgMediaWikiFarmScriptComposer->argv );
 	}
 
 	/**
 	 * Test usage method.
 	 *
-	 * @covers MediaWikiFarmComposerScript::main
-	 * @uses MediaWikiFarmComposerScript::__construct
+	 * @covers MediaWikiFarmScriptComposer::main
+	 * @uses MediaWikiFarmScriptComposer::__construct
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::usage
 	 * @uses AbstractMediaWikiFarmScript::premain
@@ -97,18 +97,18 @@ HELP;
 
 		$this->expectOutputString( self::$longHelp );
 
-		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 2, array( self::$mwcomposerPath, '-h' ) );
+		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 2, array( self::$mwcomposerPath, '-h' ) );
 
-		$this->assertFalse( $wgMediaWikiFarmComposerScript->main() );
+		$this->assertFalse( $wgMediaWikiFarmScriptComposer->main() );
 
-		$this->assertEquals( 0, $wgMediaWikiFarmComposerScript->status );
+		$this->assertEquals( 0, $wgMediaWikiFarmScriptComposer->status );
 	}
 
 	/**
 	 * Test when we are not in a Composer-managed MediaWiki directory.
 	 *
-	 * @covers MediaWikiFarmComposerScript::main
-	 * @uses MediaWikiFarmComposerScript::__construct
+	 * @covers MediaWikiFarmScriptComposer::main
+	 * @uses MediaWikiFarmScriptComposer::__construct
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::usage
 	 * @uses AbstractMediaWikiFarmScript::premain
@@ -121,11 +121,11 @@ HELP;
 		$cwd = getcwd();
 		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub2' );
 
-		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 1, array( self::$mwcomposerPath ) );
+		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 1, array( self::$mwcomposerPath ) );
 
-		$wgMediaWikiFarmComposerScript->main();
+		$wgMediaWikiFarmScriptComposer->main();
 
-		$this->assertEquals( 4, $wgMediaWikiFarmComposerScript->status );
+		$this->assertEquals( 4, $wgMediaWikiFarmScriptComposer->status );
 
 		chdir( $cwd );
 	}
@@ -135,11 +135,11 @@ HELP;
 	 *
 	 * @large
 	 * @backupGlobals enabled
-	 * @covers MediaWikiFarmComposerScript::main
-	 * @covers MediaWikiFarmComposerScript::composer2mediawiki
-	 * @uses MediaWikiFarmComposerScript::__construct
-	 * @uses MediaWikiFarmComposerScript::getParam
-	 * @uses MediaWikiFarmComposerScript::exportArguments
+	 * @covers MediaWikiFarmScriptComposer::main
+	 * @covers MediaWikiFarmScriptComposer::composer2mediawiki
+	 * @uses MediaWikiFarmScriptComposer::__construct
+	 * @uses MediaWikiFarmScriptComposer::getParam
+	 * @uses MediaWikiFarmScriptComposer::exportArguments
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::premain
 	 * @uses AbstractMediaWikiFarmScript::copyr
@@ -174,7 +174,7 @@ HELP;
 
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
-		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', dirname( __FILE__ ) . '/data/mediawiki' );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', self::$wgMediaWikiFarmCodeDir );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
 
@@ -190,10 +190,10 @@ HELP;
 		$cwd = getcwd();
 		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub3' );
 
-		$wgMediaWikiFarmComposerScript = new MediaWikiFarmComposerScript( 2, array( self::$mwcomposerPath, '-q' ) );
+		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 2, array( self::$mwcomposerPath, '-q' ) );
 
 		# This function is the main procedure, it runs Composer in background 7 times so it can take 20-25 seconds
-		$wgMediaWikiFarmComposerScript->main();
+		$wgMediaWikiFarmScriptComposer->main();
 
 		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor' ) );
 		$this->assertTrue( is_dir( self::$wgMediaWikiFarmCodeDir . '/vstub3/vendor/composer' ) );

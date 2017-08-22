@@ -8,7 +8,7 @@
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/AbstractMediaWikiFarmScript.php';
+require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/bin/AbstractMediaWikiFarmScript.php';
 
 # These tests can be called either directly with PHPUnit or through the PHPUnit infrastructure
 # inside MediaWiki (the wrapper tests/phpunit/phpunit.php).
@@ -44,6 +44,9 @@ if( !class_exists( 'MediaWikiTestCase' ) ) {
  * @group MediaWikiFarm
  */
 abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
+
+	/** @var string Farm code directory. */
+	public static $wgMediaWikiFarmFarmDir = '';
 
 	/** @var string Configuration directory for tests. */
 	public static $wgMediaWikiFarmConfigDir = '';
@@ -108,6 +111,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	static function setUpBeforeClass() {
 
 		# Set test configuration parameters
+		self::$wgMediaWikiFarmFarmDir = dirname( dirname( dirname( __FILE__ ) ) );
 		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
 		self::$wgMediaWikiFarmCodeDir = dirname( __FILE__ ) . '/data/mediawiki';
 		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';

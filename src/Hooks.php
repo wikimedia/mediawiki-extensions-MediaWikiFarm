@@ -36,10 +36,10 @@ class MediaWikiFarmHooks {
 		$files[] = $dir . 'InstallationIndependantTest.php';
 		$files[] = $dir . 'LoadingTest.php';
 		$files[] = $dir . 'LoggingTest.php';
-		$files[] = $dir . 'MediaWikiFarmComposerScriptTest.php';
-		$files[] = $dir . 'MediaWikiFarmScriptTest.php';
 		$files[] = $dir . 'MonoversionInstallationTest.php';
 		$files[] = $dir . 'MultiversionInstallationTest.php';
+		$files[] = $dir . 'bin/MediaWikiFarmScriptComposerTest.php';
+		$files[] = $dir . 'bin/MediaWikiFarmScriptTest.php';
 
 		return true;
 	}
