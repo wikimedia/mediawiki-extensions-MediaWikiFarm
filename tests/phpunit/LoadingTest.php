@@ -3,7 +3,6 @@
  * Class LoadingTest.
  *
  * @package MediaWikiFarm\Tests
- * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
@@ -82,7 +81,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
-	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarm::updateVersion
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::setVariable
@@ -91,7 +89,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::getConfigFile
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::prepareLog
@@ -103,6 +100,9 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::populateSettings
 	 * @uses MediaWikiFarmConfiguration::detectComposer
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::isMediaWiki
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testAllLoadingMechanisms() {
 
@@ -203,7 +203,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
-	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarm::updateVersion
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::setVariable
@@ -211,7 +210,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::compileConfiguration
@@ -221,6 +219,9 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::activateExtensions
 	 * @uses MediaWikiFarmConfiguration::detectLoadingMechanism
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::isMediaWiki
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testRegistrationMediaWikiFarm() {
 
@@ -252,7 +253,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::checkHostVariables
 	 * @uses MediaWikiFarm::setVersion
-	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarm::updateVersion
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::setVariable
@@ -260,7 +260,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::compileConfiguration
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::prepareLog
@@ -272,6 +271,9 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::isMediaWiki
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testExceptionsLoadingMechanisms() {
 

@@ -22,14 +22,14 @@ require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php
 class FunctionsTest extends MediaWikiFarmTestCase {
 
 	/**
-	 * Symbol for wfMediaWikiFarm_readYAML, which is normally loaded just-in-time in the main class.
+	 * Symbol for MediaWikiFarmUtils5_3::readYAML, which is normally loaded just-in-time in the main class.
 	 */
 	static function setUpBeforeClass() {
 
 		parent::setUpBeforeClass();
 
 		if( version_compare( PHP_VERSION, '5.3.0' ) >= 0 ) {
-			require_once self::$wgMediaWikiFarmFarmDir . '/src/Yaml.php';
+			require_once self::$wgMediaWikiFarmFarmDir . '/src/Utils5_3.php';
 		}
 	}
 
@@ -39,7 +39,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	 * Note that this test will be probably never get executed because PHPUnit depends
 	 * on this very library; just for completeness; commented out to avoid skippy test.
 	 *
-	 * @covers ::wfMediaWikiFarm_readYAML
+	 * @covers MediaWikiFarmUtils5_3::readYAML
 	 *
 	 * @expectedException RuntimeException
 	 * @expectedExceptionMessage Unavailable YAML library, please install it if you want to read YAML files
@@ -52,14 +52,14 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		wfMediaWikiFarm_readYAML( self::$wgMediaWikiFarmConfigDir . '/testreading.yml' );
+		MediaWikiFarmUtils5_3::readYAML( self::$wgMediaWikiFarmConfigDir . '/testreading.yml' );
 	}*/
 
 
 	/**
 	 * Test reading a missing file in the YAML function.
 	 *
-	 * @covers ::wfMediaWikiFarm_readYAML
+	 * @covers MediaWikiFarmUtils5_3::readYAML
 	 *
 	 * @expectedException RuntimeException
 	 * @expectedExceptionMessage Missing file
@@ -72,13 +72,13 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		wfMediaWikiFarm_readYAML( self::$wgMediaWikiFarmConfigDir . '/missingfile.yml' );
+		MediaWikiFarmUtils5_3::readYAML( self::$wgMediaWikiFarmConfigDir . '/missingfile.yml' );
 	}
 
 	/**
 	 * Test reading a badly-formatted YAML file in the YAML function.
 	 *
-	 * @covers ::wfMediaWikiFarm_readYAML
+	 * @covers MediaWikiFarmUtils5_3::readYAML
 	 *
 	 * @expectedException RuntimeException
 	 * @expectedExceptionMessage Badly-formatted YAML file
@@ -91,13 +91,13 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 			);
 		}
 
-		wfMediaWikiFarm_readYAML( self::$wgMediaWikiFarmConfigDir . '/badsyntax.yaml' );
+		MediaWikiFarmUtils5_3::readYAML( self::$wgMediaWikiFarmConfigDir . '/badsyntax.yaml' );
 	}
 
 	/**
 	 * Test arrayMerge.
 	 *
-	 * @covers MediaWikiFarm::arrayMerge
+	 * @covers MediaWikiFarmUtils::arrayMerge
 	 */
 	function testArrayMerge() {
 
@@ -110,7 +110,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 				'e' => 'E',
 				'f' => false,
 			),
-			MediaWikiFarm::arrayMerge(
+			MediaWikiFarmUtils::arrayMerge(
 				array(
 					'a' => 'A',
 					'b' => 'B',
@@ -135,7 +135,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 				3 => 121,
 				4 => 13,
 			),
-			MediaWikiFarm::arrayMerge(
+			MediaWikiFarmUtils::arrayMerge(
 				array(
 					'a' => false,
 					'b' => true,
@@ -182,7 +182,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 					'kg' => false,
 				),
 			),
-			MediaWikiFarm::arrayMerge(
+			MediaWikiFarmUtils::arrayMerge(
 				null,
 				array(
 					1 => array(

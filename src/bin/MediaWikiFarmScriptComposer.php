@@ -83,7 +83,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 			}
 		}
 
-		if( !MediaWikiFarm::isMediaWiki( $cwd ) || !is_file( 'composer.json' ) ) {
+		if( !MediaWikiFarmUtils::isMediaWiki( $cwd ) || !is_file( 'composer.json' ) ) {
 			$this->usage();
 			$this->status = 4;
 			return false;

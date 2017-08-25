@@ -32,6 +32,8 @@
 		"MediaWikiFarmConfiguration": "src/MediaWikiFarmConfiguration.php",
 		"AbstractMediaWikiFarmScript": "src/bin/AbstractMediaWikiFarmScript.php",
 		"MediaWikiFarmScript": "src/bin/MediaWikiFarmScript.php",
+		"MediaWikiFarmUtils": "src/Utils.php",
+		"MediaWikiFarmUtils5_3": "src/Utils5_3.php",
 		"MediaWikiFarmHooks": "src/Hooks.php",
 		"MWFConfigurationException": "src/MediaWikiFarm.php"
 	},

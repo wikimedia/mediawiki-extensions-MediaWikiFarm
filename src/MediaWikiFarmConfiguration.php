@@ -278,7 +278,7 @@ class MediaWikiFarmConfiguration {
 							continue;
 						}
 						if( array_key_exists( '+'.$wikiID, $values ) && is_array( $values['+'.$wikiID] ) ) {
-							$thisSetting = MediaWikiFarm::arrayMerge( $thisSetting, $values['+'.$wikiID] );
+							$thisSetting = MediaWikiFarmUtils::arrayMerge( $thisSetting, $values['+'.$wikiID] );
 							$thisPriority = 3;
 						}
 					}
@@ -295,7 +295,7 @@ class MediaWikiFarmConfiguration {
 								# (last value kept) and given the case should not appear, there is no.
 							}
 							elseif( array_key_exists( '+'.$tag, $values ) && is_array( $values['+'.$tag] ) ) {
-								$thisSetting = MediaWikiFarm::arrayMerge( $thisSetting, $values['+'.$tag] );
+								$thisSetting = MediaWikiFarmUtils::arrayMerge( $thisSetting, $values['+'.$tag] );
 								$thisPriority = 3;
 							}
 						}
@@ -312,7 +312,7 @@ class MediaWikiFarmConfiguration {
 							continue;
 						}
 						if( array_key_exists( '+'.$suffix, $values ) && is_array( $values['+'.$suffix] ) ) {
-							$thisSetting = MediaWikiFarm::arrayMerge( $thisSetting, $values['+'.$suffix] );
+							$thisSetting = MediaWikiFarmUtils::arrayMerge( $thisSetting, $values['+'.$suffix] );
 							$thisPriority = 3;
 						}
 					}

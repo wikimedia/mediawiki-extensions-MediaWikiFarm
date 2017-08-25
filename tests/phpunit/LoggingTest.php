@@ -61,6 +61,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testLoggingAMessage() {
 
@@ -85,6 +86,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testLoggingAMessageAndAnException() {
 
