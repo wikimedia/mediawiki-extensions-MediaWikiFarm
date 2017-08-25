@@ -325,6 +325,7 @@ HELP;
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testMissingHost() {
 
@@ -366,6 +367,7 @@ HELP;
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testInternalProblem() {
 
@@ -409,7 +411,6 @@ HELP;
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
 	 * @uses MediaWikiFarm::getConfigDir
@@ -423,6 +424,8 @@ HELP;
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testMissingScript() {
 
@@ -470,14 +473,12 @@ HELP;
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
 	 * @uses MediaWikiFarm::getConfigDir
 	 * @uses MediaWikiFarm::getConfiguration
 	 * @uses MediaWikiFarm::getFarmConfiguration
 	 * @uses MediaWikiFarm::getVariable
-	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarm::updateVersion
 	 * @uses MediaWikiFarmConfiguration::__construct
 	 * @uses MediaWikiFarmConfiguration::populateSettings
@@ -486,6 +487,9 @@ HELP;
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::isMediaWiki
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testSuccessfulLoading() {
 
@@ -550,7 +554,6 @@ OUTPUT
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
 	 * @uses MediaWikiFarm::getConfigDir
@@ -564,6 +567,8 @@ OUTPUT
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testRestInPeace() {
 

@@ -3,7 +3,6 @@
  * Classes MediaWikiFarm and MWFConfigurationException.
  *
  * @package MediaWikiFarm
- * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  *
@@ -12,6 +11,7 @@
  */
 
 // @codeCoverageIgnoreStart
+require_once dirname( __FILE__ ) . '/Utils.php';
 require_once dirname( __FILE__ ) . '/MediaWikiFarmConfiguration.php';
 // @codeCoverageIgnoreEnd
 
@@ -381,7 +381,7 @@ class MediaWikiFarm {
 			$variables = $this->variables;
 			$variables['$CORECONFIG'] = $this->farmConfig['coreconfig'];
 			$variables['$CONFIG'] = $this->farmConfig['config'];
-			self::cacheFile( $variables, $this->variables['$SERVER'] . '.php', $this->cacheDir . '/wikis' );
+			MediaWikiFarmUtils::cacheFile( $variables, $this->variables['$SERVER'] . '.php', $this->cacheDir . '/wikis' );
 		}
 
 		return true;
@@ -426,7 +426,7 @@ class MediaWikiFarm {
 
 			# Save Composer key if available
 			if( $this->cacheDir && !array_key_exists( 'unreadable-file', $this->log ) ) {
-				self::cacheFile( $this->getConfiguration( 'composer' ),
+				MediaWikiFarmUtils::cacheFile( $this->getConfiguration( 'composer' ),
 					$this->variables['$SERVER'] . '.php',
 					$this->cacheDir . '/composer'
 				);
@@ -444,7 +444,7 @@ class MediaWikiFarm {
 
 			# Create the final LocalSettings.php
 			if( $this->cacheDir && !array_key_exists( 'unreadable-file', $this->log ) ) {
-				self::cacheFile( MediaWikiFarmConfiguration::createLocalSettings( $this->getConfiguration(), (bool) $this->codeDir ),
+				MediaWikiFarmUtils::cacheFile( MediaWikiFarmConfiguration::createLocalSettings( $this->getConfiguration(), (bool) $this->codeDir ),
 					$this->variables['$SERVER'] . '.php',
 					$this->cacheDir . '/LocalSettings'
 				);
@@ -490,7 +490,7 @@ class MediaWikiFarm {
 			if( !array_key_exists( $setting, $GLOBALS ) ) {
 				$GLOBALS[$setting] = array();
 			}
-			$GLOBALS[$setting] = self::arrayMerge( $GLOBALS[$setting], $value );
+			$GLOBALS[$setting] = MediaWikiFarmUtils::arrayMerge( $GLOBALS[$setting], $value );
 		}
 
 		# Load extensions and skins with the wfLoadExtension/wfLoadSkin mechanism
@@ -945,7 +945,7 @@ class MediaWikiFarm {
 					return false;
 				}
 
-				if( is_string( $this->codeDir ) && self::isMediaWiki( $this->codeDir . '/' . ( (string) $choices[$value] ) ) ) {
+				if( is_string( $this->codeDir ) && MediaWikiFarmUtils::isMediaWiki( $this->codeDir . '/' . ( (string) $choices[$value] ) ) ) {
 
 					$this->variables['$VERSION'] = (string) $choices[$value];
 				}
@@ -1017,17 +1017,19 @@ class MediaWikiFarm {
 			}
 
 			# Search wiki in a hierarchical manner
-			if( array_key_exists( $this->variables['$WIKIID'], $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$WIKIID']] ) ) {
+			if( array_key_exists( $this->variables['$WIKIID'], $versions ) &&
+			    MediaWikiFarmUtils::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$WIKIID']] ) ) {
 				$this->variables['$VERSION'] = $versions[$this->variables['$WIKIID']];
 			}
-			elseif( array_key_exists( $this->variables['$SUFFIX'], $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$SUFFIX']] ) ) {
+			elseif( array_key_exists( $this->variables['$SUFFIX'], $versions ) &&
+			        MediaWikiFarmUtils::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$SUFFIX']] ) ) {
 				if( !$explicitExistence ) {
 					throw new MWFConfigurationException( 'Only explicitly-defined wikis declared in existence lists ' .
 						'are allowed to use the “default versions” mechanism (suffix) in multiversion mode.' );
 				}
 				$this->variables['$VERSION'] = $versions[$this->variables['$SUFFIX']];
 			}
-			elseif( array_key_exists( 'default', $versions ) && self::isMediaWiki( $this->codeDir . '/' . $versions['default'] ) ) {
+			elseif( array_key_exists( 'default', $versions ) && MediaWikiFarmUtils::isMediaWiki( $this->codeDir . '/' . $versions['default'] ) ) {
 				if( !$explicitExistence ) {
 					throw new MWFConfigurationException( 'Only explicitly-defined wikis declared in existence lists ' .
 						'are allowed to use the “default versions” mechanism (default) in multiversion mode.' );
@@ -1107,7 +1109,7 @@ class MediaWikiFarm {
 
 		# Update the deployment file
 		$deployments[$this->variables['$WIKIID']] = $version;
-		self::cacheFile( $deployments, $this->variables['$DEPLOYMENTS'], $this->configDir );
+		MediaWikiFarmUtils::cacheFile( $deployments, $this->variables['$DEPLOYMENTS'], $this->configDir );
 	}
 
 	/**
@@ -1232,226 +1234,6 @@ class MediaWikiFarm {
 	 */
 	function readFile( $filename, $directory = '', $cache = true ) {
 
-		# Check parameter
-		if( !is_string( $filename ) ) {
-			return false;
-		}
-
-		# Detect the format
-		$format = strrchr( $filename, '.' );
-		$array = false;
-
-		# Check the file exists
-		$prefixedFile = $directory ? $directory . '/' . $filename : $filename;
-		$cachedFile = $this->cacheDir && $cache ? $this->cacheDir . '/config/' . $filename . '.php' : false;
-		if( !is_file( $prefixedFile ) ) {
-			$format = null;
-		}
-
-		# Format PHP
-		if( $format == '.php' ) {
-
-			$array = include $prefixedFile;
-		}
-
-		# Format 'serialisation'
-		elseif( $format == '.ser' ) {
-
-			$content = file_get_contents( $prefixedFile );
-
-			if( preg_match( "/^\r?\n?$/m", $content ) ) {
-				$array = array();
-			}
-			else {
-				$array = unserialize( $content );
-			}
-		}
-
-		# Cached version
-		elseif( $cachedFile && is_string( $format ) && is_file( $cachedFile ) && filemtime( $cachedFile ) >= filemtime( $prefixedFile ) ) {
-
-			return $this->readFile( $filename . '.php', $this->cacheDir . '/config', false );
-		}
-
-		# Format YAML
-		elseif( $format == '.yml' || $format == '.yaml' ) {
-
-			# Load Composer libraries
-			# There is no warning if not present because to properly handle the error by returning false
-			# This is only included here to avoid delays (~3ms without OPcache) during the loading using cached files or other formats
-			if( version_compare( PHP_VERSION, '5.3.0' ) >= 0 ) {
-
-				require_once dirname( __FILE__ ) . '/Yaml.php';
-
-				try {
-					$array = wfMediaWikiFarm_readYAML( $prefixedFile );
-				}
-				catch( RuntimeException $e ) {
-					$this->log[] = $e->getMessage();
-					$this->log['unreadable-file'] = true;
-					$array = false;
-				}
-			}
-		}
-
-		# Format JSON
-		elseif( $format == '.json' ) {
-
-			$content = file_get_contents( $prefixedFile );
-
-			if( preg_match( "/^null\r?\n?$/m", $content ) ) {
-				$array = array();
-			}
-			else {
-				$array = json_decode( $content, true );
-			}
-		}
-
-		# Format 'dblist' (simple list of strings separated by newlines)
-		elseif( $format == '.dblist' ) {
-
-			$content = file_get_contents( $prefixedFile );
-
-			$array = array();
-			$arraytmp = explode( "\n", $content );
-			foreach( $arraytmp as $line ) {
-				if( $line != '' ) {
-					$array[] = $line;
-				}
-			}
-		}
-
-		# Error for any other format
-		elseif( !is_null( $format ) ) {
-			return false;
-		}
-
-		# A null value is an empty file or value 'null'
-		if( ( is_null( $array ) || $array === false ) && $cachedFile && is_file( $cachedFile ) ) {
-
-			$this->log[] = 'Unreadable file \'' . $filename . '\'';
-			$this->log['unreadable-file'] = true;
-
-			return $this->readFile( $filename . '.php', $this->cacheDir . '/config', false );
-		}
-
-		# Regular return for arrays
-		if( is_array( $array ) ) {
-
-			if( $cachedFile && $directory != $this->cacheDir . '/config' && ( !is_file( $cachedFile ) || ( filemtime( $cachedFile ) < filemtime( $prefixedFile ) ) ) ) {
-				self::cacheFile( $array, $filename . '.php', $this->cacheDir . '/config' );
-			}
-
-			return $array;
-		}
-
-		# Error for any other type
-		return false;
-	}
-
-	/**
-	 * Create a cache file.
-	 *
-	 * @internal
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 *
-	 * @param array|string $array Array of the data to be cached.
-	 * @param string $filename Name of the cache file; this filename must have an extension '.php' else no cache file is saved.
-	 * @param string $directory Name of the parent directory; null for default cache directory
-	 * @return void
-	 */
-	static function cacheFile( $array, $filename, $directory ) {
-
-		if( !preg_match( '/\.php$/', $filename ) ) {
-			return;
-		}
-
-		$prefixedFile = $directory . '/' . $filename;
-		$tmpFile = $prefixedFile . '.tmp';
-
-		# Prepare string
-		if( is_array( $array ) ) {
-			$php = "<?php\n\n// WARNING: file automatically generated: do not modify.\n\nreturn " . var_export( $array, true ) . ';';
-		} else {
-			$php = (string) $array;
-		}
-
-		# Create parent directories
-		if( !is_dir( dirname( $tmpFile ) ) ) {
-			$path = '';
-			foreach( explode( '/', dirname( $prefixedFile ) ) as $dir ) {
-				$path .= '/' . $dir;
-				if( !is_dir( $path ) ) {
-					mkdir( $path );
-				}
-			}
-		}
-
-		# Create temporary file and move it to final file
-		if( file_put_contents( $tmpFile, $php ) ) {
-			rename( $tmpFile, $prefixedFile );
-		}
-	}
-
-	/**
-	 * Guess if a given directory contains MediaWiki.
-	 *
-	 * This heuristic (presence of [dir]/includes/DefaultSettings.php) has no false negatives
-	 * (every MediaWiki from 1.1 to (at least) 1.27 has such a file) and probably has a few, if
-	 * any, false positives (another software which has the very same file).
-	 *
-	 * @api
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 *
-	 * @param string $dir The base directory which could contain MediaWiki.
-	 * @return bool The directory really contains MediaWiki.
-	 */
-	static function isMediaWiki( $dir ) {
-		return is_file( $dir . '/includes/DefaultSettings.php' );
-	}
-
-	/**
-	 * Merge multiple arrays together.
-	 *
-	 * On encountering duplicate keys, merge the two, but ONLY if they're arrays.
-	 * PHP's array_merge_recursive() merges ANY duplicate values into arrays,
-	 * which is not fun.
-	 * This function is almost the same as SiteConfiguration::arrayMerge, with the
-	 * difference an existing scalar value has precedence EVEN if evaluated to false,
-	 * in order to override permissions array with removed rights.
-	 *
-	 * @api
-	 * @mediawikifarm-const
-	 * @mediawikifarm-idempotent
-	 * @SuppressWarning(PHPMD.StaticAccess)
-	 *
-	 * @param array $array1 First array.
-	 * @return array
-	 */
-	static function arrayMerge( $array1 /* ... */ ) {
-		$out = $array1;
-		if ( is_null( $out ) ) {
-			$out = array();
-		}
-		$argsCount = func_num_args();
-		for ( $i = 1; $i < $argsCount; $i++ ) {
-			$array = func_get_arg( $i );
-			if ( is_null( $array ) ) {
-				continue;
-			}
-			foreach ( $array as $key => $value ) {
-				if( array_key_exists( $key, $out ) && is_string( $key ) && is_array( $out[$key] ) && is_array( $value ) ) {
-					$out[$key] = self::arrayMerge( $out[$key], $value );
-				} elseif( !array_key_exists( $key, $out ) || !is_numeric( $key ) ) {
-					$out[$key] = $value;
-				} elseif( is_numeric( $key ) ) {
-					$out[] = $value;
-				}
-			}
-		}
-
-		return $out;
+		return MediaWikiFarmUtils::readFile( $filename, $this->cacheDir, $this->log, $directory, $cache );
 	}
 }

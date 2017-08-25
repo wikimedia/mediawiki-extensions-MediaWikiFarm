@@ -3,7 +3,6 @@
  * Class ConstructionTest.
  *
  * @package MediaWikiFarm\Tests
- * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
@@ -27,6 +26,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getFarmConfiguration
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testSuccessfulConstructionMultiversion() {
 
@@ -83,6 +83,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getFarmConfiguration
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testSuccessfulConstructionMonoversion() {
 
@@ -151,6 +152,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getFarmConfiguration
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testSuccessfulConstructionMultiversionSubdirectories() {
 
@@ -204,6 +206,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No configuration file found
@@ -476,6 +479,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testSuccessfulConstructionWithGlobalVariable() {
 
@@ -501,6 +505,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testSuccessfulConstructionWithGlobalVariable2() {
 
@@ -526,6 +531,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testSuccessfulConstructionWithGlobalVariable3() {
 
@@ -551,6 +557,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testNormalPath() {
 
@@ -572,6 +579,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testNormalPath2() {
 
@@ -592,6 +600,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No farm corresponding to this host
@@ -613,6 +622,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No farm corresponding to this host
@@ -634,6 +644,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No farm corresponding to this host
@@ -656,8 +667,9 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getCacheDir
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
+	 * @uses MediaWikiFarmUtils::cacheFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testCacheDirectoryCreation() {
 
@@ -686,6 +698,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmConfiguration::__construct
 	 * @covers MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testCheckBasicObjectPropertiesMultiversion() {
 
@@ -731,6 +744,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::getConfigFile
 	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testCheckBasicObjectPropertiesMonoversion() {
 
@@ -759,6 +773,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testNormalRedirect() {
 
@@ -779,6 +794,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Infinite or too long redirect detected
@@ -800,6 +816,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No farm corresponding to this host
@@ -834,11 +851,9 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::setOtherVariables
 	 * @uses MediaWikiFarm::updateVersion
-	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarm::getConfigFile
 	 * @uses MediaWikiFarm::isLocalSettingsFresh
 	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
 	 * @uses MediaWikiFarmConfiguration::__construct
@@ -848,6 +863,9 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::detectComposer
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::isMediaWiki
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testLoadingCorrect() {
 
@@ -900,6 +918,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testLoadingSoftMissingError() {
 
@@ -937,6 +956,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testLoadingHardMissingError() {
 
@@ -958,7 +978,8 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::readFile
-	 * @uses ::wfMediaWikiFarm_readYAML
+	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils5_3::readYAML
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Infinite or too long redirect detected
@@ -980,6 +1001,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Infinite or too long redirect detected

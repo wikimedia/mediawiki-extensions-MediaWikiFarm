@@ -45,12 +45,13 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
-	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarmConfiguration::__construct
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::cacheFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testHighlevelConfiguration() {
 
@@ -162,10 +163,11 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarmConfiguration::__construct
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmConfiguration::composerKey
+	 * @uses MediaWikiFarmUtils::isMediaWiki
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testLoadingMechanisms() {
 
@@ -247,13 +249,13 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @covers MediaWikiFarm::compileConfiguration
 	 * @covers MediaWikiFarm::getConfigFile
-	 * @covers MediaWikiFarm::cacheFile
 	 * @covers MediaWikiFarmConfiguration::setComposer
 	 * @covers MediaWikiFarmConfiguration::setEnvironment
 	 * @covers MediaWikiFarmConfiguration::populateSettings
 	 * @covers MediaWikiFarmConfiguration::detectLoadingMechanism
 	 * @covers MediaWikiFarmConfiguration::createLocalSettings
 	 * @covers MediaWikiFarmConfiguration::writeArrayAssignment
+	 * @covers MediaWikiFarmUtils::cacheFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::getConfigDir
 	 * @uses MediaWikiFarm::getFarmConfiguration
@@ -268,8 +270,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::arrayMerge
-	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarmConfiguration::__construct
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::activateExtensions
@@ -278,6 +278,9 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmConfiguration::setComposer
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::isMediaWiki
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testLoadMediaWikiConfigMultiversion() {
 
@@ -318,7 +321,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::isLocalSettingsFresh
 	 * @covers MediaWikiFarm::compileConfiguration
 	 * @covers MediaWikiFarm::getConfigFile
-	 * @covers MediaWikiFarm::cacheFile
 	 * @covers MediaWikiFarmConfiguration::setComposer
 	 * @covers MediaWikiFarmConfiguration::setEnvironment
 	 * @covers MediaWikiFarmConfiguration::activateExtensions
@@ -326,6 +328,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmConfiguration::detectLoadingMechanism
 	 * @covers MediaWikiFarmConfiguration::createLocalSettings
 	 * @covers MediaWikiFarmConfiguration::writeArrayAssignment
+	 * @covers MediaWikiFarmUtils::cacheFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::getConfigDir
 	 * @uses MediaWikiFarm::getFarmConfiguration
@@ -339,7 +342,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::arrayMerge
 	 * @uses MediaWikiFarmConfiguration::__construct
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmConfiguration::setComposer
@@ -348,6 +350,8 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::composerKey
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testLoadMediaWikiConfigMonoversion() {
 
@@ -394,10 +398,11 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::cacheFile
-	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarmConfiguration::__construct
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
+	 * @uses MediaWikiFarmUtils::cacheFile
+	 * @uses MediaWikiFarmUtils::isMediaWiki
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testSort() {
 

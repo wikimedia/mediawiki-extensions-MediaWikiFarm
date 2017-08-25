@@ -62,7 +62,8 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 *
 	 * @requires Symfony\Component\Yaml\Yaml::parse
 	 * @covers MediaWikiFarm::readFile
-	 * @covers ::wfMediaWikiFarm_readYAML
+	 * @covers MediaWikiFarmUtils::readFile
+	 * @covers MediaWikiFarmUtils5_3::readYAML
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -87,6 +88,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test a successful reading of a PHP file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -105,6 +107,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test a successful reading of a JSON file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -123,6 +126,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test a successful reading of a SER file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -141,6 +145,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test a successful reading of a .dblist file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -159,6 +164,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test reading a missing file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -172,6 +178,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test an unrecognised format in readFile.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -188,6 +195,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test a wrong argument type in readFile.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -201,10 +209,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test reading a badly-formatted YAML file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
-	 * @uses MediaWikiFarm::readFile
-	 * @uses ::wfMediaWikiFarm_readYAML
+	 * @uses MediaWikiFarmUtils5_3::readYAML
 	 */
 	function testBadSyntaxFileReadingYAML() {
 
@@ -223,6 +231,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test reading a badly-formatted JSON file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -236,9 +245,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test reading a badly-formatted YAML file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
-	 * @uses ::wfMediaWikiFarm_readYAML
+	 * @uses MediaWikiFarmUtils5_3::readYAML
 	 */
 	function testEmptyFileReadingYAML() {
 
@@ -256,6 +266,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test a successufl reading an empty JSON file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -269,6 +280,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test a successufl reading an empty SER file.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -282,6 +294,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * Test a bad content (not an array), in a JSON file here.
 	 *
 	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 */
@@ -296,11 +309,12 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 *
 	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
 	 *
-	 * @covers MediaWikiFarm::cacheFile
+	 * @covers MediaWikiFarmUtils::cacheFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::getCacheDir
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testNoCache() {
 
@@ -314,11 +328,12 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test cache file.
 	 *
-	 * @todo This test targets mainly MediaWikiFarm::cacheFile. This function was previously protected, so it was tested through
-	 *       MediaWikiFarm::readFile. Now it is public-static, hence this test should be rewritten to directly test it.
+	 * @todo This test targets mainly MediaWikiFarmUtils::cacheFile. This function was previously protected, so it was tested through
+	 *       MediaWikiFarmUtils::readFile. Now it is public-static, hence this test should be rewritten to directly test it.
 	 *
 	 * @covers MediaWikiFarm::readFile
-	 * @covers MediaWikiFarm::cacheFile
+	 * @covers MediaWikiFarmUtils::cacheFile
+	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
@@ -359,7 +374,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/config/subdir/testreading2.json.php' ) );
 
 		# Test when it is requested to cache non-PHP file
-		MediaWikiFarm::cacheFile( array(), 'nonexistant.json', self::$wgMediaWikiFarmCacheDir );
+		MediaWikiFarmUtils::cacheFile( array(), 'nonexistant.json', self::$wgMediaWikiFarmCacheDir );
 		$this->assertFalse( is_file( self::$wgMediaWikiFarmCacheDir . '/nonexistant.json' ) );
 	}
 
@@ -375,6 +390,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::checkExistence
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
+	 * @uses MediaWikiFarmUtils::readFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Missing or badly formatted file 'badsyntax.json' defining existing values for variable 'wiki'
@@ -392,6 +408,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 *
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Argument of MediaWikiFarm->replaceVariables() must be a string or an array.
@@ -410,6 +427,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::getCodeDir
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testCreateLocalSettings() {
 
@@ -529,6 +547,7 @@ PHP;
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testComposerKey() {
 

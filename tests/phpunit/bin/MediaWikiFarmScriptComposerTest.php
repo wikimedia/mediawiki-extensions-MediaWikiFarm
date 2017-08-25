@@ -113,7 +113,7 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript::usage
 	 * @uses AbstractMediaWikiFarmScript::premain
 	 * @uses AbstractMediaWikiFarmScript::getParam
-	 * @uses MediaWikiFarm::isMediaWiki
+	 * @uses MediaWikiFarmUtils::isMediaWiki
 	 */
 	function testWrongDirectory() {
 
@@ -159,8 +159,6 @@ HELP;
 	 * @uses MediaWikiFarm::getVariable
 	 * @uses MediaWikiFarm::updateVersion
 	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::arrayMerge
-	 * @uses MediaWikiFarm::isMediaWiki
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
 	 * @uses MediaWikiFarmConfiguration::populateSettings
@@ -169,6 +167,9 @@ HELP;
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::composerKey
+	 * @uses MediaWikiFarmUtils::arrayMerge
+	 * @uses MediaWikiFarmUtils::isMediaWiki
+	 * @uses MediaWikiFarmUtils::readFile
 	 */
 	function testSuccessfulLoading() {
 
