@@ -424,7 +424,10 @@ class MediaWikiFarmConfiguration {
 			$setting = 'wgUse' . preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $key );
 			$value =& $this->configuration['settings'][$setting];
 
-			if( $ExtensionRegistry === null || $value === 'composer' ) {
+			if( $value === false ) {
+				$status = null;
+				unset( $this->configuration['extensions'][$key] );
+			} elseif( $ExtensionRegistry === null || $value === 'composer' ) {
 				if( $this->detectComposer( $type, $name ) ) {
 					$status = 'composer';
 					$value = true;
@@ -436,7 +439,7 @@ class MediaWikiFarmConfiguration {
 				$status = $value;
 				$value = true;
 			// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
-			} elseif( $value !== false && ( $status = $this->detectLoadingMechanism( $type, $name ) ) ) {
+			} elseif( $status = $this->detectLoadingMechanism( $type, $name ) ) {
 				$value = true;
 			} elseif( $key != 'ExtensionMediaWikiFarm' ) {
 				if( $value ) {
@@ -445,6 +448,7 @@ class MediaWikiFarmConfiguration {
 						$this->farm->getVariable( '$VERSION' );
 				}
 				$value = false;
+				$status = null;
 				unset( $this->configuration['extensions'][$key] );
 			} else {
 				$status = $ExtensionRegistry ? 'wfLoadExtension' : 'require_once';
