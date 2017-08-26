@@ -9,7 +9,7 @@ return array(
 		'atestextensionsfarm' => true,
 		'ctestextensionsfarm' => 'require_once',
 		'dtestextensionsfarm' => 'require_once',
-		'etestextensionsfarm' => true,
+		'etestextensionsfarm' => 'wfLoadExtension',
 	),
 	'wgUseExtensionTestExtensionRequireOnce' => array(
 		'atestextensionsfarm' => true,
@@ -41,7 +41,7 @@ return array(
 	'wgUseSkinTestSkinBiLoading' => array(
 		'atestextensionsfarm' => true,
 		'dtestextensionsfarm' => 'require_once',
-		'etestextensionsfarm' => true,
+		'etestextensionsfarm' => 'wfLoadSkin',
 	),
 	'wgUseSkinTestSkinRequireOnce' => array(
 		'atestextensionsfarm' => true,

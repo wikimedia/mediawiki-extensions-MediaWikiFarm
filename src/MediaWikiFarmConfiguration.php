@@ -424,32 +424,45 @@ class MediaWikiFarmConfiguration {
 			$setting = 'wgUse' . preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $key );
 			$value =& $this->configuration['settings'][$setting];
 
+			# Extension is deactivated
 			if( $value === false ) {
 				$status = null;
 				unset( $this->configuration['extensions'][$key] );
-			} elseif( $ExtensionRegistry === null || $value === 'composer' ) {
-				if( $this->detectComposer( $type, $name ) ) {
-					$status = 'composer';
-					$value = true;
-				} elseif( $value === 'composer' ) {
-					$value = false;
-					unset( $this->configuration['extensions'][$key] );
-				}
-			} elseif( $value === 'require_once' || $value === 'wfLoad' . ucfirst( $type ) ) {
+
+			# Mechanism Composer wanted
+			} elseif( $value === 'composer' && $this->detectComposer( $type, $name ) ) {
+				$status = 'composer';
+				$value = true;
+
+			# MediaWiki still not loaded: we must wait before taking a decision
+			} elseif( $ExtensionRegistry === null ) {
+				# nop
+
+			# Mechanism require_once wanted
+			} elseif( $value === 'require_once' && $this->detectLoadingMechanism( $type, $name, true ) == $value ) {
 				$status = $value;
 				$value = true;
-			// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
-			} elseif( $status = $this->detectLoadingMechanism( $type, $name ) ) {
+
+			# Mechanism wfLoadSkin/wfLoadExtension wanted
+			} elseif( $value === 'wfLoad' . ucfirst( $type ) && $this->detectLoadingMechanism( $type, $name ) == $value ) {
+				$status = $value;
 				$value = true;
+
+			# Any mechanism to load the extension
+			// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
+			} elseif( $value === true && $status = $this->detectLoadingMechanism( $type, $name ) ) {
+				# nop
+
+			# Missing extension or wrong configuration value
 			} elseif( $key != 'ExtensionMediaWikiFarm' ) {
-				if( $value ) {
-					$this->farm->log[] = "Requested but missing $type $name for wiki " .
-						$this->farm->getVariable( '$WIKIID' ) . ' in version ' .
-						$this->farm->getVariable( '$VERSION' );
-				}
+				$this->farm->log[] = "Requested but missing $type $name for wiki " .
+					$this->farm->getVariable( '$WIKIID' ) . ' in version ' .
+					$this->farm->getVariable( '$VERSION' );
 				$value = false;
 				$status = null;
 				unset( $this->configuration['extensions'][$key] );
+
+			# MediaWikiFarm is specific because in a non-standard location
 			} else {
 				$status = $ExtensionRegistry ? 'wfLoadExtension' : 'require_once';
 			}
@@ -513,9 +526,10 @@ class MediaWikiFarmConfiguration {
 	 *
 	 * @param string $type Type, in ['extension', 'skin'].
 	 * @param string $name Name of the extension/skin.
+	 * @param string $preferedRO Prefered require_once mechanism.
 	 * @return string|null Loading mechnism in ['wfLoadExtension', 'wfLoadSkin', 'require_once', 'composer'] or null if all mechanisms failed.
 	 */
-	function detectLoadingMechanism( $type, $name ) {
+	function detectLoadingMechanism( $type, $name, $preferedRO = null ) {
 
 		# Search base directory
 		$base = $this->farm->getVariable( '$CODE' ) . '/' . $type . 's';
@@ -528,6 +542,11 @@ class MediaWikiFarmConfiguration {
 
 		if( !is_dir( $base . '/' . $name ) ) {
 			return null;
+		}
+
+		# A MyExtension.php file is in the directory -> assume it is the loading mechanism
+		if( $preferedRO === true && is_file( $base . '/' . $name . '/' . $name . '.php' ) ) {
+			return 'require_once';
 		}
 
 		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism

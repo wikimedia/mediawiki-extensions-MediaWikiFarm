@@ -299,6 +299,8 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$this->assertFalse( array_key_exists( 'wgUseExtensionConfirmEdit/QuestyCaptcha', $config ) );
 		$this->assertTrue( array_key_exists( 'wgUseExtensionConfirmEditQuestyCaptcha', $config ) );
 		$this->assertFalse( $config['wgUseExtensionConfirmEditQuestyCaptcha'] );
+		$this->assertFalse( $config['wgUseExtensionTestExtensionMissing'] );
+		$this->assertFalse( $config['wgUseSkinTestSkinMissing'] );
 
 		# Re-load to use config cache
 		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir . '/versions.php' );
