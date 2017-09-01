@@ -95,11 +95,9 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 
 		# Get script
 		$this->script = $this->getParam( 1, false );
-		if( preg_match( '/^[a-zA-Z-]+$/', $this->script ) ) {
-			$this->script = 'maintenance/' . $this->script . '.php';
-		}
+		$this->script = preg_replace( '/^([a-zA-Z0-9-]+)(\.php)?$/', 'maintenance/$1.php', $this->script );
 
-		if( is_null( $this->script ) ) {
+		if( !$this->script ) {
 			$this->usage();
 			$this->status = 4;
 			return false;

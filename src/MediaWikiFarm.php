@@ -6,6 +6,8 @@
  * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
  * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
  *
+ * @codingStandardsIgnoreFile MediaWiki.Files.OneClassPerFile.MultipleFound
+ *
  * DEVELOPERS: given its nature, this extension must work with all MediaWiki versions and
  *             PHP 5.2+, so please do not use "new" syntaxes (namespaces, arrays with [], etc.).
  */

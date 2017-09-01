@@ -28,6 +28,8 @@
 		<exclude name="MediaWiki.Commenting.FunctionComment.ParamNameNoMatch" />
 		<!-- See previous rule between PHPDoc and PHPCS -->
 		<exclude name="MediaWiki.Commenting.FunctionComment.MissingParamTag" />
+		<!-- MediaWikiFarm is used as a prefix in all class names, but file names are too long -->
+		<exclude name="MediaWiki.Files.ClassMatchesFilename.NotMatch" />
 	</rule>
 	<!-- Lines should be less than 160 characters -->
 	<rule ref="Generic.Files.LineLength">

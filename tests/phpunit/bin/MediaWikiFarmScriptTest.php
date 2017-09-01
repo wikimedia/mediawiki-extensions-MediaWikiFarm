@@ -288,7 +288,7 @@ HELP;
 		$wgMediaWikiFarmScript->main();
 
 		$this->assertEquals( 4, $wgMediaWikiFarmScript->status );
-		$this->assertNull( $wgMediaWikiFarmScript->script );
+		$this->assertEquals( '', $wgMediaWikiFarmScript->script );
 		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
 		$this->assertEquals( array( self::$mwscriptPath ), $wgMediaWikiFarmScript->argv );
 	}

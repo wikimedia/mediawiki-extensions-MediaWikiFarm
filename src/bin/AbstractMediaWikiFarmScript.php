@@ -69,7 +69,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * @internal
 	 *
-	 * @param string|integer $name Parameter name or position (from 0).
+	 * @param string|int $name Parameter name or position (from 0).
 	 * @param bool $shift Remove this parameter from the list?
 	 * @return string|null Value of the parameter.
 	 */
