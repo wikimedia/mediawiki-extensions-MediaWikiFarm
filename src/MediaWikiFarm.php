@@ -384,6 +384,20 @@ class MediaWikiFarm {
 			$variables['$CORECONFIG'] = $this->farmConfig['coreconfig'];
 			$variables['$CONFIG'] = $this->farmConfig['config'];
 			MediaWikiFarmUtils::cacheFile( $variables, $this->variables['$SERVER'] . '.php', $this->cacheDir . '/wikis' );
+
+			# Cache the list of wikis
+			$hosts = $this->readFile( 'wikis.php', $this->cacheDir, false );
+			$host = substr( $variables['$SERVER'] . '/', 0, strpos( $variables['$SERVER'] . '/', '/' ) );
+			$path = substr( $variables['$SERVER'], strlen( $host ) );
+			if( !is_array( $hosts ) ) {
+				$hosts = array();
+			}
+			if( !array_key_exists( $host, $hosts ) || !preg_match( $hosts[$host], $path . '/' ) ) {
+				$path = preg_quote( $path, '/' );
+				$path = ( array_key_exists( $host, $hosts ) ? substr( $hosts[$host], 2, -4 ) . '|' : '' ) . $path;
+				$hosts[$host] = '/^(' . $path . ')\//';
+				MediaWikiFarmUtils::cacheFile( $hosts, 'wikis.php', $this->cacheDir );
+			}
 		}
 
 		return true;
@@ -749,12 +763,15 @@ class MediaWikiFarm {
 
 		# Shortcut loading
 		// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
-		if( $this->cacheDir && ( $result = $this->readFile( $host . ( $path ? $path : '' ) . '.php', $this->cacheDir . '/wikis', false ) ) ) {
+		if( $this->cacheDir && ( $hosts = $this->readFile( 'wikis.php', $this->cacheDir, false ) )
+		    && is_array( $hosts ) && array_key_exists( $host, $hosts ) && preg_match( $hosts[$host], $path . '/', $matches )
+		    && ( $result = $this->readFile( $host . $matches[1] . '.php', $this->cacheDir . '/wikis', false ) ) ) {
+			$path = $matches[1];
 			$fresh = true;
-			$myfreshness = filemtime( $this->cacheDir . '/wikis/' . $host . ( $path ? $path : '' ) . '.php' );
+			$myfreshness = filemtime( $this->cacheDir . '/wikis/' . $host . $path . '.php' );
 			foreach( $result['$CORECONFIG'] as $coreconfig ) {
-				if( !is_file( $this->configDir . '/' . $coreconfig ) ||
-				    filemtime( $this->configDir . '/' . $coreconfig ) > $myfreshness ) {
+				if( !is_file( $this->configDir . '/' . $coreconfig )
+				    || filemtime( $this->configDir . '/' . $coreconfig ) > $myfreshness ) {
 					$fresh = false;
 					break;
 				}
@@ -766,12 +783,12 @@ class MediaWikiFarm {
 				$this->variables = $result;
 				return;
 			} else {
-				unlink( $this->cacheDir . '/wikis/' . $host . ( $path ? $path : '' ) . '.php' );
-				if( is_file( $this->cacheDir . '/LocalSettings/' . $host . ( $path ? $path : '' ) . '.php' ) ) {
-					unlink( $this->cacheDir . '/LocalSettings/' . $host . ( $path ? $path : '' ) . '.php' );
+				unlink( $this->cacheDir . '/wikis/' . $host . $path . '.php' );
+				if( is_file( $this->cacheDir . '/LocalSettings/' . $host . $path . '.php' ) ) {
+					unlink( $this->cacheDir . '/LocalSettings/' . $host . $path . '.php' );
 				}
-				if( is_file( $this->cacheDir . '/composer/' . $host . ( $path ? $path : '' ) . '.php' ) ) {
-					unlink( $this->cacheDir . '/composer/' . $host . ( $path ? $path : '' ) . '.php' );
+				if( is_file( $this->cacheDir . '/composer/' . $host . $path . '.php' ) ) {
+					unlink( $this->cacheDir . '/composer/' . $host . $path . '.php' );
 				}
 			}
 		}
@@ -1019,12 +1036,12 @@ class MediaWikiFarm {
 			}
 
 			# Search wiki in a hierarchical manner
-			if( array_key_exists( $this->variables['$WIKIID'], $versions ) &&
-			    MediaWikiFarmUtils::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$WIKIID']] ) ) {
+			if( array_key_exists( $this->variables['$WIKIID'], $versions )
+			    && MediaWikiFarmUtils::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$WIKIID']] ) ) {
 				$this->variables['$VERSION'] = $versions[$this->variables['$WIKIID']];
 			}
-			elseif( array_key_exists( $this->variables['$SUFFIX'], $versions ) &&
-			        MediaWikiFarmUtils::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$SUFFIX']] ) ) {
+			elseif( array_key_exists( $this->variables['$SUFFIX'], $versions )
+			        && MediaWikiFarmUtils::isMediaWiki( $this->codeDir . '/' . $versions[$this->variables['$SUFFIX']] ) ) {
 				if( !$explicitExistence ) {
 					throw new MWFConfigurationException( 'Only explicitly-defined wikis declared in existence lists ' .
 						'are allowed to use the “default versions” mechanism (suffix) in multiversion mode.' );
