@@ -530,8 +530,7 @@ PHP;
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/LocalSettings/a.testfarm-multiversion.example.org.php' ) );
 
 		# Invalidate the existence cache
-		sleep( 2 );
-		$this->assertTrue( touch( self::$wgMediaWikiFarmConfigDir . '/farms.php' ) );
+		$this->assertTrue( touch( self::$wgMediaWikiFarmConfigDir . '/farms.php', time() + 300 ) );
 
 		# Check the existence cache is understood as invalidated
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,

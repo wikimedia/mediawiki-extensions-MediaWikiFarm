@@ -242,6 +242,21 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
+	 * Test reading a badly-formatted PHP file.
+	 *
+	 * @requires PHP 7.0
+	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::selectFarm
+	 */
+	function testBadSyntaxFileReadingPHP() {
+
+		$result = $this->farm->readFile( 'badsyntax.php', self::$wgMediaWikiFarmConfigDir );
+		$this->assertFalse( $result );
+	}
+
+	/**
 	 * Test reading a badly-formatted YAML file.
 	 *
 	 * @covers MediaWikiFarm::readFile
@@ -342,7 +357,9 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', null, self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir );
 
+		# Simulate an old origin file, so that the cached version (with current time) will be more recent as it should be
 		copy( self::$wgMediaWikiFarmConfigDir . '/testreading.json', self::$wgMediaWikiFarmConfigDir . '/testreading2.json' );
+		touch( self::$wgMediaWikiFarmConfigDir . '/testreading2.json', time() - 300 );
 
 		# Read original file and check the cached version is written
 		$farm->readFile( 'testreading2.json', self::$wgMediaWikiFarmConfigDir );
@@ -360,7 +377,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		# Put the original file in badsyntax and check it fallbacks to cached version
 		# Touch the file to simulate a later edit by the user
 		copy( self::$wgMediaWikiFarmConfigDir . '/badsyntax.json', self::$wgMediaWikiFarmConfigDir . '/testreading2.json' );
-		touch( self::$wgMediaWikiFarmConfigDir . '/testreading2.json', time() + 10 );
+		touch( self::$wgMediaWikiFarmConfigDir . '/testreading2.json', time() + 300 );
 		$result = $farm->readFile( 'testreading2.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
 			array(

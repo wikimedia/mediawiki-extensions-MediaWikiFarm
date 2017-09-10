@@ -46,10 +46,20 @@ class MediaWikiFarmUtils {
 			$format = null;
 		}
 
-		# Format PHP
-		if( $format == '.php' ) {
+		# Cached version - avoid the case where the timestamps are the same, the two files could have non-coherent versions
+		if( $cachedFile && is_string( $format ) && is_file( $cachedFile ) && filemtime( $cachedFile ) > filemtime( $prefixedFile ) ) {
 
-			$array = include $prefixedFile;
+			return self::readFile( $filename . '.php', $cacheDir, $log, $cacheDir . '/config', false );
+		}
+
+		# Format PHP
+		elseif( $format == '.php' ) {
+
+			try {
+				$array = @include $prefixedFile;
+			} catch( Throwable $e ) {
+				$array = null;
+			}
 		}
 
 		# Format 'serialisation'
@@ -63,12 +73,6 @@ class MediaWikiFarmUtils {
 			else {
 				$array = unserialize( $content );
 			}
-		}
-
-		# Cached version
-		elseif( $cachedFile && is_string( $format ) && is_file( $cachedFile ) && filemtime( $cachedFile ) >= filemtime( $prefixedFile ) ) {
-
-			return self::readFile( $filename . '.php', $cacheDir, $log, $cacheDir . '/config', false );
 		}
 
 		# Format YAML
@@ -136,7 +140,8 @@ class MediaWikiFarmUtils {
 		# Regular return for arrays
 		if( is_array( $array ) ) {
 
-			if( $cachedFile && $directory != $cacheDir . '/config' && ( !is_file( $cachedFile ) || ( filemtime( $cachedFile ) < filemtime( $prefixedFile ) ) ) ) {
+			# Cache this version - avoid the case where the timestamps are the same, the two files could have non-coherent versions
+			if( $cachedFile && $directory != $cacheDir . '/config' && ( !is_file( $cachedFile ) || ( filemtime( $cachedFile ) <= filemtime( $prefixedFile ) ) ) ) {
 				self::cacheFile( $array, $filename . '.php', $cacheDir . '/config' );
 			}
 

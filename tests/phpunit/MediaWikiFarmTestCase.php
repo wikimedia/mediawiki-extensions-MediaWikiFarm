@@ -123,6 +123,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 		copy( self::$wgMediaWikiFarmConfigDir . '/http404.php', 'phpunitHTTP404.php' );
 
 		# Dynamically create these files to avoid CI error reports
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/badsyntax.php', "<?php\nreturn array()\n" );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/badsyntax.json', "{\n\t\"element1\",\n}\n" );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/empty.json', "null\n" );
 	}
@@ -149,6 +150,9 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
 		if( is_file( 'phpunitHTTP404.php' ) ) {
 			unlink( 'phpunitHTTP404.php' );
+		}
+		if( is_file( self::$wgMediaWikiFarmConfigDir . '/badsyntax.php' ) ) {
+			unlink( self::$wgMediaWikiFarmConfigDir . '/badsyntax.php' );
 		}
 		if( is_file( self::$wgMediaWikiFarmConfigDir . '/badsyntax.json' ) ) {
 			unlink( self::$wgMediaWikiFarmConfigDir . '/badsyntax.json' );
