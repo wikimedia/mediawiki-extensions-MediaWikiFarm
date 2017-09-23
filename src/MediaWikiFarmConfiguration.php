@@ -434,9 +434,12 @@ class MediaWikiFarmConfiguration {
 				$status = 'composer';
 				$value = true;
 
-			# MediaWiki still not loaded: we must wait before taking a decision
+			# MediaWiki still not loaded: we must wait before taking a decision except for Composer loading
 			} elseif( $ExtensionRegistry === null ) {
-				# nop
+				if( $this->detectComposer( $type, $name ) ) {
+					$status = 'composer';
+					$value = true;
+				}
 
 			# Mechanism require_once wanted
 			} elseif( $value === 'require_once' && $this->detectLoadingMechanism( $type, $name, true ) == $value ) {
