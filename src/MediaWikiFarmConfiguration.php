@@ -430,16 +430,13 @@ class MediaWikiFarmConfiguration {
 				unset( $this->configuration['extensions'][$key] );
 
 			# Mechanism Composer wanted
-			} elseif( $value === 'composer' && $this->detectComposer( $type, $name ) ) {
+			} elseif( ( $value === 'composer' || $value === true ) && $this->detectComposer( $type, $name ) ) {
 				$status = 'composer';
 				$value = true;
 
-			# MediaWiki still not loaded: we must wait before taking a decision except for Composer loading
+			# MediaWiki still not loaded: we must wait before taking a decision
 			} elseif( $ExtensionRegistry === null ) {
-				if( $this->detectComposer( $type, $name ) ) {
-					$status = 'composer';
-					$value = true;
-				}
+				# nop
 
 			# Mechanism require_once wanted
 			} elseif( $value === 'require_once' && $this->detectLoadingMechanism( $type, $name, true ) == $value ) {
@@ -529,10 +526,10 @@ class MediaWikiFarmConfiguration {
 	 *
 	 * @param string $type Type, in ['extension', 'skin'].
 	 * @param string $name Name of the extension/skin.
-	 * @param string $preferedRO Prefered require_once mechanism.
-	 * @return string|null Loading mechnism in ['wfLoadExtension', 'wfLoadSkin', 'require_once', 'composer'] or null if all mechanisms failed.
+	 * @param bool $preferedRO Prefered require_once mechanism.
+	 * @return string|null Loading mechnism in ['wfLoadExtension', 'wfLoadSkin', 'require_once'] or null if all mechanisms failed.
 	 */
-	function detectLoadingMechanism( $type, $name, $preferedRO = null ) {
+	function detectLoadingMechanism( $type, $name, $preferedRO = false ) {
 
 		# Search base directory
 		$base = $this->farm->getVariable( '$CODE' ) . '/' . $type . 's';
@@ -555,11 +552,6 @@ class MediaWikiFarmConfiguration {
 		# An extension.json/skin.json file is in the directory -> assume it is the loading mechanism
 		if( $this->environment['ExtensionRegistry'] && is_file( $base . '/' . $name . '/' . $type . '.json' ) ) {
 			return 'wfLoad' . ucfirst( $type );
-		}
-
-		# A composer.json file is in the directory and the extension is properly autoloaded by Composer
-		elseif( $this->detectComposer( $type, $name ) ) {
-			return 'composer';
 		}
 
 		# A MyExtension.php file is in the directory -> assume it is the loading mechanism

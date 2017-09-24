@@ -137,13 +137,13 @@ class LoadingTest extends MediaWikiFarmTestCase {
 				),
 			),
 			'extensions' => array(
-				'ExtensionTestExtensionComposer2' => array( 'TestExtensionComposer2', 'extension', 'composer', 0 ),
-				'SkinTestSkinComposer' => array( 'TestSkinComposer', 'skin', 'composer', 1 ),
-				'SkinTestSkinRequireOnce' => array( 'TestSkinRequireOnce', 'skin', 'require_once', 2 ),
-				'ExtensionTestExtensionRequireOnce' => array( 'TestExtensionRequireOnce', 'extension', 'require_once', 3 ),
-				'SkinTestSkinWfLoadSkin' => array( 'TestSkinWfLoadSkin', 'skin', 'wfLoadSkin', 4 ),
-				'SkinTestSkinBiLoading' => array( 'TestSkinBiLoading', 'skin', 'wfLoadSkin', 5 ),
-				'ExtensionTestExtensionComposer' => array( 'TestExtensionComposer', 'extension', 'wfLoadExtension', 6 ),
+				'ExtensionTestExtensionComposer' => array( 'TestExtensionComposer', 'extension', 'composer', 0 ),
+				'ExtensionTestExtensionComposer2' => array( 'TestExtensionComposer2', 'extension', 'composer', 1 ),
+				'SkinTestSkinComposer' => array( 'TestSkinComposer', 'skin', 'composer', 2 ),
+				'SkinTestSkinRequireOnce' => array( 'TestSkinRequireOnce', 'skin', 'require_once', 3 ),
+				'ExtensionTestExtensionRequireOnce' => array( 'TestExtensionRequireOnce', 'extension', 'require_once', 4 ),
+				'SkinTestSkinWfLoadSkin' => array( 'TestSkinWfLoadSkin', 'skin', 'wfLoadSkin', 5 ),
+				'SkinTestSkinBiLoading' => array( 'TestSkinBiLoading', 'skin', 'wfLoadSkin', 6 ),
 				'ExtensionMediaWikiFarm' => array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 7 ),
 				'ExtensionTestExtensionWfLoadExtension' => array( 'TestExtensionWfLoadExtension', 'extension', 'wfLoadExtension', 8 ),
 				'ExtensionTestExtensionBiLoading' => array( 'TestExtensionBiLoading', 'extension', 'wfLoadExtension', 9 ),
@@ -219,9 +219,8 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::activateExtensions
 	 * @uses MediaWikiFarmConfiguration::detectLoadingMechanism
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
-	 * @uses MediaWikiFarmUtils::arrayMerge
-	 * @uses MediaWikiFarmUtils::isMediaWiki
-	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmConfiguration::detectComposer
+	 * @uses MediaWikiFarmUtils
 	 */
 	function testRegistrationMediaWikiFarm() {
 

@@ -276,11 +276,8 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::detectComposer
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
-	 * @uses MediaWikiFarmConfiguration::setComposer
-	 * @uses AbstractMediaWikiFarmScript::rmdirr
-	 * @uses MediaWikiFarmUtils::arrayMerge
-	 * @uses MediaWikiFarmUtils::isMediaWiki
-	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses AbstractMediaWikiFarmScript
+	 * @uses MediaWikiFarmUtils
 	 */
 	function testLoadMediaWikiConfigMultiversion() {
 
@@ -346,7 +343,6 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmConfiguration::__construct
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
-	 * @uses MediaWikiFarmConfiguration::setComposer
 	 * @uses MediaWikiFarmConfiguration::detectComposer
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
