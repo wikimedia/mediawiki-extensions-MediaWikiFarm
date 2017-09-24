@@ -100,9 +100,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::populateSettings
 	 * @uses MediaWikiFarmConfiguration::detectComposer
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
-	 * @uses MediaWikiFarmUtils::arrayMerge
-	 * @uses MediaWikiFarmUtils::isMediaWiki
-	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils
 	 */
 	function testAllLoadingMechanisms() {
 
@@ -270,9 +268,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
-	 * @uses MediaWikiFarmUtils::arrayMerge
-	 * @uses MediaWikiFarmUtils::isMediaWiki
-	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils
 	 */
 	function testExceptionsLoadingMechanisms() {
 

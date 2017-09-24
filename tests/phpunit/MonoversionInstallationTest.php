@@ -18,6 +18,7 @@ require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php
  * @group MediaWikiFarm
  * @covers MediaWikiFarm
  * @covers MediaWikiFarmUtils::readFile
+ * @uses MediaWikiFarmUtils::readAnyFile
  */
 class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 

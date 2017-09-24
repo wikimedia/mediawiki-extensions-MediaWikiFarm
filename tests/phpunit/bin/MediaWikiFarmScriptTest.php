@@ -325,7 +325,7 @@ HELP;
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
-	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils
 	 */
 	function testMissingHost() {
 
@@ -367,7 +367,7 @@ HELP;
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::prepareLog
 	 * @uses MediaWikiFarm::issueLog
-	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils
 	 */
 	function testInternalProblem() {
 
@@ -425,7 +425,7 @@ HELP;
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmUtils::arrayMerge
-	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils
 	 */
 	function testMissingScript() {
 
@@ -487,9 +487,7 @@ HELP;
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
-	 * @uses MediaWikiFarmUtils::arrayMerge
-	 * @uses MediaWikiFarmUtils::isMediaWiki
-	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils
 	 */
 	function testSuccessfulLoading() {
 
@@ -567,8 +565,7 @@ OUTPUT
 	 * @uses MediaWikiFarmConfiguration::setEnvironment
 	 * @uses MediaWikiFarmConfiguration::sortExtensions
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
-	 * @uses MediaWikiFarmUtils::arrayMerge
-	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils
 	 */
 	function testRestInPeace() {
 

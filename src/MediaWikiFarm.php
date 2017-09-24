@@ -837,17 +837,12 @@ class MediaWikiFarm {
 
 		# Read the farms configuration
 		if( !$farms ) {
-			// @codingStandardsIgnoreStart MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
-			if( $farms = $this->readFile( 'farms.yml', $this->configDir ) ) {
-				$this->farmConfig['coreconfig'][] = 'farms.yml';
-			} elseif( $farms = $this->readFile( 'farms.php', $this->configDir ) ) {
-				$this->farmConfig['coreconfig'][] = 'farms.php';
-			} elseif( $farms = $this->readFile( 'farms.json', $this->configDir ) ) {
-				$this->farmConfig['coreconfig'][] = 'farms.json';
+			list( $farms, $file ) = MediaWikiFarmUtils::readAnyFile( 'farms', $this->configDir, $this->cacheDir, $this->log );
+			if( $file ) {
+				$this->farmConfig['coreconfig'][] = $file;
 			} else {
 				return array( 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => false, 'redirects' => $redirects );
 			}
-			// @codingStandardsIgnoreEnd MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
 		}
 
 		# For each proposed farm, check if the host matches

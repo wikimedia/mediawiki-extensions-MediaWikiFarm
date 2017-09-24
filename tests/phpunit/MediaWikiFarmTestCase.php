@@ -50,6 +50,9 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	/** @var string Farm code directory. */
 	public static $wgMediaWikiFarmFarmDir = '';
 
+	/** @var string Data directory for tests. */
+	public static $wgMediaWikiFarmTestDataDir = '';
+
 	/** @var string Configuration directory for tests. */
 	public static $wgMediaWikiFarmConfigDir = '';
 
@@ -114,6 +117,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
 		# Set test configuration parameters
 		self::$wgMediaWikiFarmFarmDir = dirname( dirname( dirname( __FILE__ ) ) );
+		self::$wgMediaWikiFarmTestDataDir = dirname( __FILE__ ) . '/data';
 		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
 		self::$wgMediaWikiFarmCodeDir = dirname( __FILE__ ) . '/data/mediawiki';
 		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';
@@ -126,6 +130,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/badsyntax.php', "<?php\nreturn array()\n" );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/badsyntax.json', "{\n\t\"element1\",\n}\n" );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/empty.json', "null\n" );
+		file_put_contents( self::$wgMediaWikiFarmTestDataDir . '/readAnyFile/badsyntax.json', "{\n\t\"element1\",\n}\n" );
 	}
 
 	/**
@@ -159,6 +164,9 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 		}
 		if( is_file( self::$wgMediaWikiFarmConfigDir . '/empty.json' ) ) {
 			unlink( self::$wgMediaWikiFarmConfigDir . '/empty.json' );
+		}
+		if( is_file( self::$wgMediaWikiFarmTestDataDir . '/readAnyFile/badsyntax.json' ) ) {
+			unlink( self::$wgMediaWikiFarmTestDataDir . '/readAnyFile/badsyntax.json' );
 		}
 
 		parent::tearDownAfterClass();

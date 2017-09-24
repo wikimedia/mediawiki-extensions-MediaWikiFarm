@@ -66,6 +66,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils5_3::readYAML
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testSuccessfulReadingYAML() {
 
@@ -91,6 +92,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testSuccessfulReadingPHP() {
 
@@ -110,6 +112,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testSuccessfulReadingJSON() {
 
@@ -129,6 +132,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testSuccessfulReadingSER() {
 
@@ -148,6 +152,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testSuccessfulReadingDblist() {
 
@@ -167,6 +172,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testReadMissingFile() {
 
@@ -181,6 +187,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testUnrecognisedFormatReadFile() {
 
@@ -198,6 +205,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testBadArgumentReadFile() {
 
@@ -213,6 +221,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils5_3::readYAML
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testBadSyntaxFileReadingYAML() {
 
@@ -234,6 +243,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testBadSyntaxFileReadingJSON() {
 
@@ -249,6 +259,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testBadSyntaxFileReadingPHP() {
 
@@ -264,6 +275,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils5_3::readYAML
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testEmptyFileReadingYAML() {
 
@@ -284,6 +296,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testEmptyFileReadingJSON() {
 
@@ -298,6 +311,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testEmptyFileReadingSER() {
 
@@ -312,6 +326,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testBadContentReadFile() {
 
@@ -330,6 +345,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarm::getCacheDir
 	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testNoCache() {
 
@@ -352,6 +368,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testCacheFile() {
 
@@ -396,6 +413,86 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
+	 * [unit] Test reading an extension-less file.
+	 *
+	 * @covers MediaWikiFarmUtils::readAnyFile
+	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarm // should be removed: only used in setUp
+	 */
+	function testReadAnyFileSuccess() {
+
+		$log = array();
+		$result = MediaWikiFarmUtils::readAnyFile( 'success', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
+
+		$this->assertEquals(
+			true,
+			is_array( $result ) && array_keys( $result ) === array( 0, 1 ),
+			'The returned value should be a list with two elements.'
+		);
+		$this->assertEquals( 'success.php', $result[1], 'The read file should be the PHP file.' );
+		$this->assertEquals(
+			array(
+				0 => 'element1',
+				1 => array(
+					'element2' => 'element3',
+				),
+			),
+			$result[0],
+			'The result should be the specified array.'
+		);
+	}
+
+	/**
+	 * [unit] Test reading an extension-less file but non-existant file.
+	 *
+	 * @covers MediaWikiFarmUtils::readAnyFile
+	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarm // should be removed: only used in setUp
+	 */
+	function testReadAnyFileNonExistant() {
+
+		$log = array();
+		$result = MediaWikiFarmUtils::readAnyFile( 'nonexistant', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
+
+		$this->assertEquals(
+			true,
+			is_array( $result ) && array_keys( $result ) === array( 0, 1 ),
+			'The returned value should be a list with two elements.'
+		);
+		$this->assertEquals( '', $result[1], 'There should be no read file.' );
+		$this->assertEquals(
+			array(),
+			$result[0],
+			'The result should be an empty array.'
+		);
+	}
+
+	/**
+	 * [unit] Test reading an extension-less file with a bad syntax.
+	 *
+	 * @covers MediaWikiFarmUtils::readAnyFile
+	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarm // should be removed: only used in setUp
+	 */
+	function testReadAnyFileBadSyntax() {
+
+		$log = array();
+		$result = MediaWikiFarmUtils::readAnyFile( 'badsyntax', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
+
+		$this->assertEquals(
+			true,
+			is_array( $result ) && array_keys( $result ) === array( 0, 1 ),
+			'The returned value should be a list with two elements.'
+		);
+		$this->assertEquals( '', $result[1], 'There should be no read file because the only file has a syntax error.' );
+		$this->assertEquals(
+			array(),
+			$result[0],
+			'The result should be an empty array.'
+		);
+	}
+
+	/**
 	 * Test a farm with a badly-formatted ‘variables’ file.
 	 *
 	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
@@ -408,6 +505,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::setVariable
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Missing or badly formatted file 'badsyntax.json' defining existing values for variable 'wiki'
@@ -426,6 +524,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 *
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Argument of MediaWikiFarm->replaceVariables() must be a string or an array.
@@ -445,6 +544,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::getCodeDir
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testCreateLocalSettings() {
 
@@ -565,6 +665,7 @@ PHP;
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	function testComposerKey() {
 

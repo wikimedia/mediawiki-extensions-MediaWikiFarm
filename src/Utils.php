@@ -194,6 +194,36 @@ class MediaWikiFarmUtils {
 	}
 
 	/**
+	 * Read a file with any of the listed extensions.
+	 *
+	 * If multiple files exist with different extensions, the first (without syntax error)
+	 * in the extensions list is returned. If some previous files had syntax errors, these
+	 * syntax errors appear in the log.
+	 *
+	 * The available extensions are listed in the function MediaWikiFarmUtils::readFile.
+	 *
+	 * @param string $filename File name without the extension.
+	 * @param string $directory Directory containing the file.
+	 * @param string $cacheDir Cache directory.
+	 * @param string[] $log Error log.
+	 * @param string[] $formats List of possible extensions of the file.
+	 * @param bool $cache The successfully file read must be cached.
+	 * @return array 2-tuple with the result (array) and file read (string); in case no files were found, the second value is an empty string.
+	 */
+	static function readAnyFile( $filename, $directory, $cacheDir, array &$log, $formats = array( 'yml', 'php', 'json' ), $cache = true ) {
+
+		foreach( $formats as $format ) {
+
+			$array = self::readFile( $filename . '.' . $format, $cacheDir, $log, $directory, $cache );
+			if( is_array( $array ) ) {
+				return array( $array, $filename . '.' . $format );
+			}
+		}
+
+		return array( array(), '' );
+	}
+
+	/**
 	 * Guess if a given directory contains MediaWiki.
 	 *
 	 * This heuristic (presence of [dir]/includes/DefaultSettings.php) has no false negatives

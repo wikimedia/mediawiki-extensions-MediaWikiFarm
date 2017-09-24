@@ -19,6 +19,7 @@ require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php
  * @covers MediaWikiFarmUtils::isMediaWiki
  * @covers MediaWikiFarmUtils::cacheFile
  * @covers MediaWikiFarmUtils::readFile
+ * @uses MediaWikiFarmUtils::readAnyFile
  */
 class MultiversionInstallationTest extends MediaWikiFarmTestCase {
 
