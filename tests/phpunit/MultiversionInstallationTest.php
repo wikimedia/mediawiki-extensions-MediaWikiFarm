@@ -512,8 +512,8 @@ PHP;
 		# Read the existence cache
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
-			                   array( 'EntryPoint' => 'index.php' )
-			);
+		                           array( 'EntryPoint' => 'index.php' )
+		);
 
 		$this->assertTrue( $farm->checkExistence() );
 
@@ -538,6 +538,9 @@ PHP;
 			                   array( 'EntryPoint' => 'index.php' )
 			);
 		$this->assertFalse( is_file( self::$wgMediaWikiFarmCacheDir . '/LocalSettings/a.testfarm-multiversion.example.org.php' ) );
+
+		# Reinit mtime of farms.php for further tests
+		$this->assertTrue( touch( self::$wgMediaWikiFarmConfigDir . '/farms.php', time() - 5 ) );
 	}
 
 	/**
