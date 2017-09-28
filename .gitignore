@@ -20,6 +20,7 @@
 /tests/phpunit/data/config/empty.json
 /tests/phpunit/data/config/testdeploymentsfarmversions.php
 /tests/phpunit/data/mediawiki/vstub3
+/tests/phpunit/data/readAnyFile/badsyntax.json
 
 # Compiled code documentation
 /docs/code

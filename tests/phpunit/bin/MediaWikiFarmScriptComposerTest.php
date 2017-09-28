@@ -191,7 +191,7 @@ HELP;
 		$cwd = getcwd();
 		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub3' );
 
-		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 2, array( self::$mwcomposerPath, '-q' ) );
+		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 2, array( self::$mwcomposerPath, 'install', '--no-dev', '-q' ) );
 
 		# This function is the main procedure, it runs Composer in background 7 times so it can take 20-25 seconds
 		$wgMediaWikiFarmScriptComposer->main();

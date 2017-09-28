@@ -3,7 +3,6 @@
  * Class MediaWikiFarmHooks.
  *
  * @package MediaWikiFarm
- * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
  * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
  * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
  */
@@ -34,12 +33,14 @@ class MediaWikiFarmHooks {
 		$files[] = $dir . 'FunctionsTest.php';
 		$files[] = $dir . 'HooksTest.php';
 		$files[] = $dir . 'InstallationIndependantTest.php';
+		$files[] = $dir . 'ListTest.php';
 		$files[] = $dir . 'LoadingTest.php';
 		$files[] = $dir . 'LoggingTest.php';
 		$files[] = $dir . 'MonoversionInstallationTest.php';
 		$files[] = $dir . 'MultiversionInstallationTest.php';
 		$files[] = $dir . 'bin/MediaWikiFarmScriptComposerTest.php';
 		$files[] = $dir . 'bin/MediaWikiFarmScriptTest.php';
+		$files[] = $dir . 'bin/ScriptListWikisTest.php';
 
 		return true;
 	}

@@ -56,6 +56,9 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	/** @var string Configuration directory for tests. */
 	public static $wgMediaWikiFarmConfigDir = '';
 
+	/** @var string Configuration directory (2) for tests. */
+	public static $wgMediaWikiFarmConfig2Dir = '';
+
 	/** @var string Code directory created for tests. */
 	public static $wgMediaWikiFarmCodeDir = '';
 
@@ -119,6 +122,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 		self::$wgMediaWikiFarmFarmDir = dirname( dirname( dirname( __FILE__ ) ) );
 		self::$wgMediaWikiFarmTestDataDir = dirname( __FILE__ ) . '/data';
 		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
+		self::$wgMediaWikiFarmConfig2Dir = dirname( __FILE__ ) . '/data/config2';
 		self::$wgMediaWikiFarmCodeDir = dirname( __FILE__ ) . '/data/mediawiki';
 		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';
 		self::$wgMediaWikiFarmSyslog = 'mediawikifarm';
