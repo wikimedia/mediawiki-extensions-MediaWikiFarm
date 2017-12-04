@@ -929,21 +929,27 @@ class MediaWikiFarm {
 			}
 			$value = $this->variables[ '$' . strtolower( $key ) ];
 
-			# If every values are correct, continue
-			if( !array_key_exists( 'file', $variable ) || !is_string( $variable['file'] ) ) {
+			# Get the values
+			if( array_key_exists( 'file', $variable ) && is_string( $variable['file'] ) ) {
+
+				# Really check if the variable is in the listing file
+				$filename = $this->replaceVariables( $variable['file'] );
+				$choices = $this->readFile( $filename, $this->configDir );
+				if( $choices === false ) {
+					throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $variable['file'] .
+						'\' defining existing values for variable \'' . $key . '\''
+					);
+				}
+				$this->farmConfig['coreconfig'][] = $filename;
+
+			} elseif( array_key_exists( 'values', $variable ) && is_array( $variable['values'] ) ) {
+
+				$choices = $variable['values'];
+
+			} else {
 				$explicitExistence = $explicitExistenceUnderScrutiny ? false : $explicitExistence;
 				continue;
 			}
-
-			# Really check if the variable is in the listing file
-			$filename = $this->replaceVariables( $variable['file'] );
-			$choices = $this->readFile( $filename, $this->configDir );
-			if( $choices === false ) {
-				throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $variable['file'] .
-					'\' defining existing values for variable \'' . $key . '\''
-				);
-			}
-			$this->farmConfig['coreconfig'][] = $filename;
 
 			# Check if the array is a simple list of wiki identifiers without version information…
 			if( array_keys( $choices ) === range( 0, count( $choices ) - 1 ) ) {

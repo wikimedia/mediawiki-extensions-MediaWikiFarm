@@ -169,6 +169,24 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
+	 * Test a existing host in a farm with a “values” variable without version defined inside.
+	 */
+	function testVariableValuesWithoutVersion() {
+
+		$farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion-with-values-variable-without-version.example.org' );
+		$this->assertTrue( $farm->checkExistence() );
+	}
+
+	/**
+	 * Test a nonexistant host in a farm with a “values” variable without version defined inside.
+	 */
+	function testVariableValuesWithoutVersionNonexistant() {
+
+		$farm = self::constructMediaWikiFarm( 'c.testfarm-monoversion-with-values-variable-without-version.example.org' );
+		$this->assertFalse( $farm->checkExistence() );
+	}
+
+	/**
 	 * Test a existing host in a farm with a file variable with version defined inside.
 	 */
 	function testVariableFileWithVersion() {

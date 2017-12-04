@@ -134,6 +134,26 @@ return array(
 		),
 	),
 
+	'testfarm-monoversion-with-values-variable-without-version' => array(
+
+		'server' => '(?P<wiki>[a-z])\.testfarm-monoversion-with-values-variable-without-version\.example\.org',
+		'variables' => array(
+			array( 'variable' => 'wiki',
+			       'values' => array( 'a', 'b' ), ),
+		),
+		'suffix' => 'testfarm',
+		'wikiID' => '$wikitestfarm',
+		'HTTP404' => 'phpunitHTTP404.php',
+		'config' => array(
+			array( 'file' => 'settings.php',
+			       'key' => 'default',
+			),
+			array( 'file' => 'LocalSettings.php',
+			       'executable' => true,
+			),
+		),
+	),
+
 	'testfarm-multiversion-with-file-variable-with-version' => array(
 
 		'server' => '(?P<wiki>[a-z])\.testfarm-multiversion-with-file-variable-with-version\.example\.org',
