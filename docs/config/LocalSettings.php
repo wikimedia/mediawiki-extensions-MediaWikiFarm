@@ -9,8 +9,14 @@ if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
 }
 
 // Configuration directory.
+// Type: string
 // There must be a file 'farms.yml' or 'farms.php' or 'farms.json' inside.
 $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
+
+// Syslog tag.
+// Type: string|false
+$wgMediaWikiFarmSyslog = 'mediawikifarm';
+
 
 # Include the code.
 require "$IP/extensions/MediaWikiFarm/MediaWikiFarm.php";

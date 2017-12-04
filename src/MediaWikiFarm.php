@@ -602,7 +602,7 @@ class MediaWikiFarm {
 	static function prepareLog( $wgMediaWikiFarmSyslog, $wgMediaWikiFarm, $exception = null ) {
 
 		$log = array();
-		if( $wgMediaWikiFarmSyslog === false ) {
+		if( $wgMediaWikiFarmSyslog === false || $wgMediaWikiFarmSyslog === null ) {
 			return $log;
 		}
 
