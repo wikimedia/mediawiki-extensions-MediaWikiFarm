@@ -23,9 +23,11 @@ if( !class_exists( 'MediaWikiTestCase' ) ) {
 		/**
 		 * Placeholder for MediaWikiTestCase when standalone PHPUnit is executed.
 		 *
-		 * @package MediaWiki\Tests
+		 * Use a class alias instead of creating a new MediaWikiTestCase.
+		 * Wrap the alias in a call_user_func call to avoid making IDEs think this is the main
+		 * MediaWikiTestCase definition.
 		 */
-		class MediaWikiTestCase extends PHPUnit\Framework\TestCase {}
+		call_user_func( 'class_alias', 'PHPUnit\Framework\TestCase', 'MediaWikiTestCase' );
 	}
 
 	# PHPUnit < 6.0
@@ -34,9 +36,11 @@ if( !class_exists( 'MediaWikiTestCase' ) ) {
 		/**
 		 * Placeholder for MediaWikiTestCase when standalone PHPUnit is executed.
 		 *
-		 * @package MediaWiki\Tests
+		 * Use a class alias instead of creating a new MediaWikiTestCase.
+		 * Wrap the alias in a call_user_func call to avoid making IDEs think this is the main
+		 * MediaWikiTestCase definition.
 		 */
-		class MediaWikiTestCase extends PHPUnit_Framework_TestCase {} // @codingStandardsIgnoreLine Generic.Classes.DuplicateClassName.Found
+		call_user_func( 'class_alias', 'PHPUnit_Framework_TestCase', 'MediaWikiTestCase' );
 	}
 }
 
