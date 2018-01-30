@@ -1,8 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"Hamilton Abreu"
+			"Hamilton Abreu",
+			"Athena in Wonderland"
 		]
 	},
-	"mediawikifarm-desc": "Transforma uma instalação MediaWiki num site de alojamento de wikis que permite múltiplas wikis independentes."
+	"mediawikifarm-desc": "Transforma uma instalação MediaWiki num sítio de alojamento de wikis que permite múltiplas wikis independentes."
 }
