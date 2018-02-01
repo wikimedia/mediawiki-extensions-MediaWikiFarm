@@ -5,7 +5,7 @@
 		"Seb35"
 	],
 	"description": "Stub skin for testing",
-	"license-name": "GPL-3.0+",
+	"license-name": "GPL-3.0-or-later",
 	"type": "other",
 	"requires": {
 		"MediaWiki": ">= 1.25.0"

@@ -3,8 +3,8 @@
  * Classes MediaWikiFarm and MWFConfigurationException.
  *
  * @package MediaWikiFarm
- * @license GPL-3.0+ GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0+ GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0-or-later GNU General Public License v3.0 ou version ultérieure
+ * @license AGPL-3.0-or-later GNU Affero General Public License v3.0 ou version ultérieure
  *
  * @codingStandardsIgnoreFile MediaWiki.Files.OneClassPerFile.MultipleFound
  *
@@ -536,7 +536,7 @@ class MediaWikiFarm {
 				'author' => '[https://www.mediawiki.org/wiki/User:Seb35 Seb35]',
 				'url' => 'https://www.mediawiki.org/wiki/Extension:MediaWikiFarm',
 				'descriptionmsg' => 'mediawikifarm-desc',
-				'license-name' => 'GPL-3.0+',
+				'license-name' => 'GPL-3.0-or-later',
 			);
 
 			$GLOBALS['wgAutoloadClasses']['MediaWikiFarm'] = 'src/MediaWikiFarm.php';

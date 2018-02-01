@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
+ * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
 

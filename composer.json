@@ -6,7 +6,7 @@
 		"mediawiki"
 	],
 	"homepage": "https://www.mediawiki.org/wiki/Extension:MediaWikiFarm",
-	"license": "GPL-3.0+",
+	"license": "GPL-3.0-or-later",
 	"authors": [
 		{
 			"name": "Sébastien Beyou",

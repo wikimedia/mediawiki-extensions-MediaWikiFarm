@@ -3,8 +3,8 @@
  * Class MediaWikiFarmScriptListWikisTest.
  *
  * @package MediaWikiFarm\Tests
- * @license GPL-3.0+ GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0+ GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
+ * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
  */
 
 require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmTestCase.php';
