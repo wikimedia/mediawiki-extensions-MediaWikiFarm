@@ -268,7 +268,23 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
-	 * Test reading a badly-formatted YAML file.
+	 * Test a successful reading of an empty PHP file.
+	 *
+	 * @covers MediaWikiFarm::readFile
+	 * @covers MediaWikiFarmUtils::readFile
+	 * @uses MediaWikiFarm::__construct
+	 * @uses MediaWikiFarm::selectFarm
+	 * @uses MediaWikiFarmUtils5_3::readYAML
+	 * @uses MediaWikiFarmUtils::readAnyFile
+	 */
+	function testEmptyFileReadingPHP() {
+
+		$result = $this->farm->readFile( 'empty.php', self::$wgMediaWikiFarmConfigDir );
+		$this->assertEquals( array(), $result );
+	}
+
+	/**
+	 * Test a successful reading of an empty YAML file.
 	 *
 	 * @covers MediaWikiFarm::readFile
 	 * @covers MediaWikiFarmUtils::readFile
@@ -286,11 +302,11 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		}
 
 		$result = $this->farm->readFile( 'empty.yml', self::$wgMediaWikiFarmConfigDir );
-		$this->assertEquals( false, $result );
+		$this->assertEquals( array(), $result );
 	}
 
 	/**
-	 * Test a successufl reading an empty JSON file.
+	 * Test a successufl reading of an empty JSON file.
 	 *
 	 * @covers MediaWikiFarm::readFile
 	 * @covers MediaWikiFarmUtils::readFile

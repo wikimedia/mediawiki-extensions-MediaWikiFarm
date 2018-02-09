@@ -93,6 +93,9 @@ class MediaWikiFarmUtils {
 					$log['unreadable-file'] = true;
 					$array = false;
 				}
+				if( is_null( $array ) ) {
+					$array = array();
+				}
 			}
 		}
 
