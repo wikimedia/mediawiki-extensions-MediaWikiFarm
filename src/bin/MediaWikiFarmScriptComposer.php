@@ -93,22 +93,21 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 		# change its vendor directory and extensions without breaking current
 		# installation
 		$origComposerJson = file_get_contents( 'composer.json' );
-		$tmpDir = $GLOBALS['wgMediaWikiFarmCacheDir'];
-		if( !$tmpDir ) {
-			$tmpDir = '/tmp';
-		}
-		self::copyr( $cwd, $tmpDir . '/mediawiki', true, array( '/extensions', '/skins', '/vendor', '/composer\.lock' ) );
-		chdir( $tmpDir . '/mediawiki' );
+		$tmpDir = tempnam( sys_get_temp_dir(), 'mwcomposer' );
+		unlink( $tmpDir );
+		mkdir( $tmpDir );
+		self::copyr( $cwd, $tmpDir, true, array( '/extensions', '/skins', '/vendor', '/composer\.lock' ) );
+		chdir( $tmpDir );
 
 		# Update complete dependencies from Composer
 		if( !$quiet ) {
-			echo "0. Composer with complete extensions/skins set:\n"; // @codeCoverageIgnore
+			echo "\n0. Composer with complete extensions/skins set:\n"; // @codeCoverageIgnore
 		}
-		system( 'composer update ' . implode( ' ', $this->argv ), $return );
+		system( 'composer ' . implode( ' ', $this->argv ), $return );
 		if( $return ) {
 			// @codeCoverageIgnoreStart
 			chdir( $cwd );
-			self::rmdirr( $tmpDir . '/mediawiki' );
+			self::rmdirr( $tmpDir );
 			$this->status = 5;
 			return false;
 			// @codeCoverageIgnoreEnd
@@ -161,10 +160,10 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 			foreach( $installable as $name => $version ) {
 				echo '* ' . preg_replace( '/^(Extension|Skin)/', '$1 ', $extensions[$name] ) . " ($version)\n";
 			}
-			echo "\n";
 			// @codeCoverageIgnoreEnd
 		}
 		self::copyr( 'vendor/composer', 'vendor-composer/composer-init', true );
+		self::rmdirr( 'composer.lock' );
 
 		# Filter MediaWiki extensions/skins dependencies
 		foreach( $dependencies as $name => &$deps ) {
@@ -188,7 +187,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 
 			if( !$quiet ) {
 				// @codeCoverageIgnoreStart
-				echo $icounter . '. Composer set for ';
+				echo "\n$icounter. Composer set for ";
 				echo lcfirst( preg_replace( '/^(Extension|Skin)/', '$1 ', $extensions[$composerName] ) ) . ' (';
 				echo MediaWikiFarmConfiguration::composerKey( $name ) . "):\n";
 				// @codeCoverageIgnoreEnd
@@ -196,11 +195,11 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 
 			self::rmdirr( 'vendor/autoload.php' );
 			file_put_contents( 'composer.json', json_encode( $thisInstallation ) );
-			system( 'composer update ' . implode( ' ', $this->argv ), $return );
+			system( 'composer ' . implode( ' ', $this->argv ), $return );
 			if( $return ) {
 				// @codeCoverageIgnoreStart
 				chdir( $cwd );
-				self::rmdirr( $tmpDir . '/mediawiki' );
+				self::rmdirr( $tmpDir );
 				$this->status = 5;
 				return false;
 				// @codeCoverageIgnoreEnd
@@ -209,6 +208,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 			self::copyr( 'vendor/composer', 'vendor-composer/composer' . MediaWikiFarmConfiguration::composerKey( $name ),
 			             true, array(), array( '/autoload_.*\.php', '/ClassLoader\.php', '/installed\.json' )
 			);
+			self::rmdirr( 'composer.lock' );
 			$icounter++;
 		}
 
@@ -220,16 +220,16 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 		}
 
 		if( !$quiet ) {
-			echo "$icounter. Composer with empty extensions/skins set:\n"; // @codeCoverageIgnore
+			echo "\n$icounter. Composer with empty extensions/skins set:\n"; // @codeCoverageIgnore
 		}
 
 		self::rmdirr( 'vendor/autoload.php' );
 		file_put_contents( 'composer.json', json_encode( $thisInstallation ) );
-		system( 'composer update ' . implode( ' ', $this->argv ), $return );
+		system( 'composer ' . implode( ' ', $this->argv ), $return );
 		if( $return ) {
 			// @codeCoverageIgnoreStart
 			chdir( $cwd );
-			self::rmdirr( $tmpDir . '/mediawiki' );
+			self::rmdirr( $tmpDir );
 			$this->status = 5;
 			return false;
 			// @codeCoverageIgnoreEnd
@@ -262,7 +262,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 		file_put_contents( $cwd . '/vendor/MediaWikiExtensions.php', $phpDependencies );
 
 		chdir( $cwd );
-		self::rmdirr( $tmpDir . '/mediawiki' );
+		self::rmdirr( $tmpDir );
 	}
 
 	/**
