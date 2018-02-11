@@ -53,6 +53,8 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 */
 	function testHighlevelConfiguration() {
 
+		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
+
 		$result = array(
 			'settings' => array(
 				'wgUseExtensionMediaWikiFarm' => true,
@@ -348,6 +350,8 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils
 	 */
 	function testLoadMediaWikiConfigMonoversion() {
+
+		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir,

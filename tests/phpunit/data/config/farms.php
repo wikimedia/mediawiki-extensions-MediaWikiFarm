@@ -419,4 +419,25 @@ return array(
 			),
 		),
 	),
+
+	'testfarm-multiversion-with-file-versions-with-deployments5' => array(
+
+		'server' => '(?P<wiki>[a-z])\.testfarm-multiversion-with-file-versions-with-deployments5\.example\.org',
+		'variables' => array(
+			array( 'variable' => 'wiki',
+			       'file' => 'varwiki.php', ),
+		),
+		'suffix' => 'testdeploymentsfarm',
+		'wikiID' => '$wikitestdeploymentsfarm',
+		'versions' => 'testdeploymentsfarmversions5.php',
+		'deployments' => 'deployments5',
+		'config' => array(
+			array( 'file' => 'settings.php',
+			       'key' => 'default',
+			),
+			array( 'file' => 'LocalSettings.php',
+			       'executable' => true,
+			),
+		),
+	),
 );

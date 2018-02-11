@@ -320,7 +320,7 @@ PHP;
 	/**
 	 * Test the feature 'deployments' with deployed versions.
 	 */
-	function testDeploymedVersions() {
+	function testDeployedVersions() {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => 'index.php' )
@@ -340,9 +340,9 @@ PHP;
 	/**
 	 * Test the feature 'deployments' with deployed versions.
 	 *
-	 * @depends testDeploymedVersions
+	 * @depends testDeployedVersions
 	 */
-	function testDeploymedVersions2() {
+	function testDeployedVersions2() {
 
 		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
 		$versionsFile = <<<PHP
@@ -363,8 +363,11 @@ return array(
 );
 
 PHP;
+		$time = time();
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $deploymentsFile );
+		touch( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $time - 10 );
+		touch( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $time );
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => 'index.php' )
@@ -378,9 +381,9 @@ PHP;
 	/**
 	 * Test the feature 'deployments' with deployed versions.
 	 *
-	 * @depends testDeploymedVersions2
+	 * @depends testDeployedVersions2
 	 */
-	function testDeploymedVersions3() {
+	function testDeployedVersions3() {
 
 		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
 		$versionsFile = <<<PHP
@@ -401,8 +404,11 @@ return array(
 );
 
 PHP;
+		$time = time();
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $deploymentsFile );
+		touch( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $time - 10 );
+		touch( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $time );
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => 'maintenance/update.php' )
@@ -429,9 +435,9 @@ PHP;
 	/**
 	 * Test the feature 'deployments' with deployed versions.
 	 *
-	 * @depends testDeploymedVersions3
+	 * @depends testDeployedVersions3
 	 */
-	function testDeploymedVersions4() {
+	function testDeployedVersions4() {
 
 		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
 		$versionsFile = <<<PHP
@@ -452,8 +458,11 @@ return array(
 );
 
 PHP;
+		$time = time();
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $versionsFile );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $deploymentsFile );
+		touch( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php', $time - 10 );
+		touch( self::$wgMediaWikiFarmConfigDir . '/deployments.php', $time );
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => 'index.php' )
@@ -467,6 +476,47 @@ PHP;
 		}
 
 		$this->assertEquals( 'vstub2', $farm->getVariable( '$VERSION' ) );
+	}
+
+	/**
+	 * Test the feature 'deployments' with deployed versions.
+	 *
+	 * @depends testDeployedVersions4
+	 * @expectedException MWFConfigurationException
+	 * @expectedExceptionMessage No version declared for this wiki.
+	 */
+	function testDeployedVersions5() {
+
+		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
+		$versionsFile = <<<PHP
+<?php
+
+return array(
+);
+
+PHP;
+
+		# Create deployments.php: the list of existing values for variable '$WIKIID' with their associated deployed versions
+		$deploymentsFile = <<<PHP
+<?php
+
+return array(
+	'atestdeploymentsfarm' => 'vstub2',
+);
+
+PHP;
+		$time = time();
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions5.php', $versionsFile );
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/deployments5.php', $deploymentsFile );
+		touch( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions5.php', $time );
+		touch( self::$wgMediaWikiFarmConfigDir . '/deployments5.php', $time - 10 );
+
+		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments5.example.org', null,
+		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => 'index.php' )
+			);
+
+		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments5.php' ) );
+		$farm->checkExistence();
 	}
 
 	/**
@@ -517,6 +567,7 @@ PHP;
 		);
 
 		$this->assertTrue( $farm->checkExistence() );
+		$this->assertTrue( $farm->setVersion() );
 
 		# Populate the configuration cache
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
@@ -552,8 +603,14 @@ PHP;
 		if( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) ) {
 			unlink( self::$wgMediaWikiFarmConfigDir . '/deployments.php' );
 		}
+		if( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments5.php' ) ) {
+			unlink( self::$wgMediaWikiFarmConfigDir . '/deployments5.php' );
+		}
 		if( is_file( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php' ) ) {
 			unlink( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions.php' );
+		}
+		if( is_file( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions5.php' ) ) {
+			unlink( self::$wgMediaWikiFarmConfigDir . '/testdeploymentsfarmversions5.php' );
 		}
 
 		parent::tearDownAfterClass();

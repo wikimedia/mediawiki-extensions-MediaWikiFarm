@@ -558,11 +558,9 @@ class MediaWikiFarm {
 	 */
 	function updateVersionAfterMaintenance() {
 
-		if( !$this->variables['$VERSION'] ) {
-			return;
+		if( $this->variables['$VERSION'] ) {
+			$this->updateVersion( $this->variables['$VERSION'] );
 		}
-
-		$this->updateVersion( $this->variables['$VERSION'] );
 	}
 
 	/**
@@ -761,10 +759,15 @@ class MediaWikiFarm {
 			$this->configuration->setEnvironment( 'ExtensionRegistry', $environment['ExtensionRegistry'] );
 		}
 
+		# Special case for MediaWiki update
+		if( ( PHP_SAPI == 'cli' || PHP_SAPI == 'phpdbg' ) && $this->state['EntryPoint'] == 'maintenance/update.php' ) {
+			$this->cacheDir = false;
+		}
+
 		# Shortcut loading
 		// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
 		if( $this->cacheDir && ( $hosts = $this->readFile( 'wikis.php', $this->cacheDir, false ) )
-		    && is_array( $hosts ) && array_key_exists( $host, $hosts ) && preg_match( $hosts[$host], $path . '/', $matches )
+		    && array_key_exists( $host, $hosts ) && preg_match( $hosts[$host], $path . '/', $matches )
 		    && ( $result = $this->readFile( $host . $matches[1] . '.php', $this->cacheDir . '/wikis', false ) ) ) {
 			$path = $matches[1];
 			$fresh = true;
@@ -790,6 +793,11 @@ class MediaWikiFarm {
 				if( is_file( $this->cacheDir . '/composer/' . $host . $path . '.php' ) ) {
 					unlink( $this->cacheDir . '/composer/' . $host . $path . '.php' );
 				}
+				$hosts[$host] = preg_replace( '/\|?' . preg_quote( $path, '/' ) . '/', '', $hosts[$host] );
+				if( $hosts[$host] == '/^()\\//' ) {
+					unset( $hosts[$host] );
+				}
+				MediaWikiFarmUtils::cacheFile( $hosts, 'wikis.php', $this->cacheDir );
 			}
 		}
 
@@ -954,6 +962,7 @@ class MediaWikiFarm {
 			# Check if the array is a simple list of wiki identifiers without version information…
 			if( array_keys( $choices ) === range( 0, count( $choices ) - 1 ) ) {
 				if( !in_array( $value, $choices ) ) {
+					$this->updateVersion( null );
 					return false;
 				}
 				$explicitExistence = $explicitExistence === null ? true : $explicitExistence;
@@ -962,6 +971,7 @@ class MediaWikiFarm {
 			} else {
 
 				if( !array_key_exists( $value, $choices ) ) {
+					$this->updateVersion( null );
 					return false;
 				}
 
@@ -992,45 +1002,78 @@ class MediaWikiFarm {
 	 */
 	function setVersion( $explicitExistence = false ) {
 
-		global $IP;
+		# From cache
+		if( $this->variables['$CODE'] ) {
+
+			return true;
+		}
+
+		# Monoversion mode
+		if( is_null( $this->codeDir ) ) {
+
+			# Verify the explicit existence of the wiki
+			if( !$explicitExistence ) {
+				throw new MWFConfigurationException( 'Only explicitly-defined wikis declared in existence lists are allowed in monoversion mode.' );
+			}
+
+			$this->variables['$VERSION'] = '';
+			$this->variables['$CODE'] = $GLOBALS['IP'];
+
+			return true;
+		}
 
 		# Special case for the update: new (uncached) version must be used
-		$cache = ( $this->state['EntryPoint'] != 'maintenance/update.php' );
+		$canUseDeployments = ( $this->state['EntryPoint'] != 'maintenance/update.php' );
 
-		# Read cache file
+		# Read 'deployments' file
 		$deployments = array();
 		$this->setVariable( 'deployments' );
-		if( array_key_exists( '$DEPLOYMENTS', $this->variables ) && $cache ) {
+		if( array_key_exists( '$DEPLOYMENTS', $this->variables ) && $canUseDeployments ) {
 			if( strrchr( $this->variables['$DEPLOYMENTS'], '.' ) != '.php' ) {
 				$this->variables['$DEPLOYMENTS'] .= '.php';
 			}
-			$deployments = $this->readFile( $this->variables['$DEPLOYMENTS'], $this->configDir );
-			if( !is_array( $deployments ) ) {
+			$deployments = $this->readFile( $this->variables['$DEPLOYMENTS'], $this->configDir, false );
+
+			$this->setVariable( 'versions' );
+			if( $deployments === false ) {
+				if( $this->variables['$VERSIONS'] && ( $deployments = $this->readFile( $this->variables['$VERSIONS'], $this->configDir ) ) ) {
+					MediaWikiFarmUtils::cacheFile( $deployments, $this->variables['$DEPLOYMENTS'], $this->configDir, false );
+				}
+			}
+
+			$fresh = true;
+			$myfreshness = filemtime( $this->configDir . '/' . $this->variables['$DEPLOYMENTS'] );
+			foreach( $this->farmConfig['coreconfig'] as $coreconfig ) {
+				if( !is_file( $this->configDir . '/' . $coreconfig )
+				    || filemtime( $this->configDir . '/' . $coreconfig ) >= $myfreshness ) {
+					$fresh = false;
+					break;
+				}
+			}
+			if( !$fresh || ( !is_string( $this->variables['$VERSION'] ) && array_key_exists( '$VERSIONS', $this->variables ) && filemtime( $this->configDir . '/' . $this->variables['$VERSIONS'] ) >= $myfreshness ) || $deployments === false ) {
 				$deployments = array();
 			}
 		}
 
-		# Multiversion mode – use cached file
-		if( is_string( $this->codeDir ) && array_key_exists( $this->variables['$WIKIID'], $deployments ) ) {
+		# Multiversion mode – use 'deployments' file
+		if( array_key_exists( $this->variables['$WIKIID'], $deployments ) ) {
+
 			$this->variables['$VERSION'] = $deployments[$this->variables['$WIKIID']];
 			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
-			$this->farmConfig['coreconfig'][] = $this->variables['$DEPLOYMENTS'];
 		}
-		# Multiversion mode – version was given in a ‘variables’ file
-		elseif( is_string( $this->codeDir ) && is_string( $this->variables['$VERSION'] ) ) {
 
-			# Cache the version
+		# Multiversion mode – version was given in a ‘variables’ file
+		elseif( is_string( $this->variables['$VERSION'] ) ) {
+
 			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
-			if( $cache ) {
-				$this->updateVersion( $this->variables['$VERSION'] );
-			}
 		}
+
 		# Multiversion mode – version is given in a ‘versions’ file
-		elseif( is_string( $this->codeDir ) && is_null( $this->variables['$VERSION'] ) ) {
+		else {
 
 			$this->setVariable( 'versions', true );
 			$versions = $this->readFile( $this->variables['$VERSIONS'], $this->configDir );
-			if( !is_array( $versions ) ) {
+			if( $versions === false ) {
 				throw new MWFConfigurationException( 'Missing or badly formatted file \'' . $this->variables['$VERSIONS'] .
 					'\' containing the versions for wikis.'
 				);
@@ -1057,30 +1100,25 @@ class MediaWikiFarm {
 				$this->variables['$VERSION'] = $versions['default'];
 			}
 			else {
+				$this->updateVersion( null );
 				if( $explicitExistence ) {
 					throw new MWFConfigurationException( 'No version declared for this wiki.' );
 				}
 				return false;
 			}
 
-			# Cache the version
 			$this->farmConfig['coreconfig'][] = $this->variables['$VERSIONS'];
-			$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
-			if( $cache ) {
-				$this->updateVersion( $this->variables['$VERSION'] );
-			}
 		}
-		# Monoversion mode
-		elseif( is_null( $this->codeDir ) ) {
 
-			# Verify the explicit existence of the wiki
-			if( !$explicitExistence ) {
-				throw new MWFConfigurationException( 'Only explicitly-defined wikis declared in existence lists are allowed in monoversion mode.' );
-			}
+		# Update the 'deployments' file
+		if( array_key_exists( '$DEPLOYMENTS', $this->variables ) && $canUseDeployments ) {
 
-			$this->variables['$VERSION'] = '';
-			$this->variables['$CODE'] = $IP;
+			$this->updateVersion( $this->variables['$VERSION'] );
+			$this->farmConfig['coreconfig'][] = $this->variables['$DEPLOYMENTS'];
 		}
+
+		# Important set
+		$this->variables['$CODE'] = $this->codeDir . '/' . $this->variables['$VERSION'];
 
 		return true;
 	}
@@ -1106,12 +1144,13 @@ class MediaWikiFarm {
 	 *
 	 * @internal
 	 *
-	 * @param string $version The new version, should be the version found in the 'expected version' file.
+	 * @param string|null $version The new version, should be the version found in the 'expected version' file.
 	 * @return void
 	 */
 	protected function updateVersion( $version ) {
 
 		# Check a deployment file is wanted
+		$this->setVariable( 'deployments' );
 		if( !array_key_exists( '$DEPLOYMENTS', $this->variables ) ) {
 			return;
 		}
@@ -1120,16 +1159,20 @@ class MediaWikiFarm {
 		if( strrchr( $this->variables['$DEPLOYMENTS'], '.' ) != '.php' ) {
 			$this->variables['$DEPLOYMENTS'] .= '.php';
 		}
-		$deployments = $this->readFile( $this->variables['$DEPLOYMENTS'], $this->configDir );
-		if( $deployments === false ) {
-			$deployments = array();
-		} elseif( array_key_exists( $this->variables['$WIKIID'], $deployments ) && $deployments[$this->variables['$WIKIID']] == $version ) {
-			return;
-		}
+		$deployments = $this->readFile( $this->variables['$DEPLOYMENTS'], $this->configDir, false );
 
-		# Update the deployment file
-		$deployments[$this->variables['$WIKIID']] = $version;
-		MediaWikiFarmUtils::cacheFile( $deployments, $this->variables['$DEPLOYMENTS'], $this->configDir );
+		$update = ( $this->state['EntryPoint'] == 'maintenance/update.php' );
+		$isKey = is_array( $deployments ) && array_key_exists( $this->variables['$WIKIID'], $deployments );
+
+		if( $update || ( $isKey && is_null( $version ) ) || ( !$isKey && !is_null( $version ) ) ) {
+
+			if( is_null( $version ) ) {
+				unset( $deployments[$this->variables['$WIKIID']] );
+			} else {
+				$deployments[$this->variables['$WIKIID']] = $version;
+			}
+			MediaWikiFarmUtils::cacheFile( $deployments, $this->variables['$DEPLOYMENTS'], $this->configDir );
+		}
 	}
 
 	/**
