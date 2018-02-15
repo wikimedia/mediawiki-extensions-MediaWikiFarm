@@ -395,7 +395,7 @@ class MediaWikiFarm {
 			if( !array_key_exists( $host, $hosts ) || !preg_match( $hosts[$host], $path . '/' ) ) {
 				$path = preg_quote( $path, '/' );
 				$path = ( array_key_exists( $host, $hosts ) ? substr( $hosts[$host], 3, -4 ) . '|' : '' ) . $path;
-				$hosts[$host] = '/^(' . $path . ')\//';
+				$hosts[$host] = '/^(' . $path . ')\\//';
 				MediaWikiFarmUtils::cacheFile( $hosts, 'wikis.php', $this->cacheDir );
 			}
 		}
