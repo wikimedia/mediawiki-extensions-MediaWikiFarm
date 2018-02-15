@@ -165,12 +165,10 @@ class MediaWikiFarmUtils {
 	 */
 	static function cacheFile( $array, $filename, $directory ) {
 
-		if( !preg_match( '/\.php$/', $filename ) ) {
+		$prefixedFile = $directory . '/' . $filename;
+		if( !preg_match( '/\.php$/', $prefixedFile ) ) {
 			return;
 		}
-
-		$prefixedFile = $directory . '/' . $filename;
-		$tmpFile = $prefixedFile . '.tmp';
 
 		# Prepare string
 		if( is_array( $array ) ) {
@@ -180,19 +178,28 @@ class MediaWikiFarmUtils {
 		}
 
 		# Create parent directories
-		if( !is_dir( dirname( $tmpFile ) ) ) {
+		if( !is_dir( dirname( $prefixedFile ) ) ) {
 			$path = '';
 			foreach( explode( '/', dirname( $prefixedFile ) ) as $dir ) {
 				$path .= '/' . $dir;
 				if( !is_dir( $path ) ) {
+					if( file_exists( $path ) ) {
+						return;
+					}
 					mkdir( $path );
 				}
 			}
 		}
 
-		# Create temporary file and move it to final file
-		if( file_put_contents( $tmpFile, $php ) ) {
-			rename( $tmpFile, $prefixedFile );
+		# Write the file with an exclusive lock
+		// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
+		if( ( $handle = fopen( $prefixedFile, 'c' ) ) !== false ) {
+			if( flock( $handle, LOCK_EX ) !== false ) {
+				fwrite( $handle, $php );
+				fflush( $handle );
+				flock( $handle, LOCK_UN );
+			}
+			fclose( $handle );
 		}
 	}
 
