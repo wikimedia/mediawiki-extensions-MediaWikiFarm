@@ -640,4 +640,40 @@ OUTPUT
 		MediaWikiFarmScript::rmdirr( $destDir, true );
 		$this->assertFalse( file_exists( $destDir ) );
 	}
+
+	/**
+	 * Test routines for copying and deleting directories.
+	 *
+	 * @todo this test (and the code?) should be improved: currently the executed sub-processes
+	 *       read the real farm configuration indirectly given by /config/MediaWikiFarmConfiguration.php
+	 *       instead of the config given in /tests/phpunit/data/config2. Consequently the results
+	 *       could be wrong because the config is not controlled by unit tests.
+	 *
+	 * @covers MediaWikiFarmList
+	 * @covers MediaWikiFarmScript::main
+	 * @covers MediaWikiFarmScript::executeMulti
+	 * @uses MediaWikiFarmScript::main
+	 * @uses MediaWikiFarmScript::copyr
+	 * @uses MediaWikiFarmScript::rmdirr
+	 * @uses MediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::__construct
+	 * @uses AbstractMediaWikiFarmScript::getParam
+	 * @uses AbstractMediaWikiFarmScript::premain
+	 * @uses MediaWikiFarmUtils
+	 */
+	function testBatch() {
+
+		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfig2Dir );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCodeDir', self::$wgMediaWikiFarmCodeDir );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmCacheDir', false );
+		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmSyslog', false );
+
+		$binary = MediaWikiFarmScript::binary();
+		$mwscriptPath = self::$mwscriptPath;
+
+		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 3, array( self::$mwscriptPath, '--wiki=*', 'showJobs' ) );
+
+		$this->assertFalse( $wgMediaWikiFarmScript->main() );
+	}
 }

@@ -71,9 +71,10 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * @param string|int $name Parameter name or position (from 0).
 	 * @param bool $shift Remove this parameter from the list?
+	 * @param bool $flag Is this parameter a boolean flag?
 	 * @return string|null Value of the parameter.
 	 */
-	function getParam( $name, $shift = true ) {
+	function getParam( $name, $shift = true, $flag = false ) {
 
 		$posArg = 0;
 		$nbArgs = 0;
@@ -84,7 +85,12 @@ abstract class AbstractMediaWikiFarmScript {
 
 			for( $posArg = 1; $posArg < $this->argc; $posArg++ ) {
 
-				if( substr( $this->argv[$posArg], 0, strlen( $name ) + 3 ) == '--'.$name.'=' ) {
+				if( $this->argv[$posArg] == $name && $posArg < $this->argc && $flag ) {
+					$value = true;
+					$nbArgs = 1;
+					break;
+				}
+				elseif( substr( $this->argv[$posArg], 0, strlen( $name ) + 3 ) == '--'.$name.'=' ) {
 					$value = substr( $this->argv[$posArg], strlen( $name ) + 3 );
 					$nbArgs = 1;
 					break;
@@ -114,7 +120,7 @@ abstract class AbstractMediaWikiFarmScript {
 			$this->argv = array_merge( array_slice( $this->argv, 0, $posArg ), array_slice( $this->argv, $posArg + $nbArgs ) );
 		}
 
-		return $value;
+		return $flag ? (bool) $value : $value;
 	}
 
 	/**

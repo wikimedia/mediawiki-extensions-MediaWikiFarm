@@ -10,6 +10,7 @@
 
 // @codeCoverageIgnoreStart
 require_once dirname( __FILE__ ) . '/AbstractMediaWikiFarmScript.php';
+require_once dirname( dirname( __FILE__ ) ) . '/List.php';
 // @codeCoverageIgnoreEnd
 
 /**
@@ -24,6 +25,9 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 
 	/** @var string Script name. */
 	public $script = '';
+
+	/** @var bool $ilent header. */
+	public $silent = false;
 
 	/**
 	 * Create the object with a copy of $argc and $argv.
@@ -78,6 +82,8 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 			return false;
 		}
 
+		$this->silent = $this->getParam( '-q', true, true );
+
 		# Get wiki
 		$this->host = $this->getParam( 'wiki' );
 		$this->path = '';
@@ -85,6 +91,10 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 		if( is_null( $this->host ) ) {
 			$this->usage();
 			$this->status = 4;
+			return false;
+		}
+		if( strpos( $this->host, '*' ) !== false ) {
+			$this->executeMulti();
 			return false;
 		}
 		$posSlash = strpos( $this->host, '/' );
@@ -132,12 +142,13 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 		$suffix = $wgMediaWikiFarm->getVariable( '$SUFFIX' );
 		$version = $wgMediaWikiFarm->getVariable( '$VERSION' ) ? $wgMediaWikiFarm->getVariable( '$VERSION' ) : 'current';
 		$code = $wgMediaWikiFarm->getVariable( '$CODE' );
-		echo "
-Wiki:    $host (wikiID: $wikiID; suffix: $suffix)
-Version: $version: $code
-Script:  {$this->script}
-
-";
+		if( !$this->silent ) {
+			echo "\n" .
+			     "Wiki:    $host (wikiID: $wikiID; suffix: $suffix)\n" .
+			     "Version: $version: $code\n" .
+			     "Script:  {$this->script}\n" .
+			     "\n";
+		}
 
 		# Export symbols
 		$this->exportArguments();
@@ -161,5 +172,108 @@ Script:  {$this->script}
 
 		# Update version after maintenance/update.php (the only case where another version is given before execution)
 		$GLOBALS['wgMediaWikiFarm']->updateVersionAfterMaintenance();
+	}
+
+	/**
+	 * Execute the script on multiple wikis.
+	 */
+	function executeMulti() {
+
+		$spechost = '/^' . str_replace( '\*', '(.*)', preg_quote( $this->host, '/' ) ) . '$/';
+		$maxsize = 0;
+		$hosts = array();
+
+		$wgMediaWikiFarmList = new MediaWikiFarmList( $GLOBALS['wgMediaWikiFarmConfigDir'], $GLOBALS['wgMediaWikiFarmCacheDir'] );
+		foreach( $wgMediaWikiFarmList->getURLsList() as $host ) {
+			if( !preg_match( $spechost, $host ) ) {
+				continue;
+			}
+			$hosts[] = $host;
+			if( strlen( $host ) > $maxsize ) {
+				$maxsize = strlen( $host );
+			}
+		}
+		$command = array(
+			self::binary(),
+			$this->argv[0],
+			'-q',
+			'--wiki',
+			'',
+		);
+		$command = array_merge( $command, array_slice( $this->argv, 1 ) );
+		$descriptorspec = array(
+			1 => array( 'pipe', 'w' ),
+			2 => array( 'pipe', 'w' ),
+		);
+
+		foreach( $hosts as $host ) {
+			$title = false;
+			$command[4] = $host;
+			$pad = str_pad( '', $maxsize - strlen( $host ) );
+			$res = proc_open( implode( ' ', $command ), $descriptorspec, $pipes );
+			if( !$res ) {
+				$this->status = 1;
+				continue;
+			}
+			$status = proc_get_status( $res );
+			while( $status['running'] ) {
+				$status = proc_get_status( $res );
+				$stdout = stream_get_contents( $pipes[1] );
+				$stderr = stream_get_contents( $pipes[2] );
+				if( $stdout ) {
+					$stdout = explode( "\n", $stdout );
+					$nblines = count( $stdout );
+					foreach( $stdout as &$line ) {
+						$nblines--;
+						if( $nblines ) {
+							$line = "$host: $pad$line";
+						}
+					}
+					echo implode( "\n", $stdout );
+				}
+				if( $stderr ) {
+					$stderr = explode( "\n", $stderr );
+					$nblines = count( $stderr );
+					foreach( $stderr as &$line ) {
+						$nblines--;
+						if( $nblines ) {
+							$line = "$host- $pad$line";
+						}
+					}
+					fwrite( STDERR, implode( "\n", $stderr ) );
+				}
+			}
+			fclose( $pipes[1] );
+			fclose( $pipes[2] );
+			proc_close( $res );
+			if( $status['exitcode'] && $this->status === 0 ) {
+				$this->status = (int) $status['exitcode'];
+			}
+		}
+	}
+
+	/**
+	 * Obtain the PHP executable.
+	 *
+	 * @codeCoverageIgnore
+	 * @return string Command line of the "best" PHP executable.
+	 */
+	static function binary() {
+
+		static $binary = null;
+
+		if( $binary === null ) {
+			$binary = defined( 'PHP_OS' ) && PHP_OS == 'Windows' ? 'php' : '/usr/bin/php';
+			if( defined( 'PHP_BINARY' ) ) {
+				$binary = PHP_BINARY;
+			} elseif( array_key_exists( '_SERVER', $GLOBALS ) && array_key_exists( '_', $GLOBALS['_SERVER'] ) && $GLOBALS['_SERVER']['_'] ) {
+				$binary = $GLOBALS['_SERVER']['_'];
+			}
+			if( defined( 'PHP_SAPI' ) && PHP_SAPI == 'phpdbg' ) {
+				$binary .= ' -qrr';
+			}
+		}
+
+		return $binary;
 	}
 }
