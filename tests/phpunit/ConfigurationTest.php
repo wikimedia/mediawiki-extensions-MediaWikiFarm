@@ -280,6 +280,8 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 */
 	function testLoadMediaWikiConfigMultiversion() {
 
+		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
+
 		$farm = new MediaWikiFarm( 'b.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
 			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true )

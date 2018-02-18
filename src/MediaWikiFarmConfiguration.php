@@ -635,12 +635,14 @@ class MediaWikiFarmConfiguration {
 	static function createLocalSettings( $configuration, $isMonoversion, $preconfig = '', $postconfig = '' ) {
 
 		# Prepare paths
+		$extDir = $GLOBALS['IP'] . '/extensions';
 		$path = array(
 			'extension' => '$IP/extensions',
 			'skin' => '$IP/skins',
 		);
 		if( array_key_exists( 'wgExtensionDirectory', $configuration['settings'] ) ) {
 			$path['extension'] = $configuration['settings']['wgExtensionDirectory'];
+			$extDir = $path['extension'];
 		}
 		if( array_key_exists( 'wgStyleDirectory', $configuration['settings'] ) ) {
 			$path['skin'] = $configuration['settings']['wgStyleDirectory'];
@@ -664,13 +666,16 @@ class MediaWikiFarmConfiguration {
 			),
 		);
 		foreach( $configuration['extensions'] as $key => $extension ) {
-			if( $extension[2] == 'require_once' && ( $key != 'ExtensionMediaWikiFarm' || !$isMonoversion ) ) {
+			if( $extension[2] == 'require_once' && $key != 'ExtensionMediaWikiFarm' ) {
 				$extensions[$extension[1]]['require_once'] .= "require_once \"{$path[$extension[1]]}/{$extension[0]}/{$extension[0]}.php\";\n";
-			} elseif( $key == 'ExtensionMediaWikiFarm' && $extension[2] == 'wfLoadExtension' && $isMonoversion ) {
-				$extensions['extension']['wfLoadExtension'] .= "wfLoadExtension( 'MediaWikiFarm', " .
-					var_export( dirname( dirname( __FILE__ ) ) . '/extension.json', true ) . " );\n";
 			} elseif( $extension[2] == 'wfLoad' . ucfirst( $extension[1] ) ) {
-				$extensions[$extension[1]]['wfLoad' . ucfirst( $extension[1] )] .= 'wfLoad' . ucfirst( $extension[1] ) . '( ' . var_export( $extension[0], true ) . " );\n";
+				if( $key != 'ExtensionMediaWikiFarm' || ( $key == 'ExtensionMediaWikiFarm' && "$extDir/MediaWikiFarm" == dirname( dirname( __FILE__ ) ) ) ) {
+					$extensions[$extension[1]]['wfLoad' . ucfirst( $extension[1] )] .= 'wfLoad' . ucfirst( $extension[1] ) . '( ' .
+						var_export( $extension[0], true ) . " );\n";
+				} else {
+					$extensions['extension']['wfLoadExtension'] .= "wfLoadExtension( 'MediaWikiFarm', " .
+						var_export( dirname( dirname( __FILE__ ) ) . '/extension.json', true ) . " );\n";
+				}
 			}
 		}
 
@@ -711,6 +716,12 @@ class MediaWikiFarmConfiguration {
 		if( $extensions['extension']['wfLoadExtension'] ) {
 			$localSettings .= "\n# Extensions\n";
 			$localSettings .= $extensions['extension']['wfLoadExtension'];
+		}
+
+		# Self-register
+		if( $configuration['extensions']['ExtensionMediaWikiFarm'][2] == 'require_once' ) {
+			$localSettings .= "\n# Self-register\n";
+			$localSettings .= "MediaWikiFarm::selfRegister();\n";
 		}
 
 		# Included files

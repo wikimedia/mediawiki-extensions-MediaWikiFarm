@@ -514,7 +514,7 @@ class MediaWikiFarm {
 
 			if( $extension[2] == 'wfLoadExtension' ) {
 
-				if( $key != 'ExtensionMediaWikiFarm' || !$this->codeDir ) {
+				if( $key != 'ExtensionMediaWikiFarm' ) {
 					wfLoadExtension( $extension[0] );
 				} else {
 					wfLoadExtension( 'MediaWikiFarm', $this->farmDir . '/extension.json' );
@@ -524,28 +524,46 @@ class MediaWikiFarm {
 
 				wfLoadSkin( $extension[0] );
 			}
+			elseif( $extension[2] == 'require_once' && $key == 'ExtensionMediaWikiFarm' ) {
+				self::selfRegister();
+			}
+		}
+	}
+
+	/**
+	 * Register MediaWikiFarm with require_once mechanism.
+	 */
+	static function selfRegister() {
+
+		$dir = dirname( dirname( __FILE__ ) );
+
+		$json = file_get_contents( $dir . '/extension.json' );
+		if( $json === false ) {
+			return;
 		}
 
-		# Register this extension MediaWikiFarm to appear in Special:Version
-		$extMediaWikiFarm = $this->getConfiguration( 'extensions', 'ExtensionMediaWikiFarm' );
-		if( $extMediaWikiFarm && $extMediaWikiFarm[2] == 'require_once' && $this->codeDir ) {
-			$GLOBALS['wgExtensionCredits']['other'][] = array(
-				'path' => $this->farmDir . '/MediaWikiFarm.php',
-				'name' => 'MediaWikiFarm',
-				'version' => '0.5.0',
-				'author' => '[https://www.mediawiki.org/wiki/User:Seb35 Seb35]',
-				'url' => 'https://www.mediawiki.org/wiki/Extension:MediaWikiFarm',
-				'descriptionmsg' => 'mediawikifarm-desc',
-				'license-name' => 'GPL-3.0-or-later',
-			);
+		$json = json_decode( $json, true );
+		if( $json === null ) {
+			return;
+		}
 
-			$GLOBALS['wgAutoloadClasses']['MediaWikiFarm'] = 'src/MediaWikiFarm.php';
-			$GLOBALS['wgAutoloadClasses']['AbstractMediaWikiFarmScript'] = 'src/AbstractMediaWikiFarmScript.php';
-			$GLOBALS['wgAutoloadClasses']['MediaWikiFarmScript'] = 'src/MediaWikiFarmScript.php';
-			$GLOBALS['wgAutoloadClasses']['MediaWikiFarmHooks'] = 'src/Hooks.php';
-			$GLOBALS['wgAutoloadClasses']['MWFConfigurationException'] = 'src/MediaWikiFarm.php';
-			$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = array( 'i18n' );
-			$GLOBALS['wgHooks']['UnitTestsList'][] = array( 'MediaWikiFarmHooks::onUnitTestsList' );
+		$GLOBALS['wgExtensionCredits'][$json['type']][] = array(
+			'path' => $dir . '/MediaWikiFarm.php',
+			'name' => $json['name'],
+			'version' => $json['version'],
+			'author' => $json['author'],
+			'url' => $json['url'],
+			'descriptionmsg' => $json['descriptionmsg'],
+			'license-name' => $json['license-name'],
+		);
+
+		$GLOBALS['wgAutoloadClasses'] = array_merge( $GLOBALS['wgAutoloadClasses'], $json['AutoloadClasses'] );
+		$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = $dir . '/' . $json['MessagesDirs']['MediaWikiFarm'][0];
+		foreach( $json['Hooks'] as $hook => $func ) {
+			if( !array_key_exists( $hook, $GLOBALS['wgHooks'] ) ) {
+				$GLOBALS['wgHooks'][$hook] = array();
+			}
+			$GLOBALS['wgHooks'][$hook] = array_merge( $GLOBALS['wgHooks'][$hook], $json['Hooks'][$hook] );
 		}
 	}
 

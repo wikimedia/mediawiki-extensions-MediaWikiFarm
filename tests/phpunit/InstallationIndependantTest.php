@@ -564,6 +564,8 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	function testCreateLocalSettings() {
 
+		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
+
 		$configuration = array(
 			'settings' => array(
 				'wgSitename' => 'Sid It',
@@ -647,10 +649,6 @@ include 'freeLS.php';
 # Post-config
 
 PHP;
-
-		$this->assertEquals( $localSettings,
-			MediaWikiFarmConfiguration::createLocalSettings( $configuration, (bool) $this->farm->getCodeDir(), "# Pre-config\n", "# Post-config\n" )
-		);
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false );
 		$extensionJson = var_export( self::$wgMediaWikiFarmFarmDir . '/extension.json', true );

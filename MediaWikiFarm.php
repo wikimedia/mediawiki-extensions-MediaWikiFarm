@@ -16,17 +16,21 @@ if( !defined( 'MEDIAWIKI' ) && PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
 }
 
 # Load MediaWiki configuration
-if( defined( 'MEDIAWIKI' ) ) {
+if( !defined( 'MEDIAWIKI' ) ) {
+	return;
+}
 
-	# Load class definition
-	if( !class_exists( 'MediaWikiFarm' ) ) {
-		require_once dirname( __FILE__ ) . '/src/MediaWikiFarm.php';
-	}
+# Load class definition
+if( !class_exists( 'MediaWikiFarm' ) ) {
+	require_once dirname( __FILE__ ) . '/src/MediaWikiFarm.php';
+}
 
-	# Load MediaWikiFarm
-	MediaWikiFarm::load();
+# Load MediaWikiFarm
+if( MediaWikiFarm::load() == 200 ) {
 
 	# Load MediaWiki configuration
 	require_once $wgMediaWikiFarm->getConfigFile();
+} else {
+	exit( 0 );
 }
 // @codeCoverageIgnoreEnd

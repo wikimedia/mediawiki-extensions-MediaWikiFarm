@@ -193,6 +193,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * Test regular loading mechanisms.
 	 *
 	 * @covers MediaWikiFarm::loadMediaWikiConfig
+	 * @covers MediaWikiFarm::selfRegister
 	 * @uses MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
@@ -222,7 +223,8 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 */
 	function testRegistrationMediaWikiFarm() {
 
-		$this->backupGlobalVariable( 'wgAutoloadClasses' );
+		$this->backupAndSetGlobalVariable( 'wgAutoloadClasses', array() );
+		$this->backupAndSetGlobalVariable( 'wgHooks', array() );
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
