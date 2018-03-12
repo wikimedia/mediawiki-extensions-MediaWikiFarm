@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Kly"
+		]
+	},
+	"mediawikifarm-desc": "將 MediaWiki 安裝設置轉換成由多個獨立 wiki 所組成的農場"
+}
