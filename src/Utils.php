@@ -195,8 +195,10 @@ class MediaWikiFarmUtils {
 		// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
 		if( ( $handle = fopen( $prefixedFile, 'c' ) ) !== false ) {
 			if( flock( $handle, LOCK_EX ) !== false ) {
-				fwrite( $handle, $php );
-				fflush( $handle );
+				if( ftruncate( $handle, 0 ) !== false && rewind( $handle ) !== false ) {
+					fwrite( $handle, $php );
+					fflush( $handle );
+				}
 				flock( $handle, LOCK_UN );
 			}
 			fclose( $handle );
