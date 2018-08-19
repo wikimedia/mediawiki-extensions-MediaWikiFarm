@@ -25,7 +25,7 @@
  * Depending of your openness policy, you could publish all or parts of the configuration
  * files, but probably you don’t want to publish private informations like database
  * configuration, upgrade key, etc. so be sure you distribute properly the parameters
- * accross files, to easily publish some files.
+ * across files, to easily publish some files.
  */
 $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 

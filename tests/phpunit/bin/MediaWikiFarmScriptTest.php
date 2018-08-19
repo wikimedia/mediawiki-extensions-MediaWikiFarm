@@ -29,7 +29,7 @@ class MediaWikiFarmScriptTest extends MediaWikiFarmTestCase {
 	public static $longHelp = '';
 
 	/**
-	 * Set up some "constants" to be used accross the tests.
+	 * Set up some "constants" to be used across the tests.
 	 */
 	static function setUpBeforeClass() {
 
