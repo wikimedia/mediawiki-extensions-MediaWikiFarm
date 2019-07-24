@@ -1,8 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"Woytecr"
+			"Woytecr",
+			"Railfail536"
 		]
 	},
-	"mediawikifarm-desc": "Przełącza instalację MediaWiki w farmę składającą się z wielu niezależnych wiki."
+	"mediawikifarm-desc": "Przełącza instalację MediaWiki w farmę składającą się z wielu niezależnych wiki"
 }
