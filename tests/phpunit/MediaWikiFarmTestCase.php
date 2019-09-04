@@ -102,6 +102,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 		$this->backupGlobals = null;
 
 		# Closures are thought to be serialisable although they are not, so blacklist them
+		# sebastian/global-state was improved on this point since version 3.0
 		$this->backupGlobalsBlacklist = array_merge(
 			$this->backupGlobalsBlacklist,
 			array(
@@ -112,6 +113,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 				'wgParamDefinitions',
 				'wgParser',
 				'wgFlowActions',
+				'wgJobClasses',
 				'wgReadOnly', // T163640 - bug in PHPUnit subprogram global-state (issue #10)
 			)
 		);
