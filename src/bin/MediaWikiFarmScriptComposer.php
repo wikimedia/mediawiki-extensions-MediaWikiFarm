@@ -206,7 +206,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 			}
 
 			self::copyr( 'vendor/composer', 'vendor-composer/composer' . MediaWikiFarmConfiguration::composerKey( $name ),
-			             true, array(), array( '/autoload_.*\.php', '/ClassLoader\.php', '/installed\.json' )
+			             true, array(), array( '/autoload_.*\.php', '/ClassLoader\.php', '/installed\.json', '/include_paths\.php' )
 			);
 			self::rmdirr( 'composer.lock' );
 			$icounter++;
