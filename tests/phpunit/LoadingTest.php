@@ -3,8 +3,8 @@
  * Class LoadingTest.
  *
  * @package MediaWikiFarm\Tests
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
@@ -58,7 +58,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	/**
 	 * Assert that ExtensionRegistry (MediaWiki 1.25+) queue is really emtpy as it should be.
 	 */
-	function assertPreConditions() {
+	public function assertPreConditions() {
 
 		if( class_exists( 'ExtensionRegistry' ) ) {
 
@@ -102,7 +102,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testAllLoadingMechanisms() {
+	public function testAllLoadingMechanisms() {
 
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
@@ -221,7 +221,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::detectComposer
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testRegistrationMediaWikiFarm() {
+	public function testRegistrationMediaWikiFarm() {
 
 		$this->backupAndSetGlobalVariable( 'wgAutoloadClasses', array() );
 		$this->backupAndSetGlobalVariable( 'wgHooks', array() );
@@ -272,7 +272,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testExceptionsLoadingMechanisms() {
+	public function testExceptionsLoadingMechanisms() {
 
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );

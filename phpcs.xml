@@ -30,6 +30,8 @@
 		<exclude name="MediaWiki.Commenting.FunctionComment.MissingParamTag" />
 		<!-- MediaWikiFarm is used as a prefix in all class names, but file names are too long -->
 		<exclude name="MediaWiki.Files.ClassMatchesFilename.NotMatch" />
+		<!-- Keep @backupGlobals, it’s an additional check to improve quality -->
+		<exclude name="MediaWiki.Commenting.PhpunitAnnotations.ForbiddenBackupGlobals" />
 	</rule>
 	<!-- Lines should be less than 160 characters -->
 	<rule ref="Generic.Files.LineLength">

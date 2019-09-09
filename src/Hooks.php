@@ -3,8 +3,8 @@
  * Class MediaWikiFarmHooks.
  *
  * @package MediaWikiFarm
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 /**

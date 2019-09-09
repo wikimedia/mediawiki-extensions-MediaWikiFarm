@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 // @codeCoverageIgnoreStart
@@ -41,7 +41,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * @param string $entryPoint The entry point we want the profile, e.g. 'index.php'.
 	 * @return int The profile, either 0 or 1.
 	 */
-	static function getEntryPointProfile( $entryPoint ) {
+	public static function getEntryPointProfile( $entryPoint ) {
 
 		if( !is_dir( dirname( __FILE__ ) . '/results' ) ) {
 			mkdir( dirname( __FILE__ ) . '/results' );
@@ -65,7 +65,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * @param string $name Name of the counter.
 	 * @return void
 	 */
-	static function startCounter( $name ) {
+	public static function startCounter( $name ) {
 
 		self::$time0[$name] = microtime( true );
 	}
@@ -76,7 +76,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * @param string $name Name of the counter.
 	 * @return void
 	 */
-	static function stopCounter( $name ) {
+	public static function stopCounter( $name ) {
 
 		$time = microtime( true );
 		self::$counters[$name] = $time - self::$time0[$name];
@@ -87,7 +87,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 *
 	 * @return void
 	 */
-	static function writeResults() {
+	public static function writeResults() {
 
 		global $IP;
 
@@ -134,7 +134,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 *
 	 * @return string File where is loaded the configuration.
 	 */
-	function getConfigFile() {
+	public function getConfigFile() {
 
 		if( !$this->isLocalSettingsFresh() ) {
 			return $this->farmDir . '/tests/perfs/main.php';
@@ -160,7 +160,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * @param string $postconfig PHP code to be added at the end of the file.
 	 * @return string Content of the file LocalSettings.php.
 	 */
-	static function createLocalSettings( $configuration, $isMonoversion, $preconfig = '', $postconfig = '' ) {
+	public static function createLocalSettings( $configuration, $isMonoversion, $preconfig = '', $postconfig = '' ) {
 
 		return parent::createLocalSettings( $configuration, $isMonoversion,
 			"# Start counter\nif( class_exists( 'MediaWikiFarmTestPerfs' ) ) {\n\tMediaWikiFarmTestPerfs::startCounter( 'config' );\n}\n",
@@ -177,7 +177,7 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 * @param bool $force Whether to force loading in $this->configuration even if there is a LocalSettings.php
 	 * @return void
 	 */
-	function getMediaWikiConfig( $force = false ) {
+	public function getMediaWikiConfig( $force = false ) {
 
 		self::startCounter( 'compilation' );
 

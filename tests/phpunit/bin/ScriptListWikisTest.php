@@ -3,8 +3,8 @@
  * Class MediaWikiFarmScriptListWikisTest.
  *
  * @package MediaWikiFarm\Tests
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmTestCase.php';
@@ -30,7 +30,7 @@ class MediaWikiFarmScriptListWikisTest extends MediaWikiFarmTestCase {
 	/**
 	 * Set up some "constants" to be used across the tests.
 	 */
-	static function setUpBeforeClass() {
+	public static function setUpBeforeClass() {
 
 		parent::setUpBeforeClass();
 
@@ -66,7 +66,7 @@ HELP;
 	 * @covers MediaWikiFarmScriptListWikis::__construct
 	 * @uses AbstractMediaWikiFarmScript
 	 */
-	function testConstruction() {
+	public function testConstruction() {
 
 		$wgMediaWikiFarmScriptListWikis = new MediaWikiFarmScriptListWikis( 1, array( self::$mwlistwikisPath ) );
 
@@ -81,7 +81,7 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript
 	 * @uses MediaWikiFarmScriptListWikis
 	 */
-	function testUsage() {
+	public function testUsage() {
 
 		$this->expectOutputString( self::$longHelp );
 
@@ -101,7 +101,7 @@ HELP;
 	 * @uses MediaWikiFarmList
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testIntegration() {
+	public function testIntegration() {
 
 		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfig2Dir );

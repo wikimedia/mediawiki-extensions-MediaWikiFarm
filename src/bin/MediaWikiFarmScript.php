@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 // @codeCoverageIgnoreStart
@@ -37,7 +37,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 	 * @param string[] $argv Input arguments.
 	 * @return MediaWikiFarmScript
 	 */
-	function __construct( $argc, $argv ) {
+	public function __construct( $argc, $argv ) {
 
 		parent::__construct( $argc, $argv );
 
@@ -75,7 +75,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 	 *
 	 * @return bool If false, there was an error in the program.
 	 */
-	function main() {
+	public function main() {
 
 		# Manage mandatory arguments.
 		if( !$this->premain() ) {
@@ -164,7 +164,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 	 *
 	 * @return void
 	 */
-	function restInPeace() {
+	public function restInPeace() {
 
 		if( !array_key_exists( 'wgMediaWikiFarm', $GLOBALS ) || !$GLOBALS['wgMediaWikiFarm'] instanceof MediaWikiFarm ) {
 			return;
@@ -177,7 +177,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 	/**
 	 * Execute the script on multiple wikis.
 	 */
-	function executeMulti() {
+	public function executeMulti() {
 
 		$spechost = '/^' . str_replace( '\*', '(.*)', preg_quote( $this->host, '/' ) ) . '$/';
 		$maxsize = 0;
@@ -210,6 +210,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 			$title = false;
 			$command[4] = $host;
 			$pad = str_pad( '', $maxsize - strlen( $host ) );
+			// @codingStandardsIgnoreLine MediaWiki.Usage.ForbiddenFunctions.proc_open
 			$res = proc_open( implode( ' ', $command ), $descriptorspec, $pipes );
 			if( !$res ) {
 				$this->status = 1;
@@ -258,7 +259,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 	 * @codeCoverageIgnore
 	 * @return string Command line of the "best" PHP executable.
 	 */
-	static function binary() {
+	public static function binary() {
 
 		static $binary = null;
 

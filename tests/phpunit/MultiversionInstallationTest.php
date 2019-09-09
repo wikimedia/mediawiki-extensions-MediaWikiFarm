@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
@@ -29,7 +29,7 @@ class MultiversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Set up MediaWikiFarm parameters and versions files with the current MediaWiki installation.
 	 */
-	static function setUpBeforeClass() {
+	public static function setUpBeforeClass() {
 
 		parent::setUpBeforeClass();
 
@@ -54,7 +54,7 @@ PHP;
 	 * @param string $entryPoint Entry point, else 'index.php'.
 	 * @return MediaWikiFarm
 	 */
-	static function constructMediaWikiFarm( $host, $entryPoint = 'index.php' ) {
+	public static function constructMediaWikiFarm( $host, $entryPoint = 'index.php' ) {
 
 		$farm = new MediaWikiFarm( $host, null, self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => $entryPoint ) );
 
@@ -74,7 +74,7 @@ PHP;
 	/**
 	 * Test the variable read for the URL is correct.
 	 */
-	function testURLVariables() {
+	public function testURLVariables() {
 
 		$this->assertEquals(
 			array(
@@ -92,7 +92,7 @@ PHP;
 	/**
 	 * Test basic variables.
 	 */
-	function testVariables() {
+	public function testVariables() {
 
 		$this->farm->checkExistence();
 
@@ -117,7 +117,7 @@ PHP;
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Missing key 'suffix' in farm configuration.
 	 */
-	function testMissingSuffixVariable() {
+	public function testMissingSuffixVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-missing-suffix.example.org' );
 		$farm->checkExistence();
@@ -129,7 +129,7 @@ PHP;
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Missing key 'wikiID' in farm configuration.
 	 */
-	function testMissingWikiIDVariable() {
+	public function testMissingWikiIDVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-missing-wikiid.example.org' );
 		$farm->checkExistence();
@@ -141,7 +141,7 @@ PHP;
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Wrong type (non-string) for key 'suffix' in farm configuration.
 	 */
-	function testBadTypeMandatoryVariable() {
+	public function testBadTypeMandatoryVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-bad-type-mandatory.example.org' );
 		$farm->checkExistence();
@@ -150,7 +150,7 @@ PHP;
 	/**
 	 * Test when a non-mandatory variable has a bad definition.
 	 */
-	function testBadTypeNonMandatoryVariable() {
+	public function testBadTypeNonMandatoryVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-bad-type-nonmandatory.example.org' );
 		$farm->checkExistence();
@@ -160,7 +160,7 @@ PHP;
 	/**
 	 * Test setting variables.
 	 *
-	function testReplaceVariables() {
+	public function testReplaceVariables() {
 
 		$this->farm->checkExistence();
 
@@ -183,7 +183,7 @@ PHP;
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Missing key 'versions' in farm configuration.
 	 */
-	function testEdgeCasesConfigFile() {
+	public function testEdgeCasesConfigFile() {
 
 		# Check a config file without defined variables
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-novariables.example.org' );
@@ -193,7 +193,7 @@ PHP;
 	/**
 	 * Test a existing host in a farm with a file variable without version defined inside.
 	 */
-	function testVariableFileWithoutVersion() {
+	public function testVariableFileWithoutVersion() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-file-variable-without-version.example.org' );
 		$this->assertTrue( $farm->checkExistence() );
@@ -205,7 +205,7 @@ PHP;
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No version declared for this wiki.
 	 */
-	function testVariableFileWithoutVersionMissingVersion() {
+	public function testVariableFileWithoutVersionMissingVersion() {
 
 		$farm = self::constructMediaWikiFarm( 'b.testfarm-multiversion-with-file-variable-without-version.example.org' );
 		$farm->checkExistence();
@@ -214,7 +214,7 @@ PHP;
 	/**
 	 * Test a nonexistant host in a farm with a file variable without version defined inside.
 	 */
-	function testVariableFileWithoutVersionNonexistant() {
+	public function testVariableFileWithoutVersionNonexistant() {
 
 		$farm = self::constructMediaWikiFarm( 'c.testfarm-multiversion-with-file-variable-without-version.example.org' );
 		$this->assertFalse( $farm->checkExistence() );
@@ -223,7 +223,7 @@ PHP;
 	/**
 	 * Test a existing host in a farm with a file variable with version defined inside.
 	 */
-	function testVariableFileWithVersion() {
+	public function testVariableFileWithVersion() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-file-variable-with-version.example.org' );
 		$this->assertTrue( $farm->checkExistence() );
@@ -232,7 +232,7 @@ PHP;
 	/**
 	 * Test a nonexistant host in a farm with a file variable with version defined inside.
 	 */
-	function testVariableFileWithVersionNonexistant() {
+	public function testVariableFileWithVersionNonexistant() {
 
 		$farm = self::constructMediaWikiFarm( 'c.testfarm-multiversion.example.org' );
 		$this->assertFalse( $farm->checkExistence() );
@@ -242,10 +242,11 @@ PHP;
 	 * Test a nonexistant host in a farm with a file variable with version defined inside.
 	 *
 	 * @expectedException MWFConfigurationException
-	 * @codingStandardsIgnoreLine Generic.Files.LineLength.TooLong
+	 * @codingStandardsIgnoreStart Generic.Files.LineLength.TooLong
 	 * @expectedExceptionMessage Only explicitly-defined wikis declared in existence lists are allowed to use the “default versions” mechanism (suffix) in multiversion mode.
+	 * @codingStandardsIgnoreEnd
 	 */
-	function testVersionDefaultFamily() {
+	public function testVersionDefaultFamily() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-version-default-family.example.org' );
 		$farm->checkExistence();
@@ -255,10 +256,11 @@ PHP;
 	 * Test a nonexistant host in a farm with a file variable with version defined inside.
 	 *
 	 * @expectedException MWFConfigurationException
-	 * @codingStandardsIgnoreLine Generic.Files.LineLength.TooLong
+	 * @codingStandardsIgnoreStart Generic.Files.LineLength.TooLong
 	 * @expectedExceptionMessage Only explicitly-defined wikis declared in existence lists are allowed to use the “default versions” mechanism (default) in multiversion mode.
+	 * @codingStandardsIgnoreEnd
 	 */
-	function testVersionDefaultDefault() {
+	public function testVersionDefaultDefault() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-version-default-default.example.org' );
 		$farm->checkExistence();
@@ -267,7 +269,7 @@ PHP;
 	/**
 	 * Test families and default versions for families.
 	 */
-	function testFamilyFarm() {
+	public function testFamilyFarm() {
 
 		$farm = new MediaWikiFarm( 'a.a.testfarm-multiversion-with-file-versions-other-keys.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => 'index.php' )
@@ -299,7 +301,7 @@ PHP;
 	 *
 	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
 	 */
-	function testUndefinedVariable() {
+	public function testUndefinedVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-undefined-variable.example.org' );
 		$this->assertTrue( $farm->checkExistence() );
@@ -311,7 +313,7 @@ PHP;
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Missing or badly formatted file 'badsyntax.json' containing the versions for wikis.
 	 */
-	function testBadlyFormattedVersionsFile() {
+	public function testBadlyFormattedVersionsFile() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-multiversion-with-bad-file-versions.example.org' );
 		$farm->checkExistence();
@@ -320,7 +322,7 @@ PHP;
 	/**
 	 * Test the feature 'deployments' with deployed versions.
 	 */
-	function testDeployedVersions() {
+	public function testDeployedVersions() {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-with-file-versions-with-deployments.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false, array( 'EntryPoint' => 'index.php' )
@@ -342,7 +344,7 @@ PHP;
 	 *
 	 * @depends testDeployedVersions
 	 */
-	function testDeployedVersions2() {
+	public function testDeployedVersions2() {
 
 		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
 		$versionsFile = <<<PHP
@@ -383,7 +385,7 @@ PHP;
 	 *
 	 * @depends testDeployedVersions2
 	 */
-	function testDeployedVersions3() {
+	public function testDeployedVersions3() {
 
 		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
 		$versionsFile = <<<PHP
@@ -437,7 +439,7 @@ PHP;
 	 *
 	 * @depends testDeployedVersions3
 	 */
-	function testDeployedVersions4() {
+	public function testDeployedVersions4() {
 
 		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
 		$versionsFile = <<<PHP
@@ -485,7 +487,7 @@ PHP;
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No version declared for this wiki.
 	 */
-	function testDeployedVersions5() {
+	public function testDeployedVersions5() {
 
 		# Create testdeploymentsfarmversions.php: the list of existing values for variable '$WIKIID' with their associated versions
 		$versionsFile = <<<PHP
@@ -524,7 +526,7 @@ PHP;
 	 *
 	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
 	 */
-	function testMemoisationCheckExistence() {
+	public function testMemoisationCheckExistence() {
 
 		$this->farm->checkExistence();
 		$this->assertTrue( $this->farm->checkExistence() );
@@ -535,7 +537,7 @@ PHP;
 	 *
 	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
 	 */
-	function testMemoisationCheckHostVariables() {
+	public function testMemoisationCheckHostVariables() {
 
 		$this->farm->checkExistence();
 		$this->assertTrue( $this->farm->checkHostVariables() );
@@ -544,11 +546,11 @@ PHP;
 	/**
 	 * Test cache of checkExistence().
 	 *
-	 * @medium
+	 * @group medium
 	 * @uses MediaWikiFarmConfiguration
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 */
-	function testCacheExistence() {
+	public function testCacheExistence() {
 
 		# Populate the existence cache
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
@@ -598,7 +600,7 @@ PHP;
 	/**
 	 * Remove config files.
 	 */
-	static function tearDownAfterClass() {
+	public static function tearDownAfterClass() {
 
 		if( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) ) {
 			unlink( self::$wgMediaWikiFarmConfigDir . '/deployments.php' );

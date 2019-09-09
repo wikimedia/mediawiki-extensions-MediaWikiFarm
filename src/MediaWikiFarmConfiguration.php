@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 
@@ -47,7 +47,7 @@ class MediaWikiFarmConfiguration {
 	 * @param MediaWikiFarm $farm Main object.
 	 * @return MediaWikiFarmConfiguration
 	 */
-	function __construct( &$farm ) {
+	public function __construct( &$farm ) {
 
 		$this->farm = $farm;
 	}
@@ -69,7 +69,7 @@ class MediaWikiFarmConfiguration {
 	 * @param string|false $key2 Subkey (specific to each entry) or false for the whole entry.
 	 * @return array MediaWiki configuration, either entire, either a part depending on the parameter.
 	 */
-	function getConfiguration( $key = false, $key2 = false ) {
+	public function getConfiguration( $key = false, $key2 = false ) {
 		if( $key !== false ) {
 			if( array_key_exists( $key, $this->configuration ) ) {
 				if( $key2 !== false && array_key_exists( $key2, $this->configuration[$key] ) ) {
@@ -90,7 +90,7 @@ class MediaWikiFarmConfiguration {
 	 * @param string[] $composer List of Composer-installed extensions.
 	 * @return void
 	 */
-	function setComposer( $composer ) {
+	public function setComposer( $composer ) {
 
 		$this->configuration['composer'] = $composer;
 	}
@@ -128,7 +128,7 @@ class MediaWikiFarmConfiguration {
 	 *
 	 * @return bool Success.
 	 */
-	function populateSettings() {
+	public function populateSettings() {
 
 		$settings = &$this->configuration['settings'];
 		$priorities = array();
@@ -365,7 +365,7 @@ class MediaWikiFarmConfiguration {
 	 * @param mixed|null $value Value of the keyed environment variable.
 	 * @return void
 	 */
-	function setEnvironment( $key = null, $value = null ) {
+	public function setEnvironment( $key = null, $value = null ) {
 
 		if( $key === null ) {
 			$key = 'ExtensionRegistry';
@@ -402,7 +402,7 @@ class MediaWikiFarmConfiguration {
 	 *
 	 * @return void
 	 */
-	function activateExtensions() {
+	public function activateExtensions() {
 
 		# Autodetect if ExtensionRegistry is here
 		$ExtensionRegistry = $this->environment['ExtensionRegistry'];
@@ -508,7 +508,7 @@ class MediaWikiFarmConfiguration {
 	 * @param string $name Name of the extension/skin.
 	 * @return bool The extension/skin is Composer-managed (at least for its installation).
 	 */
-	function detectComposer( $type, $name ) {
+	public function detectComposer( $type, $name ) {
 
 		if( is_file( $this->farm->getVariable( '$CODE' ) . '/' . $type . 's/' . $name . '/composer.json' ) &&
 		    is_dir( $this->farm->getVariable( '$CODE' ) . '/vendor/composer' . self::composerKey( ucfirst( $type ) . $name ) ) ) {
@@ -529,7 +529,7 @@ class MediaWikiFarmConfiguration {
 	 * @param bool $preferedRO Prefered require_once mechanism.
 	 * @return string|null Loading mechnism in ['wfLoadExtension', 'wfLoadSkin', 'require_once'] or null if all mechanisms failed.
 	 */
-	function detectLoadingMechanism( $type, $name, $preferedRO = false ) {
+	public function detectLoadingMechanism( $type, $name, $preferedRO = false ) {
 
 		# Search base directory
 		$base = $this->farm->getVariable( '$CODE' ) . '/' . $type . 's';
@@ -574,7 +574,7 @@ class MediaWikiFarmConfiguration {
 	 * @param array $b Second element.
 	 * @return int Relative order of the two elements.
 	 */
-	function sortExtensions( $a, $b ) {
+	public function sortExtensions( $a, $b ) {
 
 		static $loading = array(
 			'' => 0,
@@ -632,7 +632,7 @@ class MediaWikiFarmConfiguration {
 	 * @param string $postconfig PHP code to be added at the end of the file.
 	 * @return string Content of the file LocalSettings.php.
 	 */
-	static function createLocalSettings( $configuration, $isMonoversion, $preconfig = '', $postconfig = '' ) {
+	public static function createLocalSettings( $configuration, $isMonoversion, $preconfig = '', $postconfig = '' ) {
 
 		# Prepare paths
 		$extDir = $GLOBALS['IP'] . '/extensions';
@@ -753,7 +753,7 @@ class MediaWikiFarmConfiguration {
 	 * @param string $prefix The beginning of the plain PHP, should be something like '$myArray'.
 	 * @return string The plain PHP for this array assignment.
 	 */
-	static function writeArrayAssignment( $array, $prefix ) {
+	public static function writeArrayAssignment( $array, $prefix ) {
 
 		$result = '';
 		$isList = ( count( array_diff( array_keys( $array ), range( 0, count( $array ) ) ) ) == 0 );
@@ -784,7 +784,7 @@ class MediaWikiFarmConfiguration {
 	 * @param string $name Name of extension or skin.
 	 * @return string Composer key.
 	 */
-	static function composerKey( $name ) {
+	public static function composerKey( $name ) {
 
 		if( $name == '' ) {
 			return '';

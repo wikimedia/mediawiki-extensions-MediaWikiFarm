@@ -3,8 +3,8 @@
  * Class MediaWikiFarmScriptListWikis.
  *
  * @package MediaWikiFarm
- * @license GPL-3.0-or-later GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 // @codeCoverageIgnoreStart
@@ -25,7 +25,7 @@ class MediaWikiFarmScriptListWikis extends AbstractMediaWikiFarmScript {
 	 * @param string[] $argv Input arguments.
 	 * @return MediaWikiFarmScript
 	 */
-	function __construct( $argc, $argv ) {
+	public function __construct( $argc, $argv ) {
 
 		parent::__construct( $argc, $argv );
 
@@ -54,7 +54,7 @@ class MediaWikiFarmScriptListWikis extends AbstractMediaWikiFarmScript {
 	 *
 	 * @return bool If false, there was an error in the program.
 	 */
-	function main() {
+	public function main() {
 
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCacheDir;
 

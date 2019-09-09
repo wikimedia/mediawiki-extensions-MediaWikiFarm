@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  *
  * @codingStandardsIgnoreFile MediaWiki.Files.OneClassPerFile.MultipleFound
  */
@@ -122,7 +122,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	/**
 	 * Set up MediaWikiFarm parameters and versions files with the current MediaWiki installation.
 	 */
-	static function setUpBeforeClass() {
+	public static function setUpBeforeClass() {
 
 		# Set test configuration parameters
 		self::$wgMediaWikiFarmFarmDir = dirname( dirname( dirname( __FILE__ ) ) );
@@ -161,7 +161,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	/**
 	 * Remove config files.
 	 */
-	static function tearDownAfterClass() {
+	public static function tearDownAfterClass() {
 
 		if( is_file( 'phpunitHTTP404.php' ) ) {
 			unlink( 'phpunitHTTP404.php' );
@@ -189,7 +189,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @return void
 	 * @throws PHPUnit_Framework_RiskyTestError When the global variable cannot be backuped.
 	 */
-	function backupAndUnsetGlobalVariable( $key ) {
+	public function backupAndUnsetGlobalVariable( $key ) {
 
 		$this->backupGlobalVariable( $key );
 		unset( $GLOBALS[$key] );
@@ -203,7 +203,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @return void
 	 * @throws PHPUnit_Framework_RiskyTestError When the global variable cannot be backuped.
 	 */
-	function backupAndSetGlobalVariable( $key, $value ) {
+	public function backupAndSetGlobalVariable( $key, $value ) {
 
 		$this->backupGlobalVariable( $key );
 		$GLOBALS[$key] = $value;
@@ -217,7 +217,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @return void
 	 * @throws PHPUnit_Framework_RiskyTestError When the global variable cannot be backuped.
 	 */
-	function backupAndUnsetGlobalSubvariable( $key, $subkey ) {
+	public function backupAndUnsetGlobalSubvariable( $key, $subkey ) {
 
 		$this->backupGlobalSubvariable( $key, $subkey );
 		unset( $GLOBALS[$key][$subkey] );
@@ -232,7 +232,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @return void
 	 * @throws PHPUnit_Framework_RiskyTestError When the global variable cannot be backuped.
 	 */
-	function backupAndSetGlobalSubvariable( $key, $subkey, $value ) {
+	public function backupAndSetGlobalSubvariable( $key, $subkey, $value ) {
 
 		$this->backupGlobalSubvariable( $key, $subkey );
 		$GLOBALS[$key][$subkey] = $value;
@@ -245,7 +245,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @return void
 	 * @throws PHPUnit_Framework_RiskyTestError When a global variable cannot be backuped.
 	 */
-	function backupGlobalVariables( $keys ) {
+	public function backupGlobalVariables( $keys ) {
 
 		foreach( $keys as $key ) {
 			$this->backupGlobalVariable( $key );
@@ -259,7 +259,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @return void
 	 * @throws PHPUnit_Framework_RiskyTestError When the global variable cannot be backuped.
 	 */
-	function backupGlobalVariable( $key ) {
+	public function backupGlobalVariable( $key ) {
 
 		if( !array_key_exists( $key, $GLOBALS ) ) {
 			$this->backupMWFGlobalsExist[$key] = false;
@@ -281,7 +281,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @return void
 	 * @throws PHPUnit_Framework_RiskyTestError When the global variable cannot be backuped.
 	 */
-	function backupGlobalSubvariable( $key, $subkey ) {
+	public function backupGlobalSubvariable( $key, $subkey ) {
 
 		if( !array_key_exists( $key, $GLOBALS ) ) {
 			throw new PHPUnit_Framework_RiskyTestError( 'Requested array backup of a global subvariable but nonexistent global variable' );
@@ -311,7 +311,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 *
 	 * @return void
 	 */
-	function restoreSimpleGlobalVariables() {
+	public function restoreSimpleGlobalVariables() {
 
 		foreach( $this->backupMWFGlobalsExist as $key => $existence ) {
 
@@ -340,7 +340,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @param mixed $value Value to be checked.
 	 * @return bool The value is a scalar or an array of scalars.
 	 */
-	static function isRecursiveScalar( $value ) {
+	public static function isRecursiveScalar( $value ) {
 
 		if( is_scalar( $value ) || $value === null ) {
 			return true;

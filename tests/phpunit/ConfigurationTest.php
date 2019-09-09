@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
@@ -51,7 +51,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses AbstractMediaWikiFarmScript
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testHighlevelConfiguration() {
+	public function testHighlevelConfiguration() {
 
 		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
@@ -168,7 +168,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmConfiguration::composerKey
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testLoadingMechanisms() {
+	public function testLoadingMechanisms() {
 
 		# First, without ExtensionRegistry
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-test-extensions.example.org', null,
@@ -278,7 +278,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses AbstractMediaWikiFarmScript
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testLoadMediaWikiConfigMultiversion() {
+	public function testLoadMediaWikiConfigMultiversion() {
 
 		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
@@ -351,7 +351,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses AbstractMediaWikiFarmScript
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testLoadMediaWikiConfigMonoversion() {
+	public function testLoadMediaWikiConfigMonoversion() {
 
 		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
@@ -402,7 +402,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 	 * @uses AbstractMediaWikiFarmScript
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testSort() {
+	public function testSort() {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,

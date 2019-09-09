@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmTestCase.php';
@@ -31,7 +31,7 @@ class MediaWikiFarmScriptTest extends MediaWikiFarmTestCase {
 	/**
 	 * Set up some "constants" to be used across the tests.
 	 */
-	static function setUpBeforeClass() {
+	public static function setUpBeforeClass() {
 
 		parent::setUpBeforeClass();
 
@@ -81,7 +81,7 @@ HELP;
 	 * @covers MediaWikiFarmScript::__construct
 	 * @covers AbstractMediaWikiFarmScript::__construct
 	 */
-	function testConstruction() {
+	public function testConstruction() {
 
 		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 1, array( self::$mwscriptPath ) );
 
@@ -97,7 +97,7 @@ HELP;
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 */
-	function testUsage1() {
+	public function testUsage1() {
 
 		$this->expectOutputString( self::$shortHelp );
 
@@ -114,7 +114,7 @@ HELP;
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 */
-	function testUsage2() {
+	public function testUsage2() {
 
 		$this->expectOutputString( self::$longHelp );
 
@@ -132,7 +132,7 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::usage
 	 */
-	function testUsage3() {
+	public function testUsage3() {
 
 		$this->expectOutputString( self::$longHelp );
 
@@ -152,7 +152,7 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::usage
 	 */
-	function testUsage4() {
+	public function testUsage4() {
 
 		$this->expectOutputString( self::$longHelp );
 
@@ -171,7 +171,7 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 * @backupGlobals enabled
 	 */
-	function testExport() {
+	public function testExport() {
 
 		$this->backupAndSetGlobalVariable( 'argc', 0 );
 		$this->backupAndSetGlobalVariable( 'argv', array() );
@@ -196,7 +196,7 @@ HELP;
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 */
-	function testGetParam() {
+	public function testGetParam() {
 
 		$parameters = array( self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org', 'showJobs', '--test', 'abc' );
 
@@ -236,7 +236,7 @@ HELP;
 	 * @ uses MediaWikiFarmScript::__construct
 	 * @ uses AbstractMediaWikiFarmScript::__construct
 	 *
-	function testLoad() {
+	public function testLoad() {
 
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
 
@@ -258,7 +258,7 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript::usage
 	 * @uses AbstractMediaWikiFarmScript::premain
 	 */
-	function testMissingArgumentWiki() {
+	public function testMissingArgumentWiki() {
 
 		$this->expectOutputString( self::$shortHelp );
 
@@ -279,7 +279,7 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript::usage
 	 * @uses AbstractMediaWikiFarmScript::premain
 	 */
-	function testMissingArgumentScript() {
+	public function testMissingArgumentScript() {
 
 		$this->expectOutputString( self::$shortHelp );
 
@@ -328,7 +328,7 @@ HELP;
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testMissingHost() {
+	public function testMissingHost() {
 
 		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
@@ -370,7 +370,7 @@ HELP;
 	 * @uses MediaWikiFarm::issueLog
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testInternalProblem() {
+	public function testInternalProblem() {
 
 		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
@@ -428,7 +428,7 @@ HELP;
 	 * @uses MediaWikiFarmUtils::arrayMerge
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testMissingScript() {
+	public function testMissingScript() {
 
 		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );
@@ -490,7 +490,7 @@ HELP;
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testSuccessfulLoading() {
+	public function testSuccessfulLoading() {
 
 		global $IP;
 
@@ -568,7 +568,7 @@ OUTPUT
 	 * @uses MediaWikiFarmConfiguration::getConfiguration
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testRestInPeace() {
+	public function testRestInPeace() {
 
 		global $IP;
 
@@ -614,7 +614,7 @@ OUTPUT
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 */
-	function testRecursiveCopyAndDelete() {
+	public function testRecursiveCopyAndDelete() {
 
 		$destDir = dirname( dirname( __FILE__ ) ) . '/data/copie';
 
@@ -661,7 +661,7 @@ OUTPUT
 	 * @uses AbstractMediaWikiFarmScript::premain
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testBatch() {
+	public function testBatch() {
 
 		$this->backupAndUnsetGlobalVariable( 'wgMediaWikiFarm' );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfig2Dir );

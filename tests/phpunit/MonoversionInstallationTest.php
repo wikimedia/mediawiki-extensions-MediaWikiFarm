@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 
@@ -33,7 +33,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 * @param string $host Host name.
 	 * @return MediaWikiFarm
 	 */
-	static function constructMediaWikiFarm( $host ) {
+	public static function constructMediaWikiFarm( $host ) {
 
 		$farm = new MediaWikiFarm( $host, null, self::$wgMediaWikiFarmConfigDir, null, false, array( 'EntryPoint' => 'index.php' ) );
 
@@ -53,7 +53,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test the variable read for the URL is correct.
 	 */
-	function testURLVariables() {
+	public function testURLVariables() {
 
 		$this->assertEquals(
 			array(
@@ -71,7 +71,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test basic variables.
 	 */
-	function testVariables() {
+	public function testVariables() {
 
 		global $IP;
 
@@ -97,7 +97,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Missing key 'suffix' in farm configuration.
 	 */
-	function testMissingSuffixVariable() {
+	public function testMissingSuffixVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-missing-suffix.example.org' );
 		$farm->checkExistence();
@@ -109,7 +109,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Missing key 'wikiID' in farm configuration.
 	 */
-	function testMissingWikiIDVariable() {
+	public function testMissingWikiIDVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-missing-wikiid.example.org' );
 		$farm->checkExistence();
@@ -121,7 +121,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Wrong type (non-string) for key 'suffix' in farm configuration.
 	 */
-	function testBadTypeMandatoryVariable() {
+	public function testBadTypeMandatoryVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-bad-type-mandatory.example.org' );
 		$farm->checkExistence();
@@ -130,7 +130,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test when a non-mandatory variable has a bad definition.
 	 */
-	function testBadTypeNonMandatoryVariable() {
+	public function testBadTypeNonMandatoryVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-bad-type-nonmandatory.example.org' );
 		$farm->checkExistence();
@@ -143,7 +143,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Only explicitly-defined wikis declared in existence lists are allowed in monoversion mode.
 	 */
-	function testEdgeCasesConfigFile() {
+	public function testEdgeCasesConfigFile() {
 
 		# Check a config file without defined variables
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-novariables.example.org' );
@@ -153,7 +153,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test a existing host in a farm with a file variable without version defined inside.
 	 */
-	function testVariableFileWithoutVersion() {
+	public function testVariableFileWithoutVersion() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion-with-file-variable-without-version.example.org' );
 		$this->assertTrue( $farm->checkExistence() );
@@ -162,7 +162,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test a nonexistant host in a farm with a file variable without version defined inside.
 	 */
-	function testVariableFileWithoutVersionNonexistant() {
+	public function testVariableFileWithoutVersionNonexistant() {
 
 		$farm = self::constructMediaWikiFarm( 'c.testfarm-monoversion-with-file-variable-without-version.example.org' );
 		$this->assertFalse( $farm->checkExistence() );
@@ -171,7 +171,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test a existing host in a farm with a “values” variable without version defined inside.
 	 */
-	function testVariableValuesWithoutVersion() {
+	public function testVariableValuesWithoutVersion() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion-with-values-variable-without-version.example.org' );
 		$this->assertTrue( $farm->checkExistence() );
@@ -180,7 +180,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test a nonexistant host in a farm with a “values” variable without version defined inside.
 	 */
-	function testVariableValuesWithoutVersionNonexistant() {
+	public function testVariableValuesWithoutVersionNonexistant() {
 
 		$farm = self::constructMediaWikiFarm( 'c.testfarm-monoversion-with-values-variable-without-version.example.org' );
 		$this->assertFalse( $farm->checkExistence() );
@@ -189,7 +189,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test a existing host in a farm with a file variable with version defined inside.
 	 */
-	function testVariableFileWithVersion() {
+	public function testVariableFileWithVersion() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion-with-file-variable-with-version.example.org' );
 		$this->assertTrue( $farm->checkExistence() );
@@ -198,7 +198,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test a nonexistant host in a farm with a file variable with version defined inside.
 	 */
-	function testVariableFileWithVersionNonexistant() {
+	public function testVariableFileWithVersionNonexistant() {
 
 		$farm = self::constructMediaWikiFarm( 'b.testfarm-monoversion-with-file-variable-with-version.example.org' );
 		$this->assertFalse( $farm->checkExistence() );
@@ -212,7 +212,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Only explicitly-defined wikis declared in existence lists are allowed in monoversion mode.
 	 */
-	function testUndefinedVariable() {
+	public function testUndefinedVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion-with-undefined-variable.example.org' );
 		$farm->checkExistence();
@@ -223,7 +223,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 *
 	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
 	 */
-	function testMemoisationCheckExistence() {
+	public function testMemoisationCheckExistence() {
 
 		$this->farm->checkExistence();
 		$this->assertTrue( $this->farm->checkExistence() );
@@ -234,7 +234,7 @@ class MonoversionInstallationTest extends MediaWikiFarmTestCase {
 	 *
 	 * This test is mainly used to add code coverage; the assertion is tested elsewhere.
 	 */
-	function testMemoisationCheckHostVariables() {
+	public function testMemoisationCheckHostVariables() {
 
 		$this->farm->checkExistence();
 		$this->assertTrue( $this->farm->checkHostVariables() );

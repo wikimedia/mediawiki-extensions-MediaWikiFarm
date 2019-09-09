@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
@@ -24,7 +24,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	/**
 	 * Symbol for MediaWikiFarmUtils5_3::readYAML, which is normally loaded just-in-time in the main class.
 	 */
-	static function setUpBeforeClass() {
+	public static function setUpBeforeClass() {
 
 		parent::setUpBeforeClass();
 
@@ -39,10 +39,12 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	 * Note that this test will be probably never get executed because PHPUnit depends
 	 * on this very library; just for completeness; commented out to avoid skippy test.
 	 *
+	 * @codingStandardsIgnoreStart MediaWiki.Commenting.PhpunitAnnotations.NotTestFunction
 	 * @covers MediaWikiFarmUtils5_3::readYAML
 	 *
 	 * @expectedException RuntimeException
 	 * @expectedExceptionMessage Unavailable YAML library, please install it if you want to read YAML files
+	 * @codingStandardsIgnoreEnd
 	 */
 	/*function testUninstalledYAMLLibrary() {
 
@@ -64,7 +66,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	 * @expectedException RuntimeException
 	 * @expectedExceptionMessage Missing file
 	 */
-	function testReadMissingFileYAMLFunction() {
+	public function testReadMissingFileYAMLFunction() {
 
 		if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) ) {
 			$this->markTestSkipped(
@@ -83,7 +85,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	 * @expectedException RuntimeException
 	 * @expectedExceptionMessage Badly-formatted YAML file
 	 */
-	function testBadSyntaxFileYAMLFunction() {
+	public function testBadSyntaxFileYAMLFunction() {
 
 		if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) ) {
 			$this->markTestSkipped(
@@ -99,7 +101,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarmUtils::arrayMerge
 	 */
-	function testArrayMerge() {
+	public function testArrayMerge() {
 
 		$this->assertEquals(
 			array(

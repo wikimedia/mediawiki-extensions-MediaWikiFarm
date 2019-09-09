@@ -3,8 +3,8 @@
  * Class MediaWikiFarmUtils.
  *
  * @package MediaWikiFarm
- * @license GPL-3.0-or-later GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 
@@ -28,7 +28,7 @@ class MediaWikiFarmUtils {
 	 * @param bool $cache The successfully file read must be cached.
 	 * @return array|false The interpreted array in case of success, else false.
 	 */
-	static function readFile( $filename, $cacheDir, array &$log, $directory = '', $cache = true ) {
+	public static function readFile( $filename, $cacheDir, array &$log, $directory = '', $cache = true ) {
 
 		# Check parameter
 		if( !is_string( $filename ) ) {
@@ -163,7 +163,7 @@ class MediaWikiFarmUtils {
 	 * @param string $directory Name of the parent directory; null for default cache directory
 	 * @return void
 	 */
-	static function cacheFile( $array, $filename, $directory ) {
+	public static function cacheFile( $array, $filename, $directory ) {
 
 		$prefixedFile = $directory . '/' . $filename;
 		if( !preg_match( '/\.php$/', $prefixedFile ) ) {
@@ -222,7 +222,7 @@ class MediaWikiFarmUtils {
 	 * @param bool $cache The successfully file read must be cached.
 	 * @return array 2-tuple with the result (array) and file read (string); in case no files were found, the second value is an empty string.
 	 */
-	static function readAnyFile( $filename, $directory, $cacheDir, array &$log, $formats = array( 'yml', 'php', 'json' ), $cache = true ) {
+	public static function readAnyFile( $filename, $directory, $cacheDir, array &$log, $formats = array( 'yml', 'php', 'json' ), $cache = true ) {
 
 		foreach( $formats as $format ) {
 
@@ -245,7 +245,7 @@ class MediaWikiFarmUtils {
 	 * @param string $dir The base directory which could contain MediaWiki.
 	 * @return bool The directory really contains MediaWiki.
 	 */
-	static function isMediaWiki( $dir ) {
+	public static function isMediaWiki( $dir ) {
 		return is_file( $dir . '/includes/DefaultSettings.php' );
 	}
 
@@ -264,7 +264,7 @@ class MediaWikiFarmUtils {
 	 * @param array $array1 First array.
 	 * @return array
 	 */
-	static function arrayMerge( $array1 /* ... */ ) {
+	public static function arrayMerge( $array1 /* ... */ ) {
 		$out = $array1;
 		if ( is_null( $out ) ) {
 			$out = array();

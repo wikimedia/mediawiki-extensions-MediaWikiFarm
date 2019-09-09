@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
@@ -23,7 +23,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::prepareLog
 	 */
-	function testNoLogging() {
+	public function testNoLogging() {
 
 		# Check no log message is issued
 		$this->assertEquals( array(), MediaWikiFarm::prepareLog( false, null, new Exception( 'test exception' ) ) );
@@ -34,7 +34,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::prepareLog
 	 */
-	function testBadLoggingConfigurationParameter() {
+	public function testBadLoggingConfigurationParameter() {
 
 		$this->assertEquals( array( 'Logging parameter must be false or a string', 'test exception' ),
 		                     MediaWikiFarm::prepareLog( 0, null, new Exception( 'test exception' ) ) );
@@ -47,7 +47,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::prepareLog
 	 */
-	function testLoggingAnException() {
+	public function testLoggingAnException() {
 
 		$this->assertEquals( array( 'test exception' ), MediaWikiFarm::prepareLog( 'mediawikifarmtest', null, new Exception( 'test exception' ) ) );
 
@@ -63,7 +63,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testLoggingAMessage() {
+	public function testLoggingAMessage() {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
@@ -88,7 +88,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testLoggingAMessageAndAnException() {
+	public function testLoggingAMessageAndAnException() {
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',

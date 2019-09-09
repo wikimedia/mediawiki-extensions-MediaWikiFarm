@@ -27,7 +27,7 @@
 		"phpunit/phpunit": "^3.4 || ^4.0 || ^5.0 || ^6.0",
 		"jakub-onderka/php-parallel-lint": "*",
 		"phpmd/phpmd": "*",
-		"mediawiki/mediawiki-codesniffer": "~0.12.0",
+		"mediawiki/mediawiki-codesniffer": "19.2.0",
 		"jakub-onderka/php-console-highlighter": "0.3.2",
 		"mediawiki/minus-x": "0.3.1"
 	},

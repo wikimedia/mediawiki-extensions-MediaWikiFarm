@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
@@ -38,7 +38,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @param string $host Host name.
 	 * @return MediaWikiFarm
 	 */
-	static function constructMediaWikiFarm( $host ) {
+	public static function constructMediaWikiFarm( $host ) {
 
 		return new MediaWikiFarm( $host, null, self::$wgMediaWikiFarmConfigDir, null, false );
 	}
@@ -68,7 +68,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testSuccessfulReadingYAML() {
+	public function testSuccessfulReadingYAML() {
 
 		if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) ) {
 			$this->markTestSkipped(
@@ -94,7 +94,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testSuccessfulReadingPHP() {
+	public function testSuccessfulReadingPHP() {
 
 		$result = $this->farm->readFile( 'testreading.php', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
@@ -114,7 +114,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testSuccessfulReadingJSON() {
+	public function testSuccessfulReadingJSON() {
 
 		$result = $this->farm->readFile( 'testreading.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
@@ -134,7 +134,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testSuccessfulReadingSER() {
+	public function testSuccessfulReadingSER() {
 
 		$result = $this->farm->readFile( 'testreading.ser', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
@@ -154,7 +154,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testSuccessfulReadingDblist() {
+	public function testSuccessfulReadingDblist() {
 
 		$result = $this->farm->readFile( 'testreading.dblist', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
@@ -174,7 +174,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testReadMissingFile() {
+	public function testReadMissingFile() {
 
 		$result = $this->farm->readFile( 'missingfile.yml', self::$wgMediaWikiFarmConfigDir );
 		$this->assertFalse( $result );
@@ -189,7 +189,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testUnrecognisedFormatReadFile() {
+	public function testUnrecognisedFormatReadFile() {
 
 		$result = $this->farm->readFile( 'wrongformat.txt', self::$wgMediaWikiFarmConfigDir );
 		$this->assertFalse( $result );
@@ -207,7 +207,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testBadArgumentReadFile() {
+	public function testBadArgumentReadFile() {
 
 		$result = $this->farm->readFile( 0 );
 		$this->assertFalse( $result );
@@ -223,7 +223,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils5_3::readYAML
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testBadSyntaxFileReadingYAML() {
+	public function testBadSyntaxFileReadingYAML() {
 
 		if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) ) {
 			$this->markTestSkipped(
@@ -245,7 +245,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testBadSyntaxFileReadingJSON() {
+	public function testBadSyntaxFileReadingJSON() {
 
 		$result = $this->farm->readFile( 'badsyntax.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertFalse( $result );
@@ -261,7 +261,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testBadSyntaxFileReadingPHP() {
+	public function testBadSyntaxFileReadingPHP() {
 
 		$result = $this->farm->readFile( 'badsyntax.php', self::$wgMediaWikiFarmConfigDir );
 		$this->assertFalse( $result );
@@ -277,7 +277,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils5_3::readYAML
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testEmptyFileReadingPHP() {
+	public function testEmptyFileReadingPHP() {
 
 		$result = $this->farm->readFile( 'empty.php', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals( array(), $result );
@@ -293,7 +293,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils5_3::readYAML
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testEmptyFileReadingYAML() {
+	public function testEmptyFileReadingYAML() {
 
 		if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) ) {
 			$this->markTestSkipped(
@@ -314,7 +314,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testEmptyFileReadingJSON() {
+	public function testEmptyFileReadingJSON() {
 
 		$result = $this->farm->readFile( 'empty.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals( array(), $result );
@@ -329,7 +329,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testEmptyFileReadingSER() {
+	public function testEmptyFileReadingSER() {
 
 		$result = $this->farm->readFile( 'empty.ser', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals( array(), $result );
@@ -344,7 +344,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testBadContentReadFile() {
+	public function testBadContentReadFile() {
 
 		$result = $this->farm->readFile( self::$wgMediaWikiFarmConfigDir . '/string.json' );
 		$this->assertFalse( $result );
@@ -363,7 +363,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testNoCache() {
+	public function testNoCache() {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', null, self::$wgMediaWikiFarmConfigDir, null, false );
 
@@ -386,7 +386,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses AbstractMediaWikiFarmScript::rmdirr
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testCacheFile() {
+	public function testCacheFile() {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', null, self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir );
 
@@ -435,7 +435,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm // should be removed: only used in setUp
 	 */
-	function testReadAnyFileSuccess() {
+	public function testReadAnyFileSuccess() {
 
 		$log = array();
 		$result = MediaWikiFarmUtils::readAnyFile( 'success', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
@@ -465,7 +465,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm // should be removed: only used in setUp
 	 */
-	function testReadAnyFileNonExistant() {
+	public function testReadAnyFileNonExistant() {
 
 		$log = array();
 		$result = MediaWikiFarmUtils::readAnyFile( 'nonexistant', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
@@ -490,7 +490,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm // should be removed: only used in setUp
 	 */
-	function testReadAnyFileBadSyntax() {
+	public function testReadAnyFileBadSyntax() {
 
 		$log = array();
 		$result = MediaWikiFarmUtils::readAnyFile( 'badsyntax', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
@@ -526,7 +526,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage Missing or badly formatted file 'badsyntax.json' defining existing values for variable 'wiki'
 	 */
-	function testBadlyFormattedFileVariable() {
+	public function testBadlyFormattedFileVariable() {
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-badly-formatted-file-variable.example.org' );
 		$farm->checkExistence();
@@ -545,7 +545,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Argument of MediaWikiFarm->replaceVariables() must be a string or an array.
 	 */
-	function testWrongTypeReplaceVariables() {
+	public function testWrongTypeReplaceVariables() {
 
 		$result = $this->farm->replaceVariables( 1 );
 	}
@@ -562,7 +562,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testCreateLocalSettings() {
+	public function testCreateLocalSettings() {
 
 		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
@@ -681,7 +681,7 @@ PHP;
 	 * @uses MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
-	function testComposerKey() {
+	public function testComposerKey() {
 
 		$this->assertEquals( 'c4538db9', MediaWikiFarmConfiguration::composerKey( 'ExtensionSemanticMediaWiki' ) );
 		$this->assertEquals( '', MediaWikiFarmConfiguration::composerKey( '' ) );
@@ -692,7 +692,7 @@ PHP;
 	 *
 	 * Methods tested here are supposed to be constant: the internal properties should not change.
 	 */
-	function assertPostConditions() {
+	public function assertPostConditions() {
 
 		if( $this->shouldBeConstant ) {
 			$this->assertEquals( $this->control, $this->farm, 'Methods tested in InstallationIndependantTest are supposed to be constant.' );

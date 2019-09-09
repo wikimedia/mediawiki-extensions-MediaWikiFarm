@@ -5,8 +5,8 @@
  * It was splitted from the other files to keep basic compatibility with PHP 5.2 (lack of namespaces) and permit graceful unfeaturing in this PHP version.
  *
  * @package MediaWikiFarm
- * @license GPL-3.0-or-later GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 
@@ -22,7 +22,7 @@ class MediaWikiFarmUtils5_3 { // @codingStandardsIgnoreLine Squiz.Classes.ValidC
 	 * @return array|string|int|bool|null Content of the YAML file or null in case of error.
 	 * @throws RuntimeException When YAML library is not available, file is missing, or file is badly-formatted.
 	 */
-	static function readYAML( $filename ) {
+	public static function readYAML( $filename ) {
 
 		if( !is_file( $filename ) ) {
 			throw new RuntimeException( 'Missing file \'' . $filename . '\'' );

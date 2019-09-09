@@ -3,8 +3,8 @@
  * Classes MediaWikiFarm and MWFConfigurationException.
  *
  * @package MediaWikiFarm
- * @license GPL-3.0-or-later GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  *
  * @codingStandardsIgnoreFile MediaWiki.Files.OneClassPerFile.MultipleFound
  *
@@ -100,7 +100,7 @@ class MediaWikiFarm {
 	 * @param string $key Parameter name.
 	 * @return mixed|null Requested state or null if nonexistant.
 	 */
-	function getState( $key ) {
+	public function getState( $key ) {
 		if( array_key_exists( $key, $this->state ) ) {
 			return $this->state[$key];
 		}
@@ -116,7 +116,7 @@ class MediaWikiFarm {
 	 *
 	 * @return string|null Farm code directory.
 	 */
-	function getFarmDir() {
+	public function getFarmDir() {
 		return $this->farmDir;
 	}
 
@@ -129,7 +129,7 @@ class MediaWikiFarm {
 	 *
 	 * @return string|null Config directory.
 	 */
-	function getConfigDir() {
+	public function getConfigDir() {
 		return $this->configDir;
 	}
 
@@ -142,7 +142,7 @@ class MediaWikiFarm {
 	 *
 	 * @return string|null Code directory, or null if currently installed as a classical extension (monoversion installation).
 	 */
-	function getCodeDir() {
+	public function getCodeDir() {
 		return $this->codeDir;
 	}
 
@@ -155,7 +155,7 @@ class MediaWikiFarm {
 	 *
 	 * @return string|false Cache directory.
 	 */
-	function getCacheDir() {
+	public function getCacheDir() {
 		return $this->cacheDir;
 	}
 
@@ -171,7 +171,7 @@ class MediaWikiFarm {
 	 *
 	 * @return array Farm configuration.
 	 */
-	function getFarmConfiguration() {
+	public function getFarmConfiguration() {
 		return $this->farmConfig;
 	}
 
@@ -188,7 +188,7 @@ class MediaWikiFarm {
 	 *
 	 * @return string[] Request variables.
 	 */
-	function getVariables() {
+	public function getVariables() {
 		return $this->variables;
 	}
 
@@ -202,7 +202,7 @@ class MediaWikiFarm {
 	 * @param mixed $default Default value returned when the variable does not exist.
 	 * @return string|mixed Requested variable or default value if the variable does not exist.
 	 */
-	function getVariable( $varname, $default = null ) {
+	public function getVariable( $varname, $default = null ) {
 		return array_key_exists( $varname, $this->variables ) ? $this->variables[$varname] : $default;
 	}
 
@@ -223,7 +223,7 @@ class MediaWikiFarm {
 	 * @param string|false $key2 Subkey (specific to each entry) or false for the whole entry.
 	 * @return array|MediaWikiFarmConfiguration MediaWiki configuration, either entire, either a part depending on the parameter, or the configuration object.
 	 */
-	function getConfiguration( $key = false, $key2 = false ) {
+	public function getConfiguration( $key = false, $key2 = false ) {
 		if( $this->configuration === null ) {
 			$that =& $this;
 			$this->configuration = new MediaWikiFarmConfiguration( $that );
@@ -256,7 +256,7 @@ class MediaWikiFarm {
 	 * @param array $environment Environment which determines a given configuration.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
-	static function load( $entryPoint = '', $host = null, $path = null, $state = array(), $environment = array() ) {
+	public static function load( $entryPoint = '', $host = null, $path = null, $state = array(), $environment = array() ) {
 
 		global $wgMediaWikiFarm;
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $wgMediaWikiFarmSyslog;
@@ -353,7 +353,7 @@ class MediaWikiFarm {
 	 * @throws MWFConfigurationException
 	 * @throws InvalidArgumentException
 	 */
-	function checkExistence() {
+	public function checkExistence() {
 
 		# In the multiversion case, informations are already loaded and nonexistent wikis are already verified
 		if( $this->variables['$CODE'] ) {
@@ -408,7 +408,7 @@ class MediaWikiFarm {
 	 *
 	 * @api
 	 */
-	function compileConfiguration() {
+	public function compileConfiguration() {
 
 		if( $this->isLocalSettingsFresh() ) {
 
@@ -492,7 +492,7 @@ class MediaWikiFarm {
 	 *
 	 * @return void
 	 */
-	function loadMediaWikiConfig() {
+	public function loadMediaWikiConfig() {
 
 		# Set general parameters as global variables
 		foreach( $this->getConfiguration( 'settings' ) as $setting => $value ) {
@@ -533,7 +533,7 @@ class MediaWikiFarm {
 	/**
 	 * Register MediaWikiFarm with require_once mechanism.
 	 */
-	static function selfRegister() {
+	public static function selfRegister() {
 
 		$dir = dirname( dirname( __FILE__ ) );
 
@@ -574,7 +574,7 @@ class MediaWikiFarm {
 	 *
 	 * @return void
 	 */
-	function updateVersionAfterMaintenance() {
+	public function updateVersionAfterMaintenance() {
 
 		if( $this->variables['$VERSION'] ) {
 			$this->updateVersion( $this->variables['$VERSION'] );
@@ -596,7 +596,7 @@ class MediaWikiFarm {
 	 *
 	 * @return string File where is loaded the configuration.
 	 */
-	function getConfigFile() {
+	public function getConfigFile() {
 
 		if( !$this->isLocalSettingsFresh() ) {
 			return $this->farmDir . '/src/main.php';
@@ -615,7 +615,7 @@ class MediaWikiFarm {
 	 * @param Exception|Throwable|null $exception Caught exception if any.
 	 * @return string[] All log messages ready to be sent to syslog.
 	 */
-	static function prepareLog( $wgMediaWikiFarmSyslog, $wgMediaWikiFarm, $exception = null ) {
+	public static function prepareLog( $wgMediaWikiFarmSyslog, $wgMediaWikiFarm, $exception = null ) {
 
 		$log = array();
 		if( $wgMediaWikiFarmSyslog === false || $wgMediaWikiFarmSyslog === null ) {
@@ -658,7 +658,7 @@ class MediaWikiFarm {
 	 * @param string[] $log Log messages.
 	 * @return void
 	 */
-	static function issueLog( $log ) {
+	public static function issueLog( $log ) {
 
 		foreach( $log as $id => $error ) {
 			if( is_numeric( $id ) ) {
@@ -695,7 +695,7 @@ class MediaWikiFarm {
 	 * @throws MWFConfigurationException When no farms.yml/php/json is found.
 	 * @throws InvalidArgumentException When wrong input arguments are passed.
 	 */
-	function __construct( $host, $path, $configDir, $codeDir = null, $cacheDir = false, $state = array(), $environment = array() ) {
+	public function __construct( $host, $path, $configDir, $codeDir = null, $cacheDir = false, $state = array(), $environment = array() ) {
 
 		# Default value for host
 		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
@@ -855,7 +855,7 @@ class MediaWikiFarm {
 	 * @param int $redirects Number of remaining internal redirects before error.
 	 * @return array
 	 */
-	function selectFarm( $host, $farms, $redirects ) {
+	public function selectFarm( $host, $farms, $redirects ) {
 
 		if( $redirects <= 0 ) {
 			return array( 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => $farms, 'redirects' => $redirects );
@@ -926,7 +926,7 @@ class MediaWikiFarm {
 	 * @throws MWFConfigurationException When a file defining the existing values for a variable is missing or badly formatted.
 	 * @throws InvalidArgumentException
 	 */
-	function checkHostVariables() {
+	public function checkHostVariables() {
 
 		if( $this->variables['$VERSION'] ) {
 			return true;
@@ -1018,7 +1018,7 @@ class MediaWikiFarm {
 	 * @throws MWFConfigurationException When the file defined by 'versions' is missing or badly formatted.
 	 * @throws LogicException
 	 */
-	function setVersion( $explicitExistence = false ) {
+	public function setVersion( $explicitExistence = false ) {
 
 		# From cache
 		if( $this->variables['$CODE'] ) {
@@ -1152,7 +1152,7 @@ class MediaWikiFarm {
 	 * @return void
 	 * @throws InvalidArgumentException
 	 */
-	function setOtherVariables() {
+	public function setOtherVariables() {
 
 		$this->setVariable( 'data' );
 	}
@@ -1201,7 +1201,7 @@ class MediaWikiFarm {
 	 *
 	 * @return bool The cached configuration file LocalSettings.php for the requested wiki is fresh.
 	 */
-	function isLocalSettingsFresh() {
+	public function isLocalSettingsFresh() {
 
 		if( !$this->cacheDir ) {
 			return false;
@@ -1241,7 +1241,7 @@ class MediaWikiFarm {
 	 * @throws MWFConfigurationException When the variable is mandatory and missing.
 	 * @throws InvalidArgumentException
 	 */
-	function setVariable( $name, $mandatory = false ) {
+	public function setVariable( $name, $mandatory = false ) {
 
 		if( !array_key_exists( $name, $this->farmConfig ) ) {
 			if( $mandatory ) {
@@ -1271,7 +1271,7 @@ class MediaWikiFarm {
 	 * @return string|string[] Input where variables were replaced.
 	 * @throws InvalidArgumentException When argument type is incorrect.
 	 */
-	function replaceVariables( $value ) {
+	public function replaceVariables( $value ) {
 
 		if( is_string( $value ) ) {
 
@@ -1313,7 +1313,7 @@ class MediaWikiFarm {
 	 * @param bool $cache The successfully file read must be cached.
 	 * @return array|false The interpreted array in case of success, else false.
 	 */
-	function readFile( $filename, $directory = '', $cache = true ) {
+	public function readFile( $filename, $directory = '', $cache = true ) {
 
 		return MediaWikiFarmUtils::readFile( $filename, $this->cacheDir, $this->log, $directory, $cache );
 	}

@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 // @codeCoverageIgnoreStart
@@ -56,7 +56,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @param string[] $argv Input arguments.
 	 * @return AbstractMediaWikiFarmScript
 	 */
-	function __construct( $argc, $argv ) {
+	public function __construct( $argc, $argv ) {
 
 		$this->argc = $argc;
 		$this->argv = $argv;
@@ -74,7 +74,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @param bool $flag Is this parameter a boolean flag?
 	 * @return string|null Value of the parameter.
 	 */
-	function getParam( $name, $shift = true, $flag = false ) {
+	public function getParam( $name, $shift = true, $flag = false ) {
 
 		$posArg = 0;
 		$nbArgs = 0;
@@ -131,7 +131,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @param bool $long Show extended usage.
 	 * @return void
 	 */
-	function usage( $long = false ) {
+	public function usage( $long = false ) {
 
 		# Minimal help, be it an error or not
 		if( $this->shortUsage ) {
@@ -156,7 +156,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * @return void
 	 */
-	function load() {
+	public function load() {
 
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $wgMediaWikiFarmSyslog, $IP;
 
@@ -193,7 +193,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * @return void
 	 */
-	function exportArguments() {
+	public function exportArguments() {
 
 		global $argc, $argv;
 
@@ -211,7 +211,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * @return bool If false, the main program should return.
 	 */
-	function premain() {
+	public function premain() {
 
 		# Return usage
 		if( $this->argc == 2 && ( $this->argv[1] == '-h' || $this->argv[1] == '--help' ) ) {
@@ -232,7 +232,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * @return bool If false, there was an error in the program.
 	 */
-	abstract function main();
+	abstract public function main();
 
 	/**
 	 * Post-execution of the main script, only needed in the case 'maintenance/update.php' is run (see main documentation).
@@ -241,7 +241,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 *
 	 * @return void
 	 */
-	function restInPeace() {}
+	public function restInPeace() {}
 
 
 
@@ -258,7 +258,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @param bool $deleteDir Delete the root directory? (Else leave it empty.)
 	 * @return void
 	 */
-	static function rmdirr( $dir, $deleteDir = true ) {
+	public static function rmdirr( $dir, $deleteDir = true ) {
 
 		if( !is_dir( $dir ) ) {
 			if( is_file( $dir ) || is_link( $dir ) ) {
@@ -291,12 +291,12 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @param bool $force If true, delete the destination directory before beginning.
 	 * @param string[] $blacklist Regular expressions to blacklist some files; if it begins
 	 *                 with '/', only files from the root directory will be considered.
-	 * @param string[] $whitelist Regular expression to whitelist only some files; if it begins
+	 * @param string[]|null $whitelist Regular expression to whitelist only some files; if it begins
 	 *                 with '/', only files from the root directory will be considered.
 	 * @param string $base Internal parameter to track the base directory.
 	 * @return void
 	 */
-	static function copyr( $source, $dest, $force = false, $blacklist = array(), $whitelist = null, $base = '' ) {
+	public static function copyr( $source, $dest, $force = false, $blacklist = array(), $whitelist = null, $base = '' ) {
 
 		# Return if we are considering a blacklisted file
 		foreach( $blacklist as $file ) {

@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm\Tests
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmTestCase.php';
@@ -31,7 +31,7 @@ class MediaWikiFarmScriptComposerTest extends MediaWikiFarmTestCase {
 	/**
 	 * Set up some "constants" to be used across the tests.
 	 */
-	static function setUpBeforeClass() {
+	public static function setUpBeforeClass() {
 
 		parent::setUpBeforeClass();
 
@@ -76,7 +76,7 @@ HELP;
 	 * @covers MediaWikiFarmScriptComposer::__construct
 	 * @uses AbstractMediaWikiFarmScript::__construct
 	 */
-	function testConstruction() {
+	public function testConstruction() {
 
 		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 1, array( self::$mwcomposerPath ) );
 
@@ -93,7 +93,7 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript::usage
 	 * @uses AbstractMediaWikiFarmScript::premain
 	 */
-	function testUsage() {
+	public function testUsage() {
 
 		$this->expectOutputString( self::$longHelp );
 
@@ -115,7 +115,7 @@ HELP;
 	 * @uses AbstractMediaWikiFarmScript::getParam
 	 * @uses MediaWikiFarmUtils::isMediaWiki
 	 */
-	function testWrongDirectory() {
+	public function testWrongDirectory() {
 
 		$this->expectOutputString( self::$shortHelp );
 		$cwd = getcwd();
@@ -133,7 +133,7 @@ HELP;
 	/**
 	 * Test successful loading.
 	 *
-	 * @large
+	 * @group large
 	 * @backupGlobals enabled
 	 * @covers MediaWikiFarmScriptComposer::main
 	 * @covers MediaWikiFarmScriptComposer::composer2mediawiki
@@ -171,7 +171,7 @@ HELP;
 	 * @uses MediaWikiFarmUtils::isMediaWiki
 	 * @uses MediaWikiFarmUtils::readFile
 	 */
-	function testSuccessfulLoading() {
+	public function testSuccessfulLoading() {
 
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarm', null );
 		$this->backupAndSetGlobalVariable( 'wgMediaWikiFarmConfigDir', self::$wgMediaWikiFarmConfigDir );

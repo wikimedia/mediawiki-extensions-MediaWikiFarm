@@ -4,8 +4,8 @@
  *
  * @package MediaWikiFarm
  * @author Sébastien Beyou ~ Seb35 <seb35@seb35.fr>
- * @license GPL-3.0-or-later GNU General Public License v3.0 ou version ultérieure
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0 ou version ultérieure
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 // @codeCoverageIgnoreStart
@@ -31,7 +31,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 	 * @param string[] $argv Input arguments.
 	 * @return MediaWikiFarmScript
 	 */
-	function __construct( $argc, $argv ) {
+	public function __construct( $argc, $argv ) {
 
 		parent::__construct( $argc, $argv );
 
@@ -64,7 +64,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 	 *
 	 * @return void
 	 */
-	function main() {
+	public function main() {
 
 		# Manage mandatory arguments.
 		if( !$this->premain() ) {
@@ -103,6 +103,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 		if( !$quiet ) {
 			echo "\n0. Composer with complete extensions/skins set:\n"; // @codeCoverageIgnore
 		}
+		// @codingStandardsIgnoreLine MediaWiki.Usage.ForbiddenFunctions.system
 		system( 'composer ' . implode( ' ', $this->argv ), $return );
 		if( $return ) {
 			// @codeCoverageIgnoreStart
@@ -195,6 +196,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 
 			self::rmdirr( 'vendor/autoload.php' );
 			file_put_contents( 'composer.json', json_encode( $thisInstallation ) );
+			// @codingStandardsIgnoreLine MediaWiki.Usage.ForbiddenFunctions.system
 			system( 'composer ' . implode( ' ', $this->argv ), $return );
 			if( $return ) {
 				// @codeCoverageIgnoreStart
@@ -225,6 +227,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 
 		self::rmdirr( 'vendor/autoload.php' );
 		file_put_contents( 'composer.json', json_encode( $thisInstallation ) );
+		// @codingStandardsIgnoreLine MediaWiki.Usage.ForbiddenFunctions.system
 		system( 'composer ' . implode( ' ', $this->argv ), $return );
 		if( $return ) {
 			// @codeCoverageIgnoreStart
@@ -276,7 +279,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 	 * @param string $type Composer type.
 	 * @return string MediaWikiFarm key.
 	 */
-	static function composer2mediawiki( $name, $type ) {
+	public static function composer2mediawiki( $name, $type ) {
 
 		$name = explode( '/', $name );
 		$name = $name[1];

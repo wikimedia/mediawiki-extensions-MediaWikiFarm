@@ -3,8 +3,8 @@
  * Class MediaWikiFarmListTest.
  *
  * @package MediaWikiFarm\Tests
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
@@ -28,7 +28,7 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmList::generateVariablesList
 	 * @uses MediaWikiFarmUtils
 	 */
-	function testConstructionSuccess() {
+	public function testConstructionSuccess() {
 
 		$wgMediaWikiFarmList = new MediaWikiFarmList( self::$wgMediaWikiFarmConfig2Dir, false );
 		$urlsList = $wgMediaWikiFarmList->getURLsList();
@@ -54,7 +54,7 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Invalid directory for the farm configuration.
 	 */
-	function testConstruction() {
+	public function testConstruction() {
 
 		new MediaWikiFarmList( 0, false );
 	}
@@ -68,7 +68,7 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Invalid directory for the farm configuration.
 	 */
-	function testConstruction2() {
+	public function testConstruction2() {
 
 		new MediaWikiFarmList( __FILE__, false );
 	}
@@ -83,7 +83,7 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 	 * @expectedException InvalidArgumentException
 	 * @expectedExceptionMessage Cache directory must be false or a directory.
 	 */
-	function testConstruction3() {
+	public function testConstruction3() {
 
 		new MediaWikiFarmList( self::$wgMediaWikiFarmConfig2Dir, 0 );
 	}
@@ -95,7 +95,7 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarmUtils
 	 * @uses AbstractMediaWikiFarmScript
 	 */
-	function testConstruction5() {
+	public function testConstruction5() {
 
 		$wgMediaWikiFarmList = new MediaWikiFarmList( self::$wgMediaWikiFarmConfig2Dir, self::$wgMediaWikiFarmCacheDir );
 		$this->assertEquals( array(), $wgMediaWikiFarmList->log );

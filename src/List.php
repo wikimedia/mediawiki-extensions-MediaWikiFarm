@@ -3,8 +3,8 @@
  * Class MediaWikiFarmList.
  *
  * @package MediaWikiFarm
- * @license GPL-3.0-or-later GNU General Public License v3.0, or (at your option) any later version.
- * @license AGPL-3.0-or-later GNU Affero General Public License v3.0, or (at your option) any later version.
+ * @license GPL-3.0-or-later
+ * @license AGPL-3.0-or-later
  */
 
 /**
@@ -32,7 +32,7 @@ class MediaWikiFarmList {
 	 * @param string|false $cacheDir Cache directory; if false, the cache is disabled.
 	 * @return MediaWikiFarmList
 	 */
-	function __construct( $configDir, $cacheDir ) {
+	public function __construct( $configDir, $cacheDir ) {
 
 		if( !is_string( $configDir ) || !is_dir( $configDir ) ) {
 			throw new InvalidArgumentException( 'Invalid directory for the farm configuration.' );
@@ -58,7 +58,7 @@ class MediaWikiFarmList {
 	 * @param string|null $farmName Farm name to return the URLs from, null for all farms.
 	 * @return string[] List of wikis URLs.
 	 */
-	function getURLsList( $farmName = null ) {
+	public function getURLsList( $farmName = null ) {
 
 		$urlsList = array();
 
@@ -96,7 +96,7 @@ class MediaWikiFarmList {
 	 * @param string $farmName Farm name to get the variables from.
 	 * @return string[] List of wikis from the farm.
 	 */
-	function getVariablesList( $farmName ) {
+	public function getVariablesList( $farmName ) {
 
 		$farm = $this->farms[$farmName];
 
@@ -113,7 +113,7 @@ class MediaWikiFarmList {
 	 * @param array[] $variables Parameter 'variables' from farms.yml.
 	 * @return array[] List of values for each variable.
 	 */
-	function obtainVariables( $variables ) {
+	public function obtainVariables( $variables ) {
 
 		$tree = array();
 
@@ -162,7 +162,7 @@ class MediaWikiFarmList {
 	 * @param array[] $variables Parameter 'variables' from farms.yml.
 	 * @return array[] Dictionaries with all possible (explicit) combinaisons of the variables.
 	 */
-	function generateVariablesList( $tree, $variables ) {
+	public function generateVariablesList( $tree, $variables ) {
 
 		$list = array();
 
