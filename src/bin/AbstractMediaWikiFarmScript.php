@@ -170,7 +170,9 @@ abstract class AbstractMediaWikiFarmScript {
 		if( is_file( dirname( dirname( $farmDir ) ) . '/includes/DefaultSettings.php' ) ) {
 
 			$IP = dirname( dirname( $farmDir ) );
-			require "$IP/LocalSettings.php";
+			if( is_file( "$IP/LocalSettings.php" ) ) {
+				require "$IP/LocalSettings.php";
+			}
 		}
 
 		# Specific values
