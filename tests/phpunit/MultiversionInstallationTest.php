@@ -420,10 +420,6 @@ PHP;
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
 		$this->assertTrue( $farm->checkExistence() );
 
-		if( strpos( phpversion(), 'hhvm' ) !== false ) {
-			return; # Multiple calls of 'include' do not check for file modification HHVM 3.5.0 https://github.com/facebook/hhvm/issues/4797
-		}
-
 		$this->assertEquals( 'vstub2', $farm->getVariable( '$VERSION' ) );
 
 		$farm->updateVersionAfterMaintenance();
@@ -472,10 +468,6 @@ PHP;
 
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmConfigDir . '/deployments.php' ) );
 		$this->assertTrue( $farm->checkExistence() );
-
-		if( strpos( phpversion(), 'hhvm' ) !== false ) {
-			return; # Multiple calls of 'include' do not check for file modification HHVM 3.5.0 https://github.com/facebook/hhvm/issues/4797
-		}
 
 		$this->assertEquals( 'vstub2', $farm->getVariable( '$VERSION' ) );
 	}
