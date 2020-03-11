@@ -23,9 +23,7 @@
 		]
 	},
 	"Hooks": {
-		"UnitTestsList": [
-			"MediaWikiFarmHooks::onUnitTestsList"
-		]
+		"UnitTestsList": "MediaWikiFarmHooks::onUnitTestsList"
 	},
 	"AutoloadClasses": {
 		"MediaWikiFarm": "src/MediaWikiFarm.php",

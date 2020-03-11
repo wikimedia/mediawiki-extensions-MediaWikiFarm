@@ -545,10 +545,7 @@ class MediaWikiFarm {
 	 * Register MediaWikiFarm with require_once mechanism.
 	 */
 	public static function selfRegister() {
-
-		$dir = dirname( __DIR__ );
-
-		$json = file_get_contents( $dir . '/extension.json' );
+		$json = file_get_contents( __DIR__ . '/../extension.json' );
 		if( $json === false ) {
 			return;
 		}
@@ -559,7 +556,7 @@ class MediaWikiFarm {
 		}
 
 		$GLOBALS['wgExtensionCredits'][$json['type']][] = [
-			'path' => $dir . '/MediaWikiFarm.php',
+			'path' => __DIR__ . '/../MediaWikiFarm.php',
 			'name' => $json['name'],
 			'version' => $json['version'],
 			'author' => $json['author'],
@@ -569,12 +566,12 @@ class MediaWikiFarm {
 		];
 
 		$GLOBALS['wgAutoloadClasses'] = array_merge( $GLOBALS['wgAutoloadClasses'], $json['AutoloadClasses'] );
-		$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = $dir . '/' . $json['MessagesDirs']['MediaWikiFarm'][0];
+		$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = __DIR__ . '/../' . $json['MessagesDirs']['MediaWikiFarm'][0];
 		foreach( $json['Hooks'] as $hook => $func ) {
 			if( !array_key_exists( $hook, $GLOBALS['wgHooks'] ) ) {
 				$GLOBALS['wgHooks'][$hook] = [];
 			}
-			$GLOBALS['wgHooks'][$hook] = array_merge( $GLOBALS['wgHooks'][$hook], $json['Hooks'][$hook] );
+			$GLOBALS['wgHooks'][$hook] = array_merge( $GLOBALS['wgHooks'][$hook], (array) $json['Hooks'][$hook] );
 		}
 	}
 
