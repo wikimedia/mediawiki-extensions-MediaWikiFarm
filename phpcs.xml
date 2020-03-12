@@ -2,14 +2,17 @@
 <ruleset name="MediaWiki">
 	<file>.</file>
 	<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">
-		<!-- This extension is intended to keep backward compatibility with PHP 5.2, so keep long array syntax -->
+		<!-- This extension is intended to keep backward compatibility with PHP 5.2 -->
+		<!-- 1. Keep long array syntax -->
 		<exclude name="Generic.Arrays.DisallowLongArraySyntax.Found" />
-		<!-- All remaining silenced errors are for inclusion of a optional PHP config file -->
-		<exclude name="Generic.PHP.NoSilencedErrors.Discouraged" />
+		<!-- 2. Do not add typehints -->
+		<exclude name="MediaWiki.Usage.PHPUnitTypeHints.MissingTypehint" />
+		<!-- 3. Keep dirname( __FILE__ ) -->
+		<exclude name="MediaWiki.Usage.DirUsage.FunctionFound" />
+
+		<!-- Style preferences -->
 		<!-- I find "catch( Exception $e ) {}" is quite clear -->
 		<exclude name="Squiz.WhiteSpace.ScopeClosingBrace.ContentBefore" />
-		<!-- This extension is intended to keep backward compatibility with PHP 5.2, so keep dirname( __FILE__ ) -->
-		<exclude name="MediaWiki.Usage.DirUsage.FunctionFound" />
 		<!-- I prefer to keep the possibility to put an "else" on a newline -->
 		<exclude name="MediaWiki.ControlStructures.IfElseStructure.SpaceBeforeElse" />
 		<!-- I don’t like "if ( true )", I prefer "if( true )" -->
@@ -20,25 +23,48 @@
 		<exclude name="MediaWiki.WhiteSpace.DisallowEmptyLineFunctions.NoEmptyLine" />
 		<!-- Sometimes spaces are used for exact alignment since tabs size is not universally aggreed -->
 		<exclude name="Generic.WhiteSpace.DisallowSpaceIndent.SpacesUsed" />
-		<!-- I prefer the contrary (colours…): a space after a cast -->
-		<exclude name="Generic.Formatting.NoSpaceAfterCast.SpaceFound" />
 		<!-- Sometimes inline comments are legit (e.g. @codeCoverageIgnore) -->
 		<exclude name="MediaWiki.WhiteSpace.SpaceBeforeSingleLineComment.NewLineComment" />
+		<!-- Not be too strict about spaces between functions -->
+		<exclude name="Squiz.WhiteSpace.FunctionSpacing.After" />
+		<exclude name="Squiz.WhiteSpace.FunctionSpacing.Before" />
+
+		<!-- Code hygiene -->
+		<!-- TODO All remaining silenced errors are for inclusion of a optional PHP config file, improve and remove this rule. -->
+		<exclude name="Generic.PHP.NoSilencedErrors.Discouraged" />
+
+		<!-- DocBlock -->
 		<!-- PHPDoc wants reference variables without the &, PHPCS prefers with &, former wins -->
-		<exclude name="MediaWiki.Commenting.FunctionComment.ParamNameNoMatch" />
-		<!-- See previous rule between PHPDoc and PHPCS -->
-		<exclude name="MediaWiki.Commenting.FunctionComment.MissingParamTag" />
-		<!-- MediaWikiFarm is used as a prefix in all class names, but file names are too long -->
-		<exclude name="MediaWiki.Files.ClassMatchesFilename.NotMatch" />
+		<exclude name="MediaWiki.Commenting.FunctionComment.ParamPassByReference" />
+		<!-- I use custom tags -->
+		<exclude name="MediaWiki.Commenting.FunctionAnnotations.UnrecognizedAnnotation" />
+
+		<!-- Tests -->
 		<!-- Keep @backupGlobals, it’s an additional check to improve quality -->
 		<exclude name="MediaWiki.Commenting.PhpunitAnnotations.ForbiddenBackupGlobals" />
+		<!-- TODO Do not use @expectedException, use $this->expectException(). -->
+		<exclude name="MediaWiki.Commenting.PhpunitAnnotations.ForbiddenExpectedException" />
+		<exclude name="MediaWiki.Commenting.PhpunitAnnotations.ForbiddenExpectedExceptionMessage" />
+
+		<!-- Misc -->
+		<!-- MediaWikiFarm is used as a prefix in all class names, but file names are too long -->
+		<exclude name="MediaWiki.Files.ClassMatchesFilename.NotMatch" />
 	</rule>
+
+	<!-- Style preferences -->
 	<!-- Lines should be less than 160 characters -->
 	<rule ref="Generic.Files.LineLength">
 		<properties>
 			<property name="lineLimit" value="160" />
 		</properties>
 	</rule>
+	<!-- I prefer the contrary: a space after a cast -->
+	<rule ref="Generic.Formatting.SpaceAfterCast">
+		<properties>
+			<property name="spacing" value="1" />
+		</properties>
+	</rule>
+
 	<rule ref="MediaWiki.NamingConventions.ValidGlobalName">
 		<properties>
 			<property name="ignoreList" type="array" value="$IP" />

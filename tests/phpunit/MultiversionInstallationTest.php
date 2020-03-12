@@ -159,7 +159,8 @@ PHP;
 
 	/**
 	 * Test setting variables.
-	 *
+	 */
+	/*
 	public function testReplaceVariables() {
 
 		$this->farm->checkExistence();
@@ -176,6 +177,7 @@ PHP;
 			),
 			$this->farm->getVariables() );
 	}
+	*/
 
 	/**
 	 * Test edge cases when reading config file: missing defined variables, missing versions file.

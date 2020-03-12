@@ -140,7 +140,7 @@ HELP;
 
 		$this->assertFalse( $wgMediaWikiFarmScript->main() );
 
-		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
+		$this->assertSame( 0, $wgMediaWikiFarmScript->status );
 	}
 
 	/**
@@ -160,7 +160,7 @@ HELP;
 
 		$this->assertFalse( $wgMediaWikiFarmScript->main() );
 
-		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
+		$this->assertSame( 0, $wgMediaWikiFarmScript->status );
 	}
 
 	/**
@@ -235,7 +235,8 @@ HELP;
 	 * @ covers MediaWikiFarmScript::load
 	 * @ uses MediaWikiFarmScript::__construct
 	 * @ uses AbstractMediaWikiFarmScript::__construct
-	 *
+	 */
+	/*
 	public function testLoad() {
 
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir;
@@ -247,6 +248,7 @@ HELP;
 
 		$this->assertTrue( true );
 	}
+	*/
 
 	/**
 	 * Test missing '--wiki' argument.
@@ -288,7 +290,7 @@ HELP;
 		$wgMediaWikiFarmScript->main();
 
 		$this->assertEquals( 4, $wgMediaWikiFarmScript->status );
-		$this->assertEquals( '', $wgMediaWikiFarmScript->script );
+		$this->assertSame( '', $wgMediaWikiFarmScript->script );
 		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
 		$this->assertEquals( array( self::$mwscriptPath ), $wgMediaWikiFarmScript->argv );
 	}
@@ -519,7 +521,7 @@ OUTPUT
 
 		$wgMediaWikiFarmScript->main();
 
-		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
+		$this->assertSame( 0, $wgMediaWikiFarmScript->status );
 		$this->assertEquals( 'testfarm-multiversion-subdirectories.example.org', $wgMediaWikiFarmScript->host );
 		$this->assertEquals( '/a', $wgMediaWikiFarmScript->path );
 		$this->assertEquals( 'maintenance/showJobs.php', $wgMediaWikiFarmScript->script );
@@ -599,7 +601,7 @@ OUTPUT
 		$wgMediaWikiFarmScript->main();
 		$wgMediaWikiFarmScript->restInPeace();
 
-		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
+		$this->assertSame( 0, $wgMediaWikiFarmScript->status );
 
 		# For coverage
 		unset( $GLOBALS['wgMediaWikiFarm'] );

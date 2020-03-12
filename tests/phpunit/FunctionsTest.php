@@ -57,7 +57,6 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 		MediaWikiFarmUtils5_3::readYAML( self::$wgMediaWikiFarmConfigDir . '/testreading.yml' );
 	}*/
 
-
 	/**
 	 * Test reading a missing file in the YAML function.
 	 *

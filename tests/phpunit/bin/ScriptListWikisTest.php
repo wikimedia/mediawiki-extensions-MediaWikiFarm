@@ -89,7 +89,7 @@ HELP;
 
 		$this->assertFalse( $wgMediaWikiFarmScriptListWikis->main() );
 
-		$this->assertEquals( 0, $wgMediaWikiFarmScriptListWikis->status );
+		$this->assertSame( 0, $wgMediaWikiFarmScriptListWikis->status );
 	}
 
 	/**
@@ -124,7 +124,7 @@ OUTPUT
 
 		$this->assertTrue( $wgMediaWikiFarmScript->main() );
 
-		$this->assertEquals( 0, $wgMediaWikiFarmScript->status );
+		$this->assertSame( 0, $wgMediaWikiFarmScript->status );
 		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
 		$this->assertEquals( array( self::$mwlistwikisPath ), $wgMediaWikiFarmScript->argv );
 	}

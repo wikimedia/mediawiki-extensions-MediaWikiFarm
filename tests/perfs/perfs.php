@@ -77,13 +77,13 @@ foreach( $statistics as $profile => $statisticsProfile ) {
 echo "bootstrap    config     total     total     config      total compilation\n";
 echo "     mean      mean      mean      mean       mean       mean        unit\n";
 echo "     farm      farm classical      farm difference difference        farm\n";
-echo '    '.number_format( $mean[0]['bootstrap'], 3 ).' ';
-echo '    '.number_format( $mean[0]['config'], 3 ).' ';
-echo '    '.number_format( $mean[1]['config'], 3 ).' ';
-echo '    '.number_format( $mean[0]['bootstrap'] + $mean[0]['config'], 3 ).' ';
-echo '     '.number_format( $mean[0]['config'] - $mean[1]['config'], 3 ).' ';
-echo '     '.number_format( $mean[0]['bootstrap'] + $mean[0]['config'] - $mean[1]['config'], 3 ).' ';
-echo '      '.number_format( $mean[0]['compilation'] * count( $statistics[0] ), 3 ).' ';
+echo '    ' . number_format( $mean[0]['bootstrap'], 3 ) . ' ';
+echo '    ' . number_format( $mean[0]['config'], 3 ) . ' ';
+echo '    ' . number_format( $mean[1]['config'], 3 ) . ' ';
+echo '    ' . number_format( $mean[0]['bootstrap'] + $mean[0]['config'], 3 ) . ' ';
+echo '     ' . number_format( $mean[0]['config'] - $mean[1]['config'], 3 ) . ' ';
+echo '     ' . number_format( $mean[0]['bootstrap'] + $mean[0]['config'] - $mean[1]['config'], 3 ) . ' ';
+echo '      ' . number_format( $mean[0]['compilation'] * count( $statistics[0] ), 3 ) . ' ';
 echo "\n\nAll results =\n";
 var_dump( $mean );
 

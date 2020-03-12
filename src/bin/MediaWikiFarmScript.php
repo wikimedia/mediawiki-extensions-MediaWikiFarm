@@ -88,7 +88,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 		$this->host = $this->getParam( 'wiki' );
 		$this->path = '';
 		$host = $this->host;
-		if( is_null( $this->host ) ) {
+		if( $this->host === null ) {
 			$this->usage();
 			$this->status = 4;
 			return false;

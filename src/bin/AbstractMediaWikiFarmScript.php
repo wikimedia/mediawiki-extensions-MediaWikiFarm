@@ -90,12 +90,12 @@ abstract class AbstractMediaWikiFarmScript {
 					$nbArgs = 1;
 					break;
 				}
-				elseif( substr( $this->argv[$posArg], 0, strlen( $name ) + 3 ) == '--'.$name.'=' ) {
+				elseif( substr( $this->argv[$posArg], 0, strlen( $name ) + 3 ) == '--' . $name . '=' ) {
 					$value = substr( $this->argv[$posArg], strlen( $name ) + 3 );
 					$nbArgs = 1;
 					break;
 				}
-				elseif( $this->argv[$posArg] == '--'.$name && $posArg < $this->argc - 1 ) {
+				elseif( $this->argv[$posArg] == '--' . $name && $posArg < $this->argc - 1 ) {
 					$value = $this->argv[$posArg + 1];
 					$nbArgs = 2;
 					break;

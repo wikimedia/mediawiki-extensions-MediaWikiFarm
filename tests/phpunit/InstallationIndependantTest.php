@@ -50,7 +50,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		parent::setUp();
 
-		if( is_null( $this->farm ) ) {
+		if( $this->farm === null ) {
 			$this->farm = self::constructMediaWikiFarm( 'a.testfarm-monoversion.example.org' );
 		}
 		$this->shouldBeConstant = true;
@@ -440,8 +440,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		$log = array();
 		$result = MediaWikiFarmUtils::readAnyFile( 'success', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
 
-		$this->assertEquals(
-			true,
+		$this->assertTrue(
 			is_array( $result ) && array_keys( $result ) === array( 0, 1 ),
 			'The returned value should be a list with two elements.'
 		);
@@ -470,12 +469,11 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		$log = array();
 		$result = MediaWikiFarmUtils::readAnyFile( 'nonexistant', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
 
-		$this->assertEquals(
-			true,
+		$this->assertTrue(
 			is_array( $result ) && array_keys( $result ) === array( 0, 1 ),
 			'The returned value should be a list with two elements.'
 		);
-		$this->assertEquals( '', $result[1], 'There should be no read file.' );
+		$this->assertSame( '', $result[1], 'There should be no read file.' );
 		$this->assertEquals(
 			array(),
 			$result[0],
@@ -495,12 +493,11 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		$log = array();
 		$result = MediaWikiFarmUtils::readAnyFile( 'badsyntax', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
 
-		$this->assertEquals(
-			true,
+		$this->assertTrue(
 			is_array( $result ) && array_keys( $result ) === array( 0, 1 ),
 			'The returned value should be a list with two elements.'
 		);
-		$this->assertEquals( '', $result[1], 'There should be no read file because the only file has a syntax error.' );
+		$this->assertSame( '', $result[1], 'There should be no read file because the only file has a syntax error.' );
 		$this->assertEquals(
 			array(),
 			$result[0],
@@ -684,7 +681,7 @@ PHP;
 	public function testComposerKey() {
 
 		$this->assertEquals( 'c4538db9', MediaWikiFarmConfiguration::composerKey( 'ExtensionSemanticMediaWiki' ) );
-		$this->assertEquals( '', MediaWikiFarmConfiguration::composerKey( '' ) );
+		$this->assertSame( '', MediaWikiFarmConfiguration::composerKey( '' ) );
 	}
 
 	/**

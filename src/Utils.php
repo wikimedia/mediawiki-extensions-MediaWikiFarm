@@ -93,7 +93,7 @@ class MediaWikiFarmUtils {
 					$log['unreadable-file'] = true;
 					$array = false;
 				}
-				if( is_null( $array ) ) {
+				if( $array === null ) {
 					$array = array();
 				}
 			}
@@ -127,12 +127,12 @@ class MediaWikiFarmUtils {
 		}
 
 		# Error for any other format
-		elseif( !is_null( $format ) ) {
+		elseif( $format !== null ) {
 			return false;
 		}
 
 		# A null value is an empty file or value 'null'
-		if( ( is_null( $array ) || $array === false ) && $cachedFile && is_file( $cachedFile ) ) {
+		if( ( $array === null || $array === false ) && $cachedFile && is_file( $cachedFile ) ) {
 
 			$log[] = 'Unreadable file \'' . $filename . '\'';
 			$log['unreadable-file'] = true;
@@ -264,15 +264,16 @@ class MediaWikiFarmUtils {
 	 * @param array $array1 First array.
 	 * @return array
 	 */
+	// @codingStandardsIgnoreLine MediaWiki.Commenting.FunctionComment.SuperfluousVariadicArgComment
 	public static function arrayMerge( $array1 /* ... */ ) {
 		$out = $array1;
-		if ( is_null( $out ) ) {
+		if ( $out === null ) {
 			$out = array();
 		}
 		$argsCount = func_num_args();
 		for ( $i = 1; $i < $argsCount; $i++ ) {
 			$array = func_get_arg( $i );
-			if ( is_null( $array ) ) {
+			if ( $array === null ) {
 				continue;
 			}
 			foreach ( $array as $key => $value ) {

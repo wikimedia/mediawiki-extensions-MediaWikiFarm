@@ -101,7 +101,7 @@ HELP;
 
 		$this->assertFalse( $wgMediaWikiFarmScriptComposer->main() );
 
-		$this->assertEquals( 0, $wgMediaWikiFarmScriptComposer->status );
+		$this->assertSame( 0, $wgMediaWikiFarmScriptComposer->status );
 	}
 
 	/**

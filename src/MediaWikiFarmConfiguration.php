@@ -228,16 +228,16 @@ class MediaWikiFarmConfiguration {
 				# corresponding to the star from the variable $WIKIID if $classicKey can match $WIKIID when remplacing the star by something
 				# (the star will be the key in the files). This reasonning is “inversed” compared to a loop checking each key in the files
 				# in order to use array_key_exists, assumed to be quicker than a direct loop.
-				$wikiIDKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $classicKey ).'$/', $this->farm->getVariable( '$WIKIID' ), $matches );
+				$wikiIDKey = (bool) preg_match( '/^' . str_replace( '*', '(.+)', $classicKey ) . '$/', $this->farm->getVariable( '$WIKIID' ), $matches );
 				$wikiID = $wikiIDKey ? $matches[1] : $this->farm->getVariable( '$WIKIID' );
-				$suffixKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $classicKey ).'$/', $this->farm->getVariable( '$SUFFIX' ), $matches );
+				$suffixKey = (bool) preg_match( '/^' . str_replace( '*', '(.+)', $classicKey ) . '$/', $this->farm->getVariable( '$SUFFIX' ), $matches );
 				$suffix = $suffixKey ? $matches[1] : $this->farm->getVariable( '$SUFFIX' );
 				/*$tagKey = array();
 				foreach( $tags as $tag ) {
 					$tagKey[$tag] = ($classicKey == $tag);
 				}*/
 				if( $defaultKey ) {
-					$suffixDefaultKey = (bool) preg_match( '/^'.str_replace( '*', '(.+)', $defaultKey ).'$/', $this->farm->getVariable( '$SUFFIX' ), $matches );
+					$suffixDefaultKey = (bool) preg_match( '/^' . str_replace( '*', '(.+)', $defaultKey ) . '$/', $this->farm->getVariable( '$SUFFIX' ), $matches );
 					// $tagDefaultKey = in_array( $defaultKey, $tags );
 				}
 
@@ -277,8 +277,8 @@ class MediaWikiFarmConfiguration {
 							$thisPriority = 5;
 							continue;
 						}
-						if( array_key_exists( '+'.$wikiID, $values ) && is_array( $values['+'.$wikiID] ) ) {
-							$thisSetting = MediaWikiFarmUtils::arrayMerge( $thisSetting, $values['+'.$wikiID] );
+						if( array_key_exists( '+' . $wikiID, $values ) && is_array( $values['+' . $wikiID] ) ) {
+							$thisSetting = MediaWikiFarmUtils::arrayMerge( $thisSetting, $values['+' . $wikiID] );
 							$thisPriority = 3;
 						}
 					}
@@ -311,8 +311,8 @@ class MediaWikiFarmConfiguration {
 							$thisPriority = 3;
 							continue;
 						}
-						if( array_key_exists( '+'.$suffix, $values ) && is_array( $values['+'.$suffix] ) ) {
-							$thisSetting = MediaWikiFarmUtils::arrayMerge( $thisSetting, $values['+'.$suffix] );
+						if( array_key_exists( '+' . $suffix, $values ) && is_array( $values['+' . $suffix] ) ) {
+							$thisSetting = MediaWikiFarmUtils::arrayMerge( $thisSetting, $values['+' . $suffix] );
 							$thisPriority = 3;
 						}
 					}
