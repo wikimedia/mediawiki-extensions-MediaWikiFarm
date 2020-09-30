@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Daud I.F. Argana"
+		]
+	},
+	"mediawikifarm-desc": "Mengubah sebuah instalasi MediaWiki menjadi sebuah gugus yang terdiri dari beberapa wiki yang berdiri sendiri"
+}
