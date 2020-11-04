@@ -1,7 +1,7 @@
 {
 	"name": "mediawiki-extensions/media-wiki-farm",
 	"description": "Configuration management for MediaWiki farms.",
-	"version": "0.5.0",
+	"version": "1.0.0",
 	"keywords": [
 		"mediawiki"
 	],
