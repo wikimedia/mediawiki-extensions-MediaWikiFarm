@@ -131,6 +131,11 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 		$installedJson = json_decode( $installedJson, true );
 		$baseComposerJson = json_decode( $origComposerJson, true );
 
+		# Composer v2 - https://github.com/composer/composer/commit/60df8925174dfb385368efbbfd2d19c7f372c2cd
+		if( array_key_exists( 'packages', $installedJson ) ) {
+			$installedJson = $installedJson['packages'];
+		}
+
 		$installable = array();
 		$extensions = array();
 		$dependencies = array();
