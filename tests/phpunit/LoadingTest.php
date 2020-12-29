@@ -10,61 +10,12 @@
 require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
 
-if( !function_exists( 'wfLoadExtension' ) ) {
-	/**
-	 * Placeholder for wfLoadExtension when standalone PHPUnit is executed.
-	 *
-	 * @package MediaWiki\Tests
-	 *
-	 * @param string $ext Extension name.
-	 * @param string|null $path Absolute path of the extension.json file.
-	 * @return void
-	 */
-	function wfLoadExtension( $ext, $path = null ) {}
-}
-
-if( !function_exists( 'wfLoadSkin' ) ) {
-	/**
-	 * Placeholder for wfLoadSkin when standalone PHPUnit is executed.
-	 *
-	 * @package MediaWiki\Tests
-	 *
-	 * @param string $skin Skin name.
-	 * @param string|null $path Absolute path of the skin.json file.
-	 * @return void
-	 */
-	function wfLoadSkin( $skin, $path = null ) {}
-}
-
 /**
  * Tests about extensions+skins loading.
  *
  * @group MediaWikiFarm
  */
 class LoadingTest extends MediaWikiFarmTestCase {
-
-	/**
-	 * Set up the default MediaWikiFarm object with a sample correct configuration file.
-	 */
-	protected function setUp() {
-
-		parent::setUp();
-
-		if( class_exists( 'ExtensionRegistry' ) ) {
-			ExtensionRegistry::getInstance()->loadFromQueue();
-		}
-	}
-
-	/**
-	 * Assert that ExtensionRegistry (MediaWiki 1.25+) queue is really emtpy as it should be.
-	 */
-	public function assertPreConditions() {
-
-		if( class_exists( 'ExtensionRegistry' ) ) {
-
-			$this->assertEmpty( ExtensionRegistry::getInstance()->getQueue() );
-		}
-	}
 
 	/**
 	 * Test regular loading mechanisms.
@@ -160,7 +111,12 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( 200, $exists );
 		$this->assertEquals( 'vstub', $wgMediaWikiFarm->getVariable( '$VERSION' ) );
 
-		$wgMediaWikiFarm->loadMediaWikiConfig();
+		if( class_exists( 'ExtensionRegistry' ) ) {
+			$extensionRegistry = new ExtensionRegistry();
+			$wgMediaWikiFarm->loadMediaWikiConfig( $extensionRegistry );
+		} else {
+			$wgMediaWikiFarm->loadMediaWikiConfig();
+		}
 		$this->assertEquals( $result['settings'], $wgMediaWikiFarm->getConfiguration( 'settings' ) );
 		$this->assertEquals( $result['arrays'], $wgMediaWikiFarm->getConfiguration( 'arrays' ) );
 		$this->assertEquals( $result['extensions'], $wgMediaWikiFarm->getConfiguration( 'extensions' ) );
@@ -181,11 +137,11 @@ class LoadingTest extends MediaWikiFarmTestCase {
 
 		# Check that extensions+skins are in ExtensionRegistry queue
 		if( class_exists( 'ExtensionRegistry' ) ) {
-			$this->assertContains( self::$wgMediaWikiFarmFarmDir . '/extension.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
-			$this->assertContains( $wgExtensionDirectory . '/TestExtensionWfLoadExtension/extension.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
-			$this->assertContains( $wgExtensionDirectory . '/TestExtensionBiLoading/extension.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
-			$this->assertContains( $wgStyleDirectory . '/TestSkinWfLoadSkin/skin.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
-			$this->assertContains( $wgStyleDirectory . '/TestSkinBiLoading/skin.json', array_keys( ExtensionRegistry::getInstance()->getQueue() ) );
+			$this->assertContains( self::$wgMediaWikiFarmFarmDir . '/extension.json', array_keys( $extensionRegistry->getQueue() ) );
+			$this->assertContains( $wgExtensionDirectory . '/TestExtensionWfLoadExtension/extension.json', array_keys( $extensionRegistry->getQueue() ) );
+			$this->assertContains( $wgExtensionDirectory . '/TestExtensionBiLoading/extension.json', array_keys( $extensionRegistry->getQueue() ) );
+			$this->assertContains( $wgStyleDirectory . '/TestSkinWfLoadSkin/skin.json', array_keys( $extensionRegistry->getQueue() ) );
+			$this->assertContains( $wgStyleDirectory . '/TestSkinBiLoading/skin.json', array_keys( $extensionRegistry->getQueue() ) );
 		}
 	}
 
@@ -318,17 +274,5 @@ class LoadingTest extends MediaWikiFarmTestCase {
 		$wgMediaWikiFarm->compileConfiguration();
 		$this->assertEquals( $result['settings'], $wgMediaWikiFarm->getConfiguration( 'settings' ) );
 		$this->assertEquals( $result['extensions'], $wgMediaWikiFarm->getConfiguration( 'extensions' ) );
-	}
-
-	/**
-	 * Remove cache directory and clear queue of ExtensionRegistry (to avoid pollute it).
-	 */
-	protected function tearDown() {
-
-		if( class_exists( 'ExtensionRegistry' ) ) {
-			ExtensionRegistry::getInstance()->clearQueue();
-		}
-
-		parent::tearDown();
 	}
 }

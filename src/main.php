@@ -52,7 +52,11 @@ foreach( $wgMediaWikiFarm->getConfiguration( 'extensions' ) as $key => $extensio
 }
 
 # Load general MediaWiki configuration
-$wgMediaWikiFarm->loadMediaWikiConfig();
+if( class_exists( 'ExtensionRegistry' ) ) {
+	$wgMediaWikiFarm->loadMediaWikiConfig( ExtensionRegistry::getInstance() );
+} else {
+	$wgMediaWikiFarm->loadMediaWikiConfig( null );
+}
 
 # Executable configuration
 foreach( $wgMediaWikiFarm->getConfiguration( 'execFiles' ) as $execFile ) {

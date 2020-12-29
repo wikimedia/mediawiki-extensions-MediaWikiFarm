@@ -490,9 +490,10 @@ class MediaWikiFarm {
 	 *
 	 * @api
 	 *
+	 * @param ExtensionRegistry|null $ExtensionRegistry Object ExtensionRegistry from MediaWiki.
 	 * @return void
 	 */
-	public function loadMediaWikiConfig() {
+	public function loadMediaWikiConfig( $extensionRegistry = null ) {
 
 		# Set general parameters as global variables
 		foreach( $this->getConfiguration( 'settings' ) as $setting => $value ) {
@@ -514,15 +515,23 @@ class MediaWikiFarm {
 
 			if( $extension[2] == 'wfLoadExtension' ) {
 
+				if( !$extensionRegistry ) {
+					throw new LogicException();
+				}
+
 				if( $key != 'ExtensionMediaWikiFarm' ) {
-					wfLoadExtension( $extension[0] );
+					$extensionRegistry->queue( $GLOBALS['wgExtensionDirectory'] . '/' . $extension[0] . '/extension.json' );
 				} else {
-					wfLoadExtension( 'MediaWikiFarm', $this->farmDir . '/extension.json' );
+					$extensionRegistry->queue( $this->farmDir . '/extension.json' );
 				}
 			}
 			elseif( $extension[2] == 'wfLoadSkin' ) {
 
-				wfLoadSkin( $extension[0] );
+				if( !$extensionRegistry ) {
+					throw new LogicException();
+				}
+
+				$extensionRegistry->queue( $GLOBALS['wgStyleDirectory'] . '/' . $extension[0] . '/skin.json' );
 			}
 			elseif( $extension[2] == 'require_once' && $key == 'ExtensionMediaWikiFarm' ) {
 				self::selfRegister();

@@ -44,6 +44,26 @@ if( !class_exists( 'MediaWikiTestCase' ) ) {
 	}
 }
 
+# Mock ExtensionRegistry given it does not exist when PHPUnit is standalonely executed
+if( !class_exists( 'ExtensionRegistry' ) && !defined( 'MEDIAWIKI' ) ) {
+
+	class ExtensionRegistry {
+
+		protected $queued = [];
+
+		function queue( $file ) {
+
+			$this->queued[$file] = true;
+		}
+
+		function getQueue() {
+
+			return $this->queued;
+		}
+
+	}
+}
+
 /**
  * Abstract class with basic stuff for tests.
  *
