@@ -302,7 +302,7 @@ abstract class AbstractMediaWikiFarmScript {
 
 		# Return if we are considering a blacklisted file
 		foreach( $blacklist as $file ) {
-			if( preg_match( '|' . ( $file{0} == '/' ? '^' : '' ) . $file . '$|', $base ) ) {
+			if( preg_match( '|' . ( $file[0] == '/' ? '^' : '' ) . $file . '$|', $base ) ) {
 				return;
 			}
 		}
@@ -311,7 +311,7 @@ abstract class AbstractMediaWikiFarmScript {
 		if( is_array( $whitelist ) && $base ) {
 			$isWhitelisted = false;
 			foreach( $whitelist as $file ) {
-				if( preg_match( '|' . ( $file{0} == '/' ? '^' : '' ) . $file . '$|', $base ) ) {
+				if( preg_match( '|' . ( $file[0] == '/' ? '^' : '' ) . $file . '$|', $base ) ) {
 					$isWhitelisted = true;
 					break;
 				}
