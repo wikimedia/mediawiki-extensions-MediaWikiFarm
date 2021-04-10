@@ -10,7 +10,7 @@ Here are detailled the scripts provided with MediaWikiFarm:
 mwscript
 ========
 
-:command:`mwscript` must be prepended to traditionnal maintenance scripts. For instance, to run :command:`maintenace/update.php`, you can run one of the two equivalent commands:
+:command:`mwscript` must be prepended to traditional maintenance scripts. For instance, to run :command:`maintenance/update.php`, you can run one of the two equivalent commands:
 * :command:`php mwscript.php maintenance/update.php --wiki=mywiki.example.org`
 * :command:`php mwscript.php update --wiki=mywiki.example.org`
 If the command doesn’t begin with "maintenance/" and doesn’t end with ".php", these are added.
