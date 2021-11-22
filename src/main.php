@@ -18,7 +18,7 @@ if( !defined( 'MEDIAWIKI' ) ) {
 # Old MediaWiki installations doesn’t load DefaultSettings.php before LocalSettings.php
 if( !isset( $wgVersion ) ) {
 	if( !$IP ) {
-		$IP = realpath( '.' ) ? realpath( '.' ) : dirname( __DIR__ );
+		$IP = realpath( '.' ) ? realpath( '.' ) : dirname( dirname( __FILE__ ) );
 	}
 	// NB: to run MediaWiki 1.1, comment this
 	require_once "$IP/includes/DefaultSettings.php";

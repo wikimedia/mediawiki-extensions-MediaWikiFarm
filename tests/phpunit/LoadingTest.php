@@ -253,6 +253,7 @@ class LoadingTest extends MediaWikiFarmTestCase {
 			),
 			'extensions' => array(),
 		);
+
 		if( class_exists( 'ExtensionRegistry' ) ) {
 			$result['settings']['wgUseExtensionTestExtensionWfLoadExtension'] = true;
 			$result['settings']['wgUseSkinTestSkinWfLoadSkin'] = true;

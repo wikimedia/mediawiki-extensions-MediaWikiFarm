@@ -21,6 +21,7 @@
 /tests/phpunit/data/config/testdeploymentsfarmversions.php
 /tests/phpunit/data/mediawiki/vstub3
 /tests/phpunit/data/readAnyFile/badsyntax.json
+/.phpunit.result.cache
 
 # Compiled code documentation
 /docs/code

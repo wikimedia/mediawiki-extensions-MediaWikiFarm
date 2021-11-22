@@ -6,11 +6,12 @@
  * @license GPL-3.0-or-later
  * @license AGPL-3.0-or-later
  *
- * @codingStandardsIgnoreFile MediaWiki.Files.OneClassPerFile.MultipleFound
+ * phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
  *
  * DEVELOPERS: given its nature, this extension must work with all MediaWiki versions and
  *             PHP 5.2+, so please do not use "new" syntaxes (namespaces, arrays with [], etc.).
  */
+
 
 // @codeCoverageIgnoreStart
 require_once dirname( __FILE__ ) . '/Utils.php';
@@ -34,12 +35,12 @@ class MWFConfigurationException extends RuntimeException {}
  * files, possibly with different permissions. Files can be written in YAML, JSON, or PHP.
  *
  * Various methods are tagged with nonstandard PHPDoc tags:
- *   @mediawikifarm-const the function is garanted not to change any object property, even static properties;
- *   @mediawikifarm-idempotent the function is garanted to always return the same result, always set the same
- *                             values for the affected object properties, always set the same values for global
- *                             variables, and always write the same content in the same files, provided the
- *                             configuration files did not change  andfor given same input parameters, but
- *                             independently of the current object state or global variables.
+ *   - @mediawikifarm-const the function is garanted not to change any object property, even static properties;
+ *   - @mediawikifarm-idempotent the function is garanted to always return the same result, always set the same
+ *                               values for the affected object properties, always set the same values for global
+ *                               variables, and always write the same content in the same files, provided the
+ *                               configuration files did not change  andfor given same input parameters, but
+ *                               independently of the current object state or global variables.
  */
 class MediaWikiFarm {
 
@@ -490,7 +491,7 @@ class MediaWikiFarm {
 	 *
 	 * @api
 	 *
-	 * @param ExtensionRegistry|null $ExtensionRegistry Object ExtensionRegistry from MediaWiki.
+	 * @param ExtensionRegistry|null $extensionRegistry Object ExtensionRegistry from MediaWiki.
 	 * @return void
 	 */
 	public function loadMediaWikiConfig( $extensionRegistry = null ) {
@@ -710,7 +711,7 @@ class MediaWikiFarm {
 		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
 		# Rationale: nginx put the regex of the server name in SERVER_NAME; HTTP_HOST seems to be always clean from this side,
 		#            and it will be checked against available hosts in constructor
-		if( is_null( $host ) ) {
+		if( $host === null ) {
 			if( array_key_exists( 'HTTP_HOST', $_SERVER ) && $_SERVER['HTTP_HOST'] ) {
 				$host = (string) $_SERVER['HTTP_HOST'];
 			} elseif( array_key_exists( 'SERVER_NAME', $_SERVER ) && $_SERVER['SERVER_NAME'] ) {
@@ -736,7 +737,7 @@ class MediaWikiFarm {
 		if( !is_string( $configDir ) || !is_dir( $configDir ) ) {
 			throw new InvalidArgumentException( 'Invalid directory for the farm configuration' );
 		}
-		if( !is_null( $codeDir ) && ( !is_string( $codeDir ) || !is_dir( $codeDir ) ) ) {
+		if( $codeDir !== null && ( !is_string( $codeDir ) || !is_dir( $codeDir ) ) ) {
 			throw new InvalidArgumentException( 'Code directory must be null or a directory' );
 		}
 		if( !is_string( $cacheDir ) && $cacheDir !== false ) {
@@ -792,7 +793,7 @@ class MediaWikiFarm {
 		}
 
 		# Shortcut loading
-		// @codingStandardsIgnoreLine MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
+		// phpcs:ignore MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures
 		if( $this->cacheDir && ( $hosts = $this->readFile( 'wikis.php', $this->cacheDir, false ) )
 		    && array_key_exists( $host, $hosts ) && preg_match( $hosts[$host], $path . '/', $matches )
 		    && ( $result = $this->readFile( $host . $matches[1] . '.php', $this->cacheDir . '/wikis', false ) ) ) {
@@ -892,7 +893,7 @@ class MediaWikiFarm {
 			$configpath = str_replace( '/', '\/', $configpath );
 			# The host is case-insensitive, the path is case-sensitive
 			# The tested host must have a trailing slash because the regex has at least one slash
-			if( ! preg_match( '/^' . $confighost . '(?-i)' . $configpath . '/i', $host . '/', $matches ) ) {
+			if( !preg_match( '/^' . $confighost . '(?-i)' . $configpath . '/i', $host . '/', $matches ) ) {
 				continue;
 			}
 			# Get the resulting host; this must not be the tested host because it has the article name, etc and is less safe than
@@ -1036,7 +1037,7 @@ class MediaWikiFarm {
 		}
 
 		# Monoversion mode
-		if( is_null( $this->codeDir ) ) {
+		if( $this->codeDir === null ) {
 
 			# Verify the explicit existence of the wiki
 			if( !$explicitExistence ) {
@@ -1062,8 +1063,9 @@ class MediaWikiFarm {
 			$deployments = $this->readFile( $this->variables['$DEPLOYMENTS'], $this->configDir, false );
 
 			$this->setVariable( 'versions' );
-			if( $deployments === false ) {
-				if( $this->variables['$VERSIONS'] && ( $deployments = $this->readFile( $this->variables['$VERSIONS'], $this->configDir ) ) ) {
+			if( $deployments === false && $this->variables['$VERSIONS'] ) {
+				$deployments = $this->readFile( $this->variables['$VERSIONS'], $this->configDir );
+				if( $deployments ) {
 					MediaWikiFarmUtils::cacheFile( $deployments, $this->variables['$DEPLOYMENTS'], $this->configDir, false );
 				}
 			}
@@ -1077,7 +1079,12 @@ class MediaWikiFarm {
 					break;
 				}
 			}
-			if( !$fresh || ( !is_string( $this->variables['$VERSION'] ) && array_key_exists( '$VERSIONS', $this->variables ) && filemtime( $this->configDir . '/' . $this->variables['$VERSIONS'] ) >= $myfreshness ) || $deployments === false ) {
+			if( !$fresh
+				|| ( !is_string( $this->variables['$VERSION'] )
+					&& array_key_exists( '$VERSIONS', $this->variables )
+					&& filemtime( $this->configDir . '/' . $this->variables['$VERSIONS'] ) >= $myfreshness )
+				|| $deployments === false
+			) {
 				$deployments = array();
 			}
 		}
@@ -1191,9 +1198,9 @@ class MediaWikiFarm {
 		$update = ( $this->state['EntryPoint'] == 'maintenance/update.php' );
 		$isKey = is_array( $deployments ) && array_key_exists( $this->variables['$WIKIID'], $deployments );
 
-		if( $update || ( $isKey && is_null( $version ) ) || ( !$isKey && !is_null( $version ) ) ) {
+		if( $update || ( $isKey && $version === null ) || ( !$isKey && $version !== null ) ) {
 
-			if( is_null( $version ) ) {
+			if( $version === null ) {
 				unset( $deployments[$this->variables['$WIKIID']] );
 			} else {
 				$deployments[$this->variables['$WIKIID']] = $version;

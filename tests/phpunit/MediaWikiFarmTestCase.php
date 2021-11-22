@@ -7,7 +7,7 @@
  * @license GPL-3.0-or-later
  * @license AGPL-3.0-or-later
  *
- * @codingStandardsIgnoreFile MediaWiki.Files.OneClassPerFile.MultipleFound
+ * phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
  */
 
 require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/bin/AbstractMediaWikiFarmScript.php';
@@ -49,18 +49,63 @@ if( !class_exists( 'ExtensionRegistry' ) && !defined( 'MEDIAWIKI' ) ) {
 
 	class ExtensionRegistry {
 
-		protected $queued = [];
+		/**
+		 * List of paths that should be loaded
+		 *
+		 * @var int[]
+		 */
+		protected $queued = array();
 
-		function queue( $file ) {
+		/**
+		 * @var ExtensionRegistry
+		 */
+		private static $instance;
 
-			$this->queued[$file] = true;
+		/**
+		 * @codeCoverageIgnore
+		 * @return ExtensionRegistry
+		 */
+		public static function getInstance() {
+			if ( self::$instance === null ) {
+				self::$instance = new self();
+			}
+
+			return self::$instance;
 		}
 
-		function getQueue() {
+		/**
+		 * @param string $path Absolute path to the JSON file
+		 */
+		public function queue( $path ) {
+
+			$this->queued[$path] = true;
+		}
+
+		/**
+		 * Get the current load queue. Not intended to be used
+		 * outside of the installer.
+		 *
+		 * @return int[] Map of extension.json files' modification timestamps keyed by absolute path
+		 */
+		public function getQueue() {
 
 			return $this->queued;
 		}
 
+		/**
+		 * @throws MWException If the queue is already marked as finished (no further things should
+		 *  be loaded then).
+		 */
+		public function loadFromQueue() {
+		}
+
+		/**
+		 * Clear the current load queue. Not intended to be used
+		 * outside of the installer.
+		 */
+		public function clearQueue() {
+			$this->queued = array();
+		}
 	}
 }
 

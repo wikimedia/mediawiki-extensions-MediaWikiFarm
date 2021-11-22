@@ -46,7 +46,7 @@ class FunctionsTest extends MediaWikiFarmTestCase {
 	 * @expectedExceptionMessage Unavailable YAML library, please install it if you want to read YAML files
 	 * @codingStandardsIgnoreEnd
 	 */
-	/*function testUninstalledYAMLLibrary() {
+	/*public function testUninstalledYAMLLibrary() {
 
 		if( class_exists( 'Symfony\Component\Yaml\Yaml' ) ) {
 			$this->markTestSkipped(

@@ -31,6 +31,11 @@ if( MediaWikiFarm::load() == 200 ) {
 	# Load MediaWiki configuration
 	require_once $wgMediaWikiFarm->getConfigFile();
 } else {
+	# TODO check the situations where it would be needed exit( 0 ), else remove
+	# Do not execute during installer
+	if( defined( 'MEDIAWIKI_INSTALL' ) ) {
+		return;
+	}
 	exit( 0 );
 }
 // @codeCoverageIgnoreEnd

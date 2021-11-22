@@ -478,6 +478,7 @@ PHP;
 	 * Test the feature 'deployments' with deployed versions.
 	 *
 	 * @depends testDeployedVersions4
+	 *
 	 * @expectedException MWFConfigurationException
 	 * @expectedExceptionMessage No version declared for this wiki.
 	 */
