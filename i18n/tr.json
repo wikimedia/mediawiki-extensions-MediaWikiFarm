@@ -1,8 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"BaRaN6161 TURK"
+			"BaRaN6161 TURK",
+			"MuratTheTurkish"
 		]
 	},
-	"mediawikifarm-desc": "MediaWiki kurulumunu birden fazla bağımsız wikiden oluşan bir çiftliğe dönüştürür"
+	"mediawikifarm-desc": "MediaWiki kurulumunu birden fazla bağımsız vikiden oluşan bir çiftliğe dönüştürür"
 }
