@@ -1,8 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"Seb35"
+			"Seb35",
+			"Verdy p"
 		]
 	},
-	"mediawikifarm-desc": "Transforme une installation MediaWiki en une ferme de nombreux wikis indépendants."
+	"mediawikifarm-desc": "Transforme une installation de MediaWiki en une ferme groupant de multiples wikis indépendants."
 }
