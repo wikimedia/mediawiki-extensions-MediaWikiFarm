@@ -1,100 +1,100 @@
 <?php
 
-return array(
+return [
 
 	# Placeholder configuration for a first installation as detailled in the documentation
-	'mywiki' => array(
+	'mywiki' => [
 
 		'server' => 'mywiki\.example\.org',
 		'suffix' => 'wiki',
 		'wikiID' => 'mywiki',
-		'config' => array(
-			array( 'file' => 'LocalSettings.php',
+		'config' => [
+			[ 'file' => 'LocalSettings.php',
 			       'executable' => true,
-			),
-		),
-	),
-);
+			],
+		],
+	],
+];
 
 // @codingStandardsIgnoreStart MediaWiki.Commenting.IllegalSingleLineComment.MissingCommentEndding
 /*
 
-return array(
+return [
 
 	# Configuration similar to the Wikimedia farm
-	'wikimedia' => array(
+	'wikimedia' => [
 
 		'server' => '(?P<lang>[a-z-]+)\.(?<family>[a-z]+)\.org',
 
-		'variables' => array(
+		'variables' => [
 
-			array( 'variable' => 'family',
-			),
-			array( 'variable' => 'lang',
+			[ 'variable' => 'family',
+			],
+			[ 'variable' => 'lang',
 			       'file'     => 'org/$family.dblist',
-			),
-		),
+			],
+		],
 		'suffix' => '$family',
 		'wikiID' => '$lang$family',
 		'versions' => 'wikiversions.json',
 		'data' => '/srv/data/org/$family/$lang',
-		'config' => array(
-			array( 'file' => 'org/DefaultSettings.yml',
+		'config' => [
+			[ 'file' => 'org/DefaultSettings.yml',
 			       'key' => '*',
-			),
-			array( 'file' => 'org/Settings-$family.yml',
+			],
+			[ 'file' => 'org/Settings-$family.yml',
 			       'key' => '*$family',
 			       'default' => '$family',
-			),
-			array( 'file' => 'org/PrivateSettings.yml',
+			],
+			[ 'file' => 'org/PrivateSettings.yml',
 			       'key' => '*',
-			),
-			array( 'file' => 'org/ExecSettings.php',
+			],
+			[ 'file' => 'org/ExecSettings.php',
 			       'executable' => true,
-			),
-		),
-	),
+			],
+		],
+	],
 
 	# Configuration for a small wiki farm
-	'com-example' => array(
+	'com-example' => [
 
 		'server' => '(?P<client>[a-z]+)-(?<wiki>[a-z]+)\.example\.com',
 
-		'variables' => array(
+		'variables' => [
 
-			array( 'variable' => 'client',
+			[ 'variable' => 'client',
 			       'file'     => 'com/example/clients.yml',
-			),
-			array( 'variable' => 'wiki',
+			],
+			[ 'variable' => 'wiki',
 			       'file'     => 'com/example/$client/wikis.yml',
-			),
-		),
+			],
+		],
 		'suffix' => '$client',
 		'wikiID' => '$wiki-$client',
 		'data' => '/srv/data/com/example/$client/$wiki',
-		'config' => array(
-			array( 'file' => 'com/example/DefaultSettings.yml',
+		'config' => [
+			[ 'file' => 'com/example/DefaultSettings.yml',
 			       'key' => 'default',
-			),
-			array( 'file' => 'com/example/InitialiseSettings.yml',
+			],
+			[ 'file' => 'com/example/InitialiseSettings.yml',
 			       'key' => '*',
-			),
-			array( 'file' => 'com/example/PrivateSettings.yml',
+			],
+			[ 'file' => 'com/example/PrivateSettings.yml',
 			       'key' => '*',
-			),
-			array( 'file' => 'com/example/ExecSettings.php',
+			],
+			[ 'file' => 'com/example/ExecSettings.php',
 			       'executable' => true,
-			),
-		),
-	),
+			],
+		],
+	],
 
 	# Aliases
 
-	'com-example-redirect' => array(
+	'com-example-redirect' => [
 
 		'server' => '(?P<client>[a-z]+)_(?<wiki>[a-z]+)\.example\.com',
 		'redirect' => '$client-$wiki.example.com',
-	),
-);
+	],
+];
 
 */

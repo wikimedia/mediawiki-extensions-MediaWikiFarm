@@ -42,7 +42,7 @@ $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
  * Although it is probably easier to name the subdirectories following the MediaWiki version
  * inside, the names are entirely independent from the real version inside the subdirectory.
  */
-$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
+$wgMediaWikiFarmCodeDir = dirname( dirname( __DIR__ ) );
 
 
 /**

@@ -1,34 +1,34 @@
 <?php
 
-return array(
-	'wgServer' => array(
+return [
+	'wgServer' => [
 		'a' => 'https://a.testfarm-monoversion.example.org',
-	),
-	'wgMemCachedTimeout' => array(
+	],
+	'wgMemCachedTimeout' => [
 		'default' => 200000,
-	),
-	'wgSitename' => array(
+	],
+	'wgSitename' => [
 		'b' => 'https://b.testfarm-monoversion.example.org',
-	),
-	'wgEnableUploads' => array(
+	],
+	'wgEnableUploads' => [
 		'b' => true,
-	),
-	'wgSkipSkins' => array(
-		'+a' => array(
+	],
+	'wgSkipSkins' => [
+		'+a' => [
 			'MySkin',
-		),
-		'+testfarm' => array(
+		],
+		'+testfarm' => [
 			'Chick',
-		),
-	),
-	'+wgFileExtensions' => array(
-		'a' => array(
+		],
+	],
+	'+wgFileExtensions' => [
+		'a' => [
 			'pdf',
-		),
-	),
-	'+wgFileBlacklist' => array(
-		'b' => array(
+		],
+	],
+	'+wgFileBlacklist' => [
+		'b' => [
 			'phpt',
-		),
-	),
-);
+		],
+	],
+];

@@ -26,7 +26,7 @@ class MediaWikiFarmHooks {
 	 */
 	public static function onUnitTestsList( array &$files ) {
 
-		$dir = dirname( dirname( __FILE__ ) ) . '/tests/phpunit/';
+		$dir = dirname( __DIR__ ) . '/tests/phpunit/';
 
 		$files[] = $dir . 'ConfigurationTest.php';
 		$files[] = $dir . 'ConstructionTest.php';

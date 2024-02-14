@@ -16,7 +16,7 @@ if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
 
 require_once "vendor/autoload.php";
 
-foreach( array( 'config/farms.yml', 'config/farms.json', 'config/farms.php' ) as $filename ) {
+foreach( [ 'config/farms.yml', 'config/farms.json', 'config/farms.php' ] as $filename ) {
 
 	if( !is_file( $filename ) ) {
 		continue;
@@ -44,8 +44,8 @@ foreach( array( 'config/farms.yml', 'config/farms.json', 'config/farms.php' ) as
 
 	// Validate
 	$validator = new JsonSchema\Validator();
-	$validator->check( $data, (object) array( '$ref' =>
-		'file://' . realpath( 'docs/farms-schema.json' ) ) );
+	$validator->check( $data, (object) [ '$ref' =>
+		'file://' . realpath( 'docs/farms-schema.json' ) ] );
 
 	if( $validator->isValid() ) {
 		echo "The supplied JSON validates against the schema.\n";

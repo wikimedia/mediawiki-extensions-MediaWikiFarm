@@ -8,8 +8,8 @@
  */
 
 // @codeCoverageIgnoreStart
-require_once dirname( __FILE__ ) . '/AbstractMediaWikiFarmScript.php';
-require_once dirname( dirname( __FILE__ ) ) . '/List.php';
+require_once __DIR__ . '/AbstractMediaWikiFarmScript.php';
+require_once dirname( __DIR__ ) . '/List.php';
 // @codeCoverageIgnoreEnd
 
 /**

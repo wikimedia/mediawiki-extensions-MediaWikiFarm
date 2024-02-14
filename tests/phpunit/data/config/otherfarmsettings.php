@@ -1,5 +1,5 @@
 <?php
 
-return array(
+return [
 	'wgMemCachedTimeout' => 111116,
-);
+];

@@ -10,7 +10,7 @@
 // @codeCoverageIgnoreStart
 
 # Default MediaWikiFarm configuration
-$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __FILE__ ) ) );
+$wgMediaWikiFarmCodeDir = dirname( dirname( __DIR__ ) );
 $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 $wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
 $wgMediaWikiFarmSyslog = 'mediawikifarm';
@@ -21,10 +21,10 @@ if( is_file( dirname( $wgMediaWikiFarmCodeDir ) . '/includes/DefaultSettings.php
 }
 
 # Override default MediaWikiFarm configuration
-@include_once dirname( dirname( __FILE__ ) ) . '/config/MediaWikiFarmDirectories.php';
+@include_once dirname( __DIR__ ) . '/config/MediaWikiFarmDirectories.php';
 
 # Include library
-require_once dirname( dirname( __FILE__ ) ) . '/src/MediaWikiFarm.php';
+require_once dirname( __DIR__ ) . '/src/MediaWikiFarm.php';
 
 # Redirect to the requested version
 if( MediaWikiFarm::load( 'opensearch_desc.php' ) == 200 ) {

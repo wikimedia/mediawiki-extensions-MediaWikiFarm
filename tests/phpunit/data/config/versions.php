@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'atestfarm' => 'vstub',
 	'ytestfarm' => 'vstub3',
-);
+];

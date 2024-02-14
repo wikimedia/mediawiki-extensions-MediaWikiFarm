@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	# Name and URL
 	'wgSitename' => 'Sid It',
 	'wgUsePathInfo' => true,
@@ -11,22 +11,22 @@ return array(
 	# Cache
 	'wgMainCacheType' => 2,
 	// 'wgMessageCacheType': 'CACHE_NONE' // todo: recognise it
-	'wgMemCachedServers' => array(
+	'wgMemCachedServers' => [
 		0 => '127.0.0.1:11211',
-	),
+	],
 	'wgMemCachedTimeout' => 100000,
 
 	# Rights
-	'+wgGroupPermissions' => array(
-		'user' => array(
+	'+wgGroupPermissions' => [
+		'user' => [
 			'apihighlimits' => true,
 			'delete' => false,
-		),
-		'sysop' => array(
+		],
+		'sysop' => [
 			'fancypermission' => true,
 			'overfancypermission' => false,
-		),
-	),
+		],
+	],
 
 	# Skins
 	'wgDefaultSkin' => 'vector',
@@ -41,4 +41,4 @@ return array(
 	# Local extensions (flags used in some PHP file)
 	'wgUseLocalExtensionSmartLinks' => true,
 	'wgUseLocalExtensionChangeTabs' => false,
-);
+];

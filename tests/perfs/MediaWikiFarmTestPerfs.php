@@ -13,7 +13,7 @@ if( $_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1' )
 	exit;
 }
 
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/MediaWikiFarm.php';
 // @codeCoverageIgnoreEnd
 
 /**
@@ -22,10 +22,10 @@ require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php
 class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 
 	/** @var float Beginning of time count. */
-	protected static $time0 = array();
+	protected static $time0 = [];
 
 	/** @var float Resulting counters. */
-	protected static $counters = array();
+	protected static $counters = [];
 
 	/** @var float Entry point (bis). */
 	protected static $entryPoint = '';
@@ -43,18 +43,18 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 	 */
 	public static function getEntryPointProfile( $entryPoint ) {
 
-		if( !is_dir( dirname( __FILE__ ) . '/results' ) ) {
-			mkdir( dirname( __FILE__ ) . '/results' );
+		if( !is_dir( __DIR__ . '/results' ) ) {
+			mkdir( __DIR__ . '/results' );
 		}
-		if( !is_file( dirname( __FILE__ ) . "/results/profile-$entryPoint.php" ) ) {
-			file_put_contents( dirname( __FILE__ ) . "/results/profile-$entryPoint.php", "<?php return 0;\n" );
+		if( !is_file( __DIR__ . "/results/profile-$entryPoint.php" ) ) {
+			file_put_contents( __DIR__ . "/results/profile-$entryPoint.php", "<?php return 0;\n" );
 		}
 
 		self::$entryPoint = $entryPoint;
-		self::$profile = include dirname( __FILE__ ) . "/results/profile-$entryPoint.php";
+		self::$profile = include __DIR__ . "/results/profile-$entryPoint.php";
 
 		$profile = ( self::$profile + 1 ) % 2;
-		file_put_contents( dirname( __FILE__ ) . "/results/profile-$entryPoint.php", "<?php return $profile;\n" );
+		file_put_contents( __DIR__ . "/results/profile-$entryPoint.php", "<?php return $profile;\n" );
 
 		return self::$profile;
 	}
@@ -94,28 +94,28 @@ class MediaWikiFarmTestPerfs extends MediaWikiFarm {
 		$profile = self::$profile;
 		$entryPoint = self::$entryPoint;
 
-		if( !is_file( dirname( __FILE__ ) . "/results/measures-$entryPoint.php" ) && $profile == 0 ) {
+		if( !is_file( __DIR__ . "/results/measures-$entryPoint.php" ) && $profile == 0 ) {
 
 			$server = $GLOBALS['wgMediaWikiFarm']->getVariable( '$SERVER' );
 			$localSettingsFile = $GLOBALS['wgMediaWikiFarm']->getConfigFile();
 
-			file_put_contents( dirname( __FILE__ ) . '/results/metadata.php',
-				"<?php return array( 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile' );\n"
+			file_put_contents( __DIR__ . '/results/metadata.php',
+				"<?php return [ 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile' ];\n"
 			);
-			file_put_contents( dirname( __FILE__ ) . "/results/measures-$entryPoint.php",
-				"<?php return array( 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile', " .
-				"0 => array(), 1 => array() );\n"
+			file_put_contents( __DIR__ . "/results/measures-$entryPoint.php",
+				"<?php return [ 'IP' => '$IP', 'server' => '$server', 'MW_CONFIG_FILE' => '$localSettingsFile', " .
+				"0 => [], 1 => [] ];\n"
 			);
 		}
 
 		# Load existing state
-		$measures = include dirname( __FILE__ ) . "/results/measures-$entryPoint.php";
+		$measures = include __DIR__ . "/results/measures-$entryPoint.php";
 
 		# Update with current measure
 		$measures[$profile][] = self::$counters;
 
 		# Write results
-		file_put_contents( dirname( __FILE__ ) . "/results/measures-$entryPoint.php", '<?php return ' . var_export( $measures, true ) . ";\n" );
+		file_put_contents( __DIR__ . "/results/measures-$entryPoint.php", '<?php return ' . var_export( $measures, true ) . ";\n" );
 	}
 
 

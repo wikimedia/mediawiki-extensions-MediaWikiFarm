@@ -9,7 +9,7 @@
  */
 
 // @codeCoverageIgnoreStart
-require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarm.php';
+require_once dirname( __DIR__ ) . '/MediaWikiFarm.php';
 // @codeCoverageIgnoreEnd
 
 /**
@@ -33,7 +33,7 @@ abstract class AbstractMediaWikiFarmScript {
 	public $argc = 0;
 
 	/** @var string[] Input arguments. */
-	public $argv = array();
+	public $argv = [];
 
 	/** @var string Short usage, displayed on request or error. */
 	public $shortUsage = '';
@@ -161,7 +161,7 @@ abstract class AbstractMediaWikiFarmScript {
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $wgMediaWikiFarmSyslog, $IP;
 
 		# Default values
-		$farmDir = dirname( dirname( dirname( __FILE__ ) ) );
+		$farmDir = dirname( dirname( __DIR__ ) );
 		$wgMediaWikiFarmCodeDir = dirname( $farmDir );
 		$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 		$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
@@ -269,7 +269,7 @@ abstract class AbstractMediaWikiFarmScript {
 			return;
 		}
 
-		$files = array_diff( scandir( $dir ), array( '.', '..' ) );
+		$files = array_diff( scandir( $dir ), [ '.', '..' ] );
 		foreach( $files as $file ) {
 			if( is_dir( $dir . '/' . $file ) ) {
 				self::rmdirr( $dir . '/' . $file );
@@ -298,7 +298,7 @@ abstract class AbstractMediaWikiFarmScript {
 	 * @param string $base Internal parameter to track the base directory.
 	 * @return void
 	 */
-	public static function copyr( $source, $dest, $force = false, $blacklist = array(), $whitelist = null, $base = '' ) {
+	public static function copyr( $source, $dest, $force = false, $blacklist = [], $whitelist = null, $base = '' ) {
 
 		# Return if we are considering a blacklisted file
 		foreach( $blacklist as $file ) {
@@ -339,7 +339,7 @@ abstract class AbstractMediaWikiFarmScript {
 
 		# General node: directory - continue the recursion by calling the function on files and directories
 		elseif( is_dir( $source ) ) {
-			$files = array_diff( scandir( $source ), array( '.', '..' ) );
+			$files = array_diff( scandir( $source ), [ '.', '..' ] );
 			if( !is_dir( $dest ) ) {
 				mkdir( $dest );
 			}

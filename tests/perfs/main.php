@@ -14,7 +14,7 @@ if( $_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1' )
 
 MediaWikiFarmTestPerfs::startCounter( 'config' );
 
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/main.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/main.php';
 
 MediaWikiFarmTestPerfs::stopCounter( 'config' );
 MediaWikiFarmTestPerfs::writeResults();

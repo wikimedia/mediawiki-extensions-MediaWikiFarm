@@ -19,7 +19,7 @@ class MediaWikiFarmList {
 	protected $cacheDir = '/tmp/mw-cache';
 
 	/** @var array Logs. */
-	public $log = array();
+	public $log = [];
 
 	/** @var array Farms. */
 	public $farms;
@@ -43,7 +43,7 @@ class MediaWikiFarmList {
 
 		$this->configDir = $configDir;
 		$this->cacheDir = $cacheDir;
-		$log = array();
+		$log = [];
 
 		list( $this->farms, /* unused */ ) = MediaWikiFarmUtils::readAnyFile( 'farms', $this->configDir, $this->cacheDir, $log );
 	}
@@ -60,7 +60,7 @@ class MediaWikiFarmList {
 	 */
 	public function getURLsList( $farmName = null ) {
 
-		$urlsList = array();
+		$urlsList = [];
 
 		if( $farmName === null ) {
 
@@ -115,13 +115,13 @@ class MediaWikiFarmList {
 	 */
 	public function obtainVariables( $variables ) {
 
-		$tree = array();
+		$tree = [];
 
 		$variable = array_shift( $variables );
 
 		if( array_key_exists( 'file', $variable ) ) {
 			$list = MediaWikiFarmUtils::readFile( $variable['file'], $this->cacheDir, $this->log, $this->configDir );
-			$values = array();
+			$values = [];
 			foreach( $list as $key => $value ) {
 				if( is_string( $key ) ) {
 					$values[] = $key;
@@ -131,7 +131,7 @@ class MediaWikiFarmList {
 			}
 			$tree = array_flip( $values );
 		} else {
-			$tree = array( 0 => null );
+			$tree = [ 0 => null ];
 		}
 
 		if( count( $variables ) ) {
@@ -164,14 +164,14 @@ class MediaWikiFarmList {
 	 */
 	public function generateVariablesList( $tree, $variables ) {
 
-		$list = array();
+		$list = [];
 
 		$name = $variables[0]['variable'];
 		array_shift( $variables );
 
 		foreach( $tree as $k => $v ) {
 			if( $v === null ) {
-				return array();
+				return [];
 			}
 			/*elseif( $k === 0 ) {
 				$list = $this->generateVariablesList( $v );
@@ -181,11 +181,11 @@ class MediaWikiFarmList {
 				if( count( $variables ) ) {
 					$sublist = $this->generateVariablesList( $v, $variables );
 					foreach( $sublist as $k2 ) {
-						$list[] = array_merge( array( $name => $k ), $k2 );
+						$list[] = array_merge( [ $name => $k ], $k2 );
 					}
 				}
 				else {
-					$list[] = array( $name => $k );
+					$list[] = [ $name => $k ];
 				}
 			}
 		}

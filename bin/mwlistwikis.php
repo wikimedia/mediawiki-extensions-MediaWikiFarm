@@ -14,7 +14,7 @@ if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
 }
 
 # Load classes
-require_once dirname( dirname( __FILE__ ) ) . '/src/bin/ScriptListWikis.php';
+require_once dirname( __DIR__ ) . '/src/bin/ScriptListWikis.php';
 
 # Prepare environment
 $wgMediaWikiFarmScriptListWikis = new MediaWikiFarmScriptListWikis( $argc, $argv );

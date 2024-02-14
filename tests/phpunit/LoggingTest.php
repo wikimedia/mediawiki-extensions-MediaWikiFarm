@@ -8,8 +8,8 @@
  * @license AGPL-3.0-or-later
  */
 
-require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
+require_once __DIR__ . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/MediaWikiFarm.php';
 
 /**
  * Logging-related tests.
@@ -26,7 +26,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	public function testNoLogging() {
 
 		# Check no log message is issued
-		$this->assertEquals( array(), MediaWikiFarm::prepareLog( false, null, new Exception( 'test exception' ) ) );
+		$this->assertEquals( [], MediaWikiFarm::prepareLog( false, null, new Exception( 'test exception' ) ) );
 	}
 
 	/**
@@ -36,7 +36,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	 */
 	public function testBadLoggingConfigurationParameter() {
 
-		$this->assertEquals( array( 'Logging parameter must be false or a string', 'test exception' ),
+		$this->assertEquals( [ 'Logging parameter must be false or a string', 'test exception' ],
 		                     MediaWikiFarm::prepareLog( 0, null, new Exception( 'test exception' ) ) );
 
 		closelog();
@@ -49,7 +49,7 @@ class LoggingTest extends MediaWikiFarmTestCase {
 	 */
 	public function testLoggingAnException() {
 
-		$this->assertEquals( array( 'test exception' ), MediaWikiFarm::prepareLog( 'mediawikifarmtest', null, new Exception( 'test exception' ) ) );
+		$this->assertEquals( [ 'test exception' ], MediaWikiFarm::prepareLog( 'mediawikifarmtest', null, new Exception( 'test exception' ) ) );
 
 		closelog();
 	}
@@ -71,10 +71,10 @@ class LoggingTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
-		$farm->log = array( 'test message' );
+				[ 'EntryPoint' => 'index.php' ] );
+		$farm->log = [ 'test message' ];
 
-		$this->assertEquals( array( 'test message' ), MediaWikiFarm::prepareLog( 'mediawikifarmtest', $farm ) );
+		$this->assertEquals( [ 'test message' ], MediaWikiFarm::prepareLog( 'mediawikifarmtest', $farm ) );
 
 		closelog();
 	}
@@ -96,10 +96,10 @@ class LoggingTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
-		$farm->log = array( 'test message' );
+				[ 'EntryPoint' => 'index.php' ] );
+		$farm->log = [ 'test message' ];
 
-		$this->assertEquals( array( 'test exception', 'test message' ), MediaWikiFarm::prepareLog( 'mediawikifarmtest', $farm, new Exception( 'test exception' ) ) );
+		$this->assertEquals( [ 'test exception', 'test message' ], MediaWikiFarm::prepareLog( 'mediawikifarmtest', $farm, new Exception( 'test exception' ) ) );
 
 		closelog();
 	}

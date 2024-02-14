@@ -7,9 +7,9 @@
  * @license AGPL-3.0-or-later
  */
 
-require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/src/MediaWikiFarm.php';
-require_once dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/src/bin/ScriptListWikis.php';
+require_once dirname( __DIR__ ) . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( __DIR__ ) ) ) . '/src/MediaWikiFarm.php';
+require_once dirname( dirname( dirname( __DIR__ ) ) ) . '/src/bin/ScriptListWikis.php';
 
 /**
  * Tests about class MediaWikiFarmScriptListWikis.
@@ -30,12 +30,12 @@ class MediaWikiFarmScriptListWikisTest extends MediaWikiFarmTestCase {
 	/**
 	 * Set up some "constants" to be used across the tests.
 	 */
-	public static function setUpBeforeClass() {
+	public static function setUpBeforeClass() : void {
 
 		parent::setUpBeforeClass();
 
 		# Set test configuration parameters
-		self::$mwlistwikisPath = $mwlistwikisPath = dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/bin/mwlistwikis.php';
+		self::$mwlistwikisPath = $mwlistwikisPath = dirname( dirname( dirname( __DIR__ ) ) ) . '/bin/mwlistwikis.php';
 
 		self::$shortHelp = <<<HELP
 
@@ -68,10 +68,10 @@ HELP;
 	 */
 	public function testConstruction() {
 
-		$wgMediaWikiFarmScriptListWikis = new MediaWikiFarmScriptListWikis( 1, array( self::$mwlistwikisPath ) );
+		$wgMediaWikiFarmScriptListWikis = new MediaWikiFarmScriptListWikis( 1, [ self::$mwlistwikisPath ] );
 
 		$this->assertEquals( 1, $wgMediaWikiFarmScriptListWikis->argc );
-		$this->assertEquals( array( self::$mwlistwikisPath ), $wgMediaWikiFarmScriptListWikis->argv );
+		$this->assertEquals( [ self::$mwlistwikisPath ], $wgMediaWikiFarmScriptListWikis->argv );
 	}
 
 	/**
@@ -85,7 +85,7 @@ HELP;
 
 		$this->expectOutputString( self::$longHelp );
 
-		$wgMediaWikiFarmScriptListWikis = new MediaWikiFarmScriptListWikis( 2, array( self::$mwlistwikisPath, '-h' ) );
+		$wgMediaWikiFarmScriptListWikis = new MediaWikiFarmScriptListWikis( 2, [ self::$mwlistwikisPath, '-h' ] );
 
 		$this->assertFalse( $wgMediaWikiFarmScriptListWikis->main() );
 
@@ -120,12 +120,12 @@ b.testfarm2-multiversion-bis.example.org
 OUTPUT
 		);
 
-		$wgMediaWikiFarmScript = new MediaWikiFarmScriptListWikis( 1, array( self::$mwlistwikisPath ) );
+		$wgMediaWikiFarmScript = new MediaWikiFarmScriptListWikis( 1, [ self::$mwlistwikisPath ] );
 
 		$this->assertTrue( $wgMediaWikiFarmScript->main() );
 
 		$this->assertSame( 0, $wgMediaWikiFarmScript->status );
 		$this->assertEquals( 1, $wgMediaWikiFarmScript->argc );
-		$this->assertEquals( array( self::$mwlistwikisPath ), $wgMediaWikiFarmScript->argv );
+		$this->assertEquals( [ self::$mwlistwikisPath ], $wgMediaWikiFarmScript->argv );
 	}
 }

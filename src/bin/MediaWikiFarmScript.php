@@ -9,8 +9,8 @@
  */
 
 // @codeCoverageIgnoreStart
-require_once dirname( __FILE__ ) . '/AbstractMediaWikiFarmScript.php';
-require_once dirname( dirname( __FILE__ ) ) . '/List.php';
+require_once __DIR__ . '/AbstractMediaWikiFarmScript.php';
+require_once dirname( __DIR__ ) . '/List.php';
 // @codeCoverageIgnoreEnd
 
 /**
@@ -181,7 +181,7 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 
 		$spechost = '/^' . str_replace( '\*', '(.*)', preg_quote( $this->host, '/' ) ) . '$/';
 		$maxsize = 0;
-		$hosts = array();
+		$hosts = [];
 
 		$wgMediaWikiFarmList = new MediaWikiFarmList( $GLOBALS['wgMediaWikiFarmConfigDir'], $GLOBALS['wgMediaWikiFarmCacheDir'] );
 		foreach( $wgMediaWikiFarmList->getURLsList() as $host ) {
@@ -193,18 +193,18 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 				$maxsize = strlen( $host );
 			}
 		}
-		$command = array(
+		$command = [
 			self::binary(),
 			$this->argv[0],
 			'-q',
 			'--wiki',
 			'',
-		);
+		];
 		$command = array_merge( $command, array_slice( $this->argv, 1 ) );
-		$descriptorspec = array(
-			1 => array( 'pipe', 'w' ),
-			2 => array( 'pipe', 'w' ),
-		);
+		$descriptorspec = [
+			1 => [ 'pipe', 'w' ],
+			2 => [ 'pipe', 'w' ],
+		];
 
 		foreach( $hosts as $host ) {
 			$title = false;

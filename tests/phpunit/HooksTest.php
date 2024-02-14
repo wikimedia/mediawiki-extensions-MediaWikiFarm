@@ -8,8 +8,8 @@
  * @license AGPL-3.0-or-later
  */
 
-require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/Hooks.php';
+require_once __DIR__ . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/Hooks.php';
 
 /**
  * MediaWiki hooks tests.
@@ -26,11 +26,11 @@ class MediaWikiFarmHooksTest extends MediaWikiFarmTestCase {
 	public function testOnUnitTestsList() {
 
 		$testFiles = array_merge(
-			glob( dirname( __FILE__ ) . '/*Test.php' ),
-			glob( dirname( __FILE__ ) . '/*/*Test.php' )
+			glob( __DIR__ . '/*Test.php' ),
+			glob( __DIR__ . '/*/*Test.php' )
 		);
 
-		$array = array();
+		$array = [];
 		MediaWikiFarmHooks::onUnitTestsList( $array );
 		sort( $array );
 

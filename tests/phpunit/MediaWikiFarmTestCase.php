@@ -10,7 +10,7 @@
  * phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
  */
 
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/bin/AbstractMediaWikiFarmScript.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/bin/AbstractMediaWikiFarmScript.php';
 
 # These tests can be called either directly with PHPUnit or through the PHPUnit infrastructure
 # inside MediaWiki (the wrapper tests/phpunit/phpunit.php).
@@ -54,7 +54,7 @@ if( !class_exists( 'ExtensionRegistry' ) && !defined( 'MEDIAWIKI' ) ) {
 		 *
 		 * @var int[]
 		 */
-		protected $queued = array();
+		protected $queued = [];
 
 		/**
 		 * @var ExtensionRegistry
@@ -104,7 +104,7 @@ if( !class_exists( 'ExtensionRegistry' ) && !defined( 'MEDIAWIKI' ) ) {
 		 * outside of the installer.
 		 */
 		public function clearQueue() {
-			$this->queued = array();
+			$this->queued = [];
 		}
 	}
 }
@@ -138,10 +138,10 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	public static $wgMediaWikiFarmSyslog = '';
 
 	/** @var array Array with boolean values if a given backuped global previously existed. */
-	public $backupMWFGlobalsExist = array();
+	public $backupMWFGlobalsExist = [];
 
 	/** @var array Array containing values of backuped globals. */
-	public $backupMWFGlobals = array();
+	public $backupMWFGlobals = [];
 
 	/**
 	 * Construct the test case.
@@ -151,7 +151,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	 * @param string $dataName Name of the data for data providers.
 	 * @return MediaWikiFarmTestCase
 	 */
-	public function __construct( $name = null, array $data = array(), $dataName = '' ) {
+	public function __construct( $name = null, array $data = [], $dataName = '' ) {
 
 		parent::__construct( $name, $data, $dataName );
 
@@ -168,41 +168,54 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 
 		# Closures are thought to be serialisable although they are not, so blacklist them
 		# sebastian/global-state was improved on this point since version 3.0
-		$this->backupGlobalsBlacklist = array_merge(
-			$this->backupGlobalsBlacklist,
-			array(
-				'factory',
-				'parserMemc',
-				'wgExtensionFunctions',
-				'wgHooks',
-				'wgParamDefinitions',
-				'wgParser',
-				'wgFlowActions',
-				'wgJobClasses',
-				'wgReadOnly', // T163640 - bug in PHPUnit subprogram global-state (issue #10)
-			)
-		);
+		$excludedClasses = [
+			'factory',
+			'parserMemc',
+			'wgExtensionFunctions',
+			'wgHooks',
+			'wgParamDefinitions',
+			'wgParser',
+			'wgFlowActions',
+			'wgJobClasses',
+			'wgReadOnly', // T163640 - bug in PHPUnit subprogram global-state (issue #10)
+		];
+		// # PHPUnit ≥ 9.3
+		if( isset( $this->backupGlobalsExcludeList ) ) {
+			$this->backupGlobalsExcludeList = array_merge(
+				$this->backupGlobalsExcludeList,
+				$excludedClasses
+			);
+		} else {
+			$this->backupGlobalsBlacklist = array_merge(
+				$this->backupGlobalsBlacklist,
+				$excludedClasses
+			);
+		}
+		if( class_exists( 'StubGlobalUser' ) && property_exists( 'StubGlobalUser', 'destructorDeprecationDisarmed' ) ) {
+			# If necessary, the object $wgUser can also be blacklisted for MW ≥ 1.37
+			StubGlobalUser::$destructorDeprecationDisarmed = true;
+		}
 	}
 
 	/**
 	 * Set up MediaWikiFarm parameters and versions files with the current MediaWiki installation.
 	 */
-	public static function setUpBeforeClass() {
+	public static function setUpBeforeClass() : void {
 
 		# Set test configuration parameters
-		self::$wgMediaWikiFarmFarmDir = dirname( dirname( dirname( __FILE__ ) ) );
-		self::$wgMediaWikiFarmTestDataDir = dirname( __FILE__ ) . '/data';
-		self::$wgMediaWikiFarmConfigDir = dirname( __FILE__ ) . '/data/config';
-		self::$wgMediaWikiFarmConfig2Dir = dirname( __FILE__ ) . '/data/config2';
-		self::$wgMediaWikiFarmCodeDir = dirname( __FILE__ ) . '/data/mediawiki';
-		self::$wgMediaWikiFarmCacheDir = dirname( __FILE__ ) . '/data/cache';
+		self::$wgMediaWikiFarmFarmDir = dirname( dirname( __DIR__ ) );
+		self::$wgMediaWikiFarmTestDataDir = __DIR__ . '/data';
+		self::$wgMediaWikiFarmConfigDir = __DIR__ . '/data/config';
+		self::$wgMediaWikiFarmConfig2Dir = __DIR__ . '/data/config2';
+		self::$wgMediaWikiFarmCodeDir = __DIR__ . '/data/mediawiki';
+		self::$wgMediaWikiFarmCacheDir = __DIR__ . '/data/cache';
 		self::$wgMediaWikiFarmSyslog = 'mediawikifarm';
 
 		# Move http404.php to current directory - @todo: should be improved
 		copy( self::$wgMediaWikiFarmConfigDir . '/http404.php', 'phpunitHTTP404.php' );
 
 		# Dynamically create these files to avoid CI error reports
-		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/badsyntax.php', "<?php\nreturn array()\n" );
+		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/badsyntax.php', "<?php\nreturn []\n" );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/badsyntax.json', "{\n\t\"element1\",\n}\n" );
 		file_put_contents( self::$wgMediaWikiFarmConfigDir . '/empty.json', "null\n" );
 		file_put_contents( self::$wgMediaWikiFarmTestDataDir . '/readAnyFile/badsyntax.json', "{\n\t\"element1\",\n}\n" );
@@ -211,7 +224,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	/**
 	 * Remove cache directory and restore the globals which were declared as changeable.
 	 */
-	protected function tearDown() {
+	protected function tearDown() : void {
 
 		if( is_dir( self::$wgMediaWikiFarmCacheDir ) ) {
 			AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir );
@@ -226,7 +239,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 	/**
 	 * Remove config files.
 	 */
-	public static function tearDownAfterClass() {
+	public static function tearDownAfterClass() : void {
 
 		if( is_file( 'phpunitHTTP404.php' ) ) {
 			unlink( 'phpunitHTTP404.php' );
@@ -355,8 +368,8 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 			throw new PHPUnit_Framework_RiskyTestError( 'Requested array backup of a global variable but non-array global variable' );
 		}
 		if( !array_key_exists( $key, $this->backupMWFGlobalsExist ) ) {
-			$this->backupMWFGlobalsExist[$key] = array();
-			$this->backupMWFGlobals[$key] = array();
+			$this->backupMWFGlobalsExist[$key] = [];
+			$this->backupMWFGlobals[$key] = [];
 		}
 
 		if( !array_key_exists( $subkey, $GLOBALS[$key] ) ) {

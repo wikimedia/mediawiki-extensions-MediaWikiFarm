@@ -10,7 +10,7 @@
 // @codeCoverageIgnoreStart
 
 # Include library
-require_once dirname( __FILE__ ) . '/MediaWikiFarmTestPerfs.php';
+require_once __DIR__ . '/MediaWikiFarmTestPerfs.php';
 
 if( $_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1' ) {
 	exit;
@@ -25,7 +25,7 @@ switch( MediaWikiFarmTestPerfs::getEntryPointProfile( 'index.php' ) ) {
 		MediaWikiFarmTestPerfs::startCounter( 'bootstrap' );
 
 		# Default MediaWikiFarm configuration
-		$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( dirname( __FILE__ ) ) ) );
+		$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __DIR__ ) ) );
 		$wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 		$wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
 
@@ -35,7 +35,7 @@ switch( MediaWikiFarmTestPerfs::getEntryPointProfile( 'index.php' ) ) {
 		}
 
 		# Override default MediaWikiFarm configuration
-		@include_once dirname( dirname( dirname( __FILE__ ) ) ) . '/config/MediaWikiFarmDirectories.php';
+		@include_once dirname( dirname( __DIR__ ) ) . '/config/MediaWikiFarmDirectories.php';
 
 		# Redirect to the requested version
 		if( MediaWikiFarmTestPerfs::load( 'index.php' ) == 200 ) {
@@ -51,7 +51,7 @@ switch( MediaWikiFarmTestPerfs::getEntryPointProfile( 'index.php' ) ) {
 	# Classical LocalSettings.php in a classical installation
 	case 1:
 
-		$wgMediaWikiFarmMetadata = include_once dirname( __FILE__ ) . '/results/metadata.php';
+		$wgMediaWikiFarmMetadata = include_once __DIR__ . '/results/metadata.php';
 
 		chdir( $wgMediaWikiFarmMetadata['IP'] );
 		/**

@@ -9,7 +9,7 @@
  */
 
 // @codeCoverageIgnoreStart
-require_once dirname( __FILE__ ) . '/AbstractMediaWikiFarmScript.php';
+require_once __DIR__ . '/AbstractMediaWikiFarmScript.php';
 // @codeCoverageIgnoreEnd
 
 /**
@@ -96,7 +96,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 		$tmpDir = tempnam( sys_get_temp_dir(), 'mwcomposer' );
 		unlink( $tmpDir );
 		mkdir( $tmpDir );
-		self::copyr( $cwd, $tmpDir, true, array( '/extensions', '/skins', '/vendor', '/composer\.lock' ) );
+		self::copyr( $cwd, $tmpDir, true, [ '/extensions', '/skins', '/vendor', '/composer\.lock' ] );
 		chdir( $tmpDir );
 
 		# Update complete dependencies from Composer
@@ -136,9 +136,9 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 			$installedJson = $installedJson['packages'];
 		}
 
-		$installable = array();
-		$extensions = array();
-		$dependencies = array();
+		$installable = [];
+		$extensions = [];
+		$dependencies = [];
 		foreach( $installedJson as $package ) {
 			if( $package['type'] == 'mediawiki-extension' || $package['type'] == 'mediawiki-skin' ) {
 				$installable[$package['name']] = $package['version_normalized'];
@@ -149,7 +149,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 				if( array_key_exists( 'require-dev', $baseComposerJson ) && array_key_exists( $package['name'], $baseComposerJson['require-dev'] ) ) {
 					unset( $baseComposerJson['require-dev'][$package['name']] );
 				}
-				$dependencies[$extensions[$package['name']]] = array_key_exists( 'require', $package ) ? array_keys( $package['require'] ) : array();
+				$dependencies[$extensions[$package['name']]] = array_key_exists( 'require', $package ) ? array_keys( $package['require'] ) : [];
 			}
 		}
 
@@ -174,7 +174,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 		# Filter MediaWiki extensions/skins dependencies
 		foreach( $dependencies as $name => &$deps ) {
 
-			$newdeps = array();
+			$newdeps = [];
 			foreach( $deps as $dep ) {
 				if( array_key_exists( $dep, $extensions ) ) {
 					$newdeps[] = $extensions[$dep];
@@ -213,7 +213,7 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 			}
 
 			self::copyr( 'vendor/composer', 'vendor-composer/composer' . MediaWikiFarmConfiguration::composerKey( $name ),
-			             true, array(), array( '/autoload_.*\.php', '/ClassLoader\.php', '/installed\.json', '/include_paths\.php' )
+			             true, [], [ '/autoload_.*\.php', '/ClassLoader\.php', '/installed\.json', '/include_paths\.php' ]
 			);
 			self::rmdirr( 'composer.lock' );
 			$icounter++;
@@ -249,19 +249,19 @@ class MediaWikiFarmScriptComposer extends AbstractMediaWikiFarmScript {
 		self::rmdirr( 'vendor-composer/composer-init', true );
 
 		# Put autoloader indirection
-		copy( dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmComposerAutoloader.php', 'vendor-composer/autoload.php' );
+		copy( dirname( __DIR__ ) . '/MediaWikiFarmComposerAutoloader.php', 'vendor-composer/autoload.php' );
 
 		# Copy the directories back to the original MediaWiki: vendor, extensions, and skins
 		self::copyr( 'vendor-composer', $cwd . '/vendor', true );
 		self::copyr( 'composer.lock', $cwd );
 		if( is_dir( 'extensions-composer' ) ) {
-			$files = array_diff( scandir( 'extensions-composer' ), array( '.', '..' ) );
+			$files = array_diff( scandir( 'extensions-composer' ), [ '.', '..' ] );
 			foreach( $files as $file ) {
 				self::copyr( 'extensions-composer/' . $file, $cwd . '/extensions/' . $file, true );
 			}
 		}
 		if( is_dir( 'skins-composer' ) ) {
-			$files = array_diff( scandir( 'skins-composer' ), array( '.', '..' ) );
+			$files = array_diff( scandir( 'skins-composer' ), [ '.', '..' ] );
 			foreach( $files as $file ) {
 				self::copyr( 'skins-composer/' . $file, $cwd . '/skins/' . $file, true );
 			}

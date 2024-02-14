@@ -13,16 +13,16 @@ if( PHP_SAPI != 'cli' && PHP_SAPI != 'phpdbg' ) {
 }
 
 # Include library
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/AbstractMediaWikiFarmScript.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/AbstractMediaWikiFarmScript.php';
 
 # Default MediaWikiFarm configuration
-$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( dirname( __FILE__ ) ) ) );
+$wgMediaWikiFarmCodeDir = dirname( dirname( dirname( __DIR__ ) ) );
 $wgMediaWikiFarmConfigDir = '/etc/mediawiki';
 $wgMediaWikiFarmCacheDir = '/tmp/mw-cache';
 $wgMediaWikiFarmSyslog = 'mediawikifarm';
 
 # Override default MediaWikiFarm configuration
-@include_once dirname( dirname( dirname( __FILE__ ) ) ) . '/config/MediaWikiFarmDirectories.php';
+@include_once dirname( dirname( __DIR__ ) ) . '/config/MediaWikiFarmDirectories.php';
 
 # Arguments
 $host = $argv[1];
@@ -50,16 +50,16 @@ for( $i = 0; $i < $sampleSize; $i++ ) {
 }
 echo "\n";
 
-$statistics = include dirname( __FILE__ ) . '/results/measures-index.php.php';
+$statistics = include __DIR__ . '/results/measures-index.php.php';
 echo "sample size(farm) = " . count( $statistics[0] ) . "\n";
 echo "sample size(classical) = " . count( $statistics[1] ) . "\n";
 
-$mean = array();
+$mean = [];
 foreach( $statistics as $profile => $statisticsProfile ) {
 	if( !is_numeric( $profile ) ) {
 		continue;
 	}
-	$mean[$profile] = array();
+	$mean[$profile] = [];
 	foreach( $statisticsProfile as $unit ) {
 		foreach( $unit as $type => $value ) {
 			if( !array_key_exists( $type, $mean[$profile] ) ) {
@@ -87,5 +87,5 @@ echo '      ' . number_format( $mean[0]['compilation'] * count( $statistics[0] )
 echo "\n\nAll results =\n";
 var_dump( $mean );
 
-unlink( dirname( __FILE__ ) . '/results/profile-index.php.php' );
-unlink( dirname( __FILE__ ) . '/results/metadata.php' );
+unlink( __DIR__ . '/results/profile-index.php.php' );
+unlink( __DIR__ . '/results/metadata.php' );

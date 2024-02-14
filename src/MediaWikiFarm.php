@@ -9,13 +9,14 @@
  * phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
  *
  * DEVELOPERS: given its nature, this extension must work with all MediaWiki versions and
- *             PHP 5.2+, so please do not use "new" syntaxes (namespaces, arrays with [], etc.).
+ *             PHP 7.0+, so please do not use "new" syntaxes (type hints with multiple types,
+ *             typed properties, named arguments, readonly properties, enums, etc.).
  */
 
 
 // @codeCoverageIgnoreStart
-require_once dirname( __FILE__ ) . '/Utils.php';
-require_once dirname( __FILE__ ) . '/MediaWikiFarmConfiguration.php';
+require_once __DIR__ . '/Utils.php';
+require_once __DIR__ . '/MediaWikiFarmConfiguration.php';
 // @codeCoverageIgnoreEnd
 
 /**
@@ -49,10 +50,10 @@ class MediaWikiFarm {
 	 * ---------- */
 
 	/** @var array State: EntryPoint (string) and InnerMediaWiki (bool). */
-	protected $state = array(
+	protected $state = [
 		'EntryPoint' => '',
 		'InnerMediaWiki' => null,
-	);
+	];
 
 	/** @var string Farm code directory. */
 	protected $farmDir = '';
@@ -67,25 +68,25 @@ class MediaWikiFarm {
 	protected $cacheDir = '/tmp/mw-cache';
 
 	/** @var array Configuration for this farm. */
-	protected $farmConfig = array(
-		'coreconfig' => array(),
-	);
+	protected $farmConfig = [
+		'coreconfig' => [],
+	];
 
 	/** @var string[] Variables related to the current request. */
-	protected $variables = array(
+	protected $variables = [
 		'$FARM' => '',
 		'$SERVER' => '',
 		'$SUFFIX' => '',
 		'$WIKIID' => '',
 		'$VERSION' => null,
 		'$CODE' => '',
-	);
+	];
 
 	/** @var MediaWikiFarmConfiguration|null Object containing the configuration of the current (single) wiki. */
 	protected $configuration = null;
 
 	/** @var array Logs. */
-	public $log = array();
+	public $log = [];
 
 
 
@@ -212,8 +213,8 @@ class MediaWikiFarm {
 	 *
 	 * This associative array contains four sections:
 	 *   - 'settings': associative array of MediaWiki configuration (e.g. 'wgServer' => '//example.org');
-	 *   - 'arrays': associative array of MediaWiki configuration of type array (e.g. 'wgGroupPermissions' => array( 'edit' => false ));
-	 *   - 'extensions': list of extensions and skins (e.g. 0 => array( 'ParserFunctions', 'extension', 'wfLoadExtension' ));
+	 *   - 'arrays': associative array of MediaWiki configuration of type array (e.g. 'wgGroupPermissions' => [ 'edit' => false ]);
+	 *   - 'extensions': list of extensions and skins (e.g. 0 => [ 'ParserFunctions', 'extension', 'wfLoadExtension' ]);
 	 *   - 'composer': list of Composer-installed extensions and skins (e.g. 0 => 'ExtensionSemanticMediaWiki');
 	 *   - 'execFiles': list of PHP files to execute at the end.
 	 *
@@ -257,7 +258,7 @@ class MediaWikiFarm {
 	 * @param array $environment Environment which determines a given configuration.
 	 * @return string $entryPoint Identical entry point as passed in input.
 	 */
-	public static function load( $entryPoint = '', $host = null, $path = null, $state = array(), $environment = array() ) {
+	public static function load( $entryPoint = '', $host = null, $path = null, $state = [], $environment = [] ) {
 
 		global $wgMediaWikiFarm;
 		global $wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir, $wgMediaWikiFarmSyslog;
@@ -266,7 +267,7 @@ class MediaWikiFarm {
 			# Initialise object
 			$wgMediaWikiFarm = new MediaWikiFarm( $host, $path,
 				$wgMediaWikiFarmConfigDir, $wgMediaWikiFarmCodeDir, $wgMediaWikiFarmCacheDir,
-				array_merge( $state, array( 'EntryPoint' => $entryPoint ) ),
+				array_merge( $state, [ 'EntryPoint' => $entryPoint ] ),
 				$environment
 			);
 
@@ -391,7 +392,7 @@ class MediaWikiFarm {
 			$host = substr( $variables['$SERVER'] . '/', 0, strpos( $variables['$SERVER'] . '/', '/' ) );
 			$path = substr( $variables['$SERVER'], strlen( $host ) );
 			if( !is_array( $hosts ) ) {
-				$hosts = array();
+				$hosts = [];
 			}
 			if( !array_key_exists( $host, $hosts ) || !preg_match( $hosts[$host], $path . '/' ) ) {
 				$path = preg_quote( $path, '/' );
@@ -506,7 +507,7 @@ class MediaWikiFarm {
 		foreach( $this->getConfiguration( 'arrays' ) as $setting => $value ) {
 
 			if( !array_key_exists( $setting, $GLOBALS ) ) {
-				$GLOBALS[$setting] = array();
+				$GLOBALS[$setting] = [];
 			}
 			$GLOBALS[$setting] = MediaWikiFarmUtils::arrayMerge( $GLOBALS[$setting], $value );
 		}
@@ -545,7 +546,7 @@ class MediaWikiFarm {
 	 */
 	public static function selfRegister() {
 
-		$dir = dirname( dirname( __FILE__ ) );
+		$dir = dirname( __DIR__ );
 
 		$json = file_get_contents( $dir . '/extension.json' );
 		if( $json === false ) {
@@ -557,7 +558,7 @@ class MediaWikiFarm {
 			return;
 		}
 
-		$GLOBALS['wgExtensionCredits'][$json['type']][] = array(
+		$GLOBALS['wgExtensionCredits'][$json['type']][] = [
 			'path' => $dir . '/MediaWikiFarm.php',
 			'name' => $json['name'],
 			'version' => $json['version'],
@@ -565,13 +566,13 @@ class MediaWikiFarm {
 			'url' => $json['url'],
 			'descriptionmsg' => $json['descriptionmsg'],
 			'license-name' => $json['license-name'],
-		);
+		];
 
 		$GLOBALS['wgAutoloadClasses'] = array_merge( $GLOBALS['wgAutoloadClasses'], $json['AutoloadClasses'] );
 		$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = $dir . '/' . $json['MessagesDirs']['MediaWikiFarm'][0];
 		foreach( $json['Hooks'] as $hook => $func ) {
 			if( !array_key_exists( $hook, $GLOBALS['wgHooks'] ) ) {
-				$GLOBALS['wgHooks'][$hook] = array();
+				$GLOBALS['wgHooks'][$hook] = [];
 			}
 			$GLOBALS['wgHooks'][$hook] = array_merge( $GLOBALS['wgHooks'][$hook], $json['Hooks'][$hook] );
 		}
@@ -627,7 +628,7 @@ class MediaWikiFarm {
 	 */
 	public static function prepareLog( $wgMediaWikiFarmSyslog, $wgMediaWikiFarm, $exception = null ) {
 
-		$log = array();
+		$log = [];
 		if( $wgMediaWikiFarmSyslog === false || $wgMediaWikiFarmSyslog === null ) {
 			return $log;
 		}
@@ -705,7 +706,7 @@ class MediaWikiFarm {
 	 * @throws MWFConfigurationException When no farms.yml/php/json is found.
 	 * @throws InvalidArgumentException When wrong input arguments are passed.
 	 */
-	public function __construct( $host, $path, $configDir, $codeDir = null, $cacheDir = false, $state = array(), $environment = array() ) {
+	public function __construct( $host, $path, $configDir, $codeDir = null, $cacheDir = false, $state = [], $environment = [] ) {
 
 		# Default value for host
 		# Warning: do not use $GLOBALS['_SERVER']['HTTP_HOST']: bug with PHP7: it is not initialised in early times of a script
@@ -769,18 +770,18 @@ class MediaWikiFarm {
 		}
 
 		# Set parameters
-		$this->farmDir = dirname( dirname( __FILE__ ) );
+		$this->farmDir = dirname( __DIR__ );
 		$this->configDir = $configDir;
 		$this->codeDir = $codeDir;
 		$this->cacheDir = $cacheDir;
-		$this->state = array_merge( array(
+		$this->state = array_merge( [
 			'EntryPoint' => '',
 			'InnerMediaWiki' => null,
-		), $state );
+		], $state );
 		if( $environment ) {
-			$environment = array_merge( array(
+			$environment = array_merge( [
 				'ExtensionRegistry' => null,
-			), $environment );
+			], $environment );
 
 			$that =& $this;
 			$this->configuration = new MediaWikiFarmConfiguration( $that );
@@ -868,7 +869,7 @@ class MediaWikiFarm {
 	public function selectFarm( $host, $farms, $redirects ) {
 
 		if( $redirects <= 0 ) {
-			return array( 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => $farms, 'redirects' => $redirects );
+			return [ 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => $farms, 'redirects' => $redirects ];
 		}
 
 		# Read the farms configuration
@@ -877,7 +878,7 @@ class MediaWikiFarm {
 			if( $file ) {
 				$this->farmConfig['coreconfig'][] = $file;
 			} else {
-				return array( 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => false, 'redirects' => $redirects );
+				return [ 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => false, 'redirects' => $redirects ];
 			}
 		}
 
@@ -902,7 +903,7 @@ class MediaWikiFarm {
 			$host = substr( $matches[0], 0, -1 );
 
 			# Initialise variables from the host
-			$variables = array();
+			$variables = [];
 			foreach( $matches as $key => $value ) {
 				if( is_string( $key ) ) {
 					$variables[ '$' . strtolower( $key ) ] = $value;
@@ -914,10 +915,10 @@ class MediaWikiFarm {
 				return $this->selectFarm( str_replace( array_keys( $variables ), $variables, $config['redirect'] ), $farms, --$redirects );
 			}
 
-			return array( 'host' => $host, 'farm' => $farm, 'config' => $config, 'variables' => $variables, 'farms' => $farms, 'redirects' => $redirects );
+			return [ 'host' => $host, 'farm' => $farm, 'config' => $config, 'variables' => $variables, 'farms' => $farms, 'redirects' => $redirects ];
 		}
 
-		return array( 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => $farms, 'redirects' => $redirects );
+		return [ 'host' => $host, 'farm' => false, 'config' => false, 'variables' => false, 'farms' => $farms, 'redirects' => $redirects ];
 	}
 
 	/**
@@ -1054,7 +1055,7 @@ class MediaWikiFarm {
 		$canUseDeployments = ( $this->state['EntryPoint'] != 'maintenance/update.php' );
 
 		# Read 'deployments' file
-		$deployments = array();
+		$deployments = [];
 		$this->setVariable( 'deployments' );
 		if( array_key_exists( '$DEPLOYMENTS', $this->variables ) && $canUseDeployments ) {
 			if( strrchr( $this->variables['$DEPLOYMENTS'], '.' ) != '.php' ) {
@@ -1085,7 +1086,7 @@ class MediaWikiFarm {
 					&& filemtime( $this->configDir . '/' . $this->variables['$VERSIONS'] ) >= $myfreshness )
 				|| $deployments === false
 			) {
-				$deployments = array();
+				$deployments = [];
 			}
 		}
 

@@ -1,6 +1,6 @@
 {
 	"name": "MediaWikiFarm",
-	"version": "1.0.0",
+	"version": "2.0.0-dev",
 	"author": [
 		"[https://www.mediawiki.org/wiki/User:Seb35 Seb35]"
 	],
@@ -9,7 +9,7 @@
 	"url": "https://www.mediawiki.org/wiki/Extension:MediaWikiFarm",
 	"type": "other",
 	"requires": {
-		"MediaWiki": ">= 1.3.0"
+		"MediaWiki": ">= 1.27.0"
 	},
 	"config": {
 		"MediaWikiFarmConfigDir": "/etc/mediawiki",
@@ -37,7 +37,6 @@
 		"MediaWikiFarmScriptComposer": "src/bin/MediaWikiFarmScriptComposer.php",
 		"MediaWikiFarmScriptListWikis": "src/bin/ScriptListWikis.php",
 		"MediaWikiFarmUtils": "src/Utils.php",
-		"MediaWikiFarmUtils5_3": "src/Utils5_3.php",
 		"MWFConfigurationException": "src/MediaWikiFarm.php"
 	},
 	"manifest_version": 1

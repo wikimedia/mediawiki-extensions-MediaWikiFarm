@@ -8,9 +8,9 @@
  * @license AGPL-3.0-or-later
  */
 
-require_once dirname( dirname( __FILE__ ) ) . '/MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/src/MediaWikiFarm.php';
-require_once dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/src/bin/MediaWikiFarmScriptComposer.php';
+require_once dirname( __DIR__ ) . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( dirname( __DIR__ ) ) ) . '/src/MediaWikiFarm.php';
+require_once dirname( dirname( dirname( __DIR__ ) ) ) . '/src/bin/MediaWikiFarmScriptComposer.php';
 
 /**
  * Tests about class Composer Script.
@@ -31,7 +31,7 @@ class MediaWikiFarmScriptComposerTest extends MediaWikiFarmTestCase {
 	/**
 	 * Set up some "constants" to be used across the tests.
 	 */
-	public static function setUpBeforeClass() {
+	public static function setUpBeforeClass() : void {
 
 		parent::setUpBeforeClass();
 
@@ -78,10 +78,10 @@ HELP;
 	 */
 	public function testConstruction() {
 
-		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 1, array( self::$mwcomposerPath ) );
+		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 1, [ self::$mwcomposerPath ] );
 
 		$this->assertEquals( 1, $wgMediaWikiFarmScriptComposer->argc );
-		$this->assertEquals( array( self::$mwcomposerPath ), $wgMediaWikiFarmScriptComposer->argv );
+		$this->assertEquals( [ self::$mwcomposerPath ], $wgMediaWikiFarmScriptComposer->argv );
 	}
 
 	/**
@@ -97,7 +97,7 @@ HELP;
 
 		$this->expectOutputString( self::$longHelp );
 
-		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 2, array( self::$mwcomposerPath, '-h' ) );
+		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 2, [ self::$mwcomposerPath, '-h' ] );
 
 		$this->assertFalse( $wgMediaWikiFarmScriptComposer->main() );
 
@@ -121,7 +121,7 @@ HELP;
 		$cwd = getcwd();
 		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub2' );
 
-		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 1, array( self::$mwcomposerPath ) );
+		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 1, [ self::$mwcomposerPath ] );
 
 		$wgMediaWikiFarmScriptComposer->main();
 
@@ -191,7 +191,7 @@ HELP;
 		$cwd = getcwd();
 		chdir( self::$wgMediaWikiFarmCodeDir . '/vstub3' );
 
-		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 2, array( self::$mwcomposerPath, 'install', '--no-dev', '-q' ) );
+		$wgMediaWikiFarmScriptComposer = new MediaWikiFarmScriptComposer( 2, [ self::$mwcomposerPath, 'install', '--no-dev', '-q' ] );
 
 		# This function is the main procedure, it runs Composer in background 7 times so it can take 20-25 seconds
 		$wgMediaWikiFarmScriptComposer->main();

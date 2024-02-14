@@ -22,7 +22,7 @@ if( !defined( 'MEDIAWIKI' ) ) {
 
 # Load class definition
 if( !class_exists( 'MediaWikiFarm' ) ) {
-	require_once dirname( __FILE__ ) . '/src/MediaWikiFarm.php';
+	require_once __DIR__ . '/src/MediaWikiFarm.php';
 }
 
 # Load MediaWikiFarm

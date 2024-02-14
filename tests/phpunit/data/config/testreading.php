@@ -1,8 +1,8 @@
 <?php
 
-return array(
+return [
 	0 => 'element1',
-	1 => array(
+	1 => [
 		'element2' => 'element3',
-	),
-);
+	],
+];

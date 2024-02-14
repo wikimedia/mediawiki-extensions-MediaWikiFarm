@@ -2,14 +2,6 @@
 <ruleset name="MediaWiki">
 	<file>.</file>
 	<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">
-		<!-- This extension is intended to keep backward compatibility with PHP 5.2 -->
-		<!-- 1. Keep long array syntax -->
-		<exclude name="Generic.Arrays.DisallowLongArraySyntax.Found" />
-		<!-- 2. Do not add typehints -->
-		<exclude name="MediaWiki.Usage.PHPUnitTypeHints.MissingTypehint" />
-		<!-- 3. Keep dirname( __FILE__ ) -->
-		<exclude name="MediaWiki.Usage.DirUsage.FunctionFound" />
-
 		<!-- Style preferences -->
 		<!-- I find "catch( Exception $e ) {}" is quite clear -->
 		<exclude name="Squiz.WhiteSpace.ScopeClosingBrace.ContentBefore" />
@@ -50,8 +42,6 @@
 		<!-- MediaWikiFarm is used as a prefix in all class names, but file names are too long -->
 		<exclude name="MediaWiki.Files.ClassMatchesFilename.NotMatch" />
 	</rule>
-
-	<rule ref="Generic.Arrays.DisallowShortArraySyntax" />
 
 	<!-- Style preferences -->
 	<!-- Lines should be less than 160 characters -->

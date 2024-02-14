@@ -7,8 +7,8 @@
  * @license AGPL-3.0-or-later
  */
 
-require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
+require_once __DIR__ . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/MediaWikiFarm.php';
 
 /**
  * Test object construction.
@@ -36,40 +36,40 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
 
 		$this->assertEquals( 'index.php', $farm->getState( 'EntryPoint' ) );
 		$this->assertNull( $farm->getState( 'nonexistant' ) );
 
-		$farmConfig = array(
+		$farmConfig = [
 			'server' => '(?P<wiki>[a-z])\.testfarm-multiversion\.example\.org',
-			'variables' => array(
-				array( 'variable' => 'wiki', ),
-			),
+			'variables' => [
+				[ 'variable' => 'wiki', ],
+			],
 			'suffix' => 'testfarm',
 			'wikiID' => '$wikitestfarm',
 			'versions' => 'versions.php',
-			'coreconfig' => array(
+			'coreconfig' => [
 				'farms.php',
-			),
-			'config' => array(
-				array( 'file' => 'settings.php',
+			],
+			'config' => [
+				[ 'file' => 'settings.php',
 				       'key' => 'default',
-				),
-				array( 'file' => 'localsettings.php',
+				],
+				[ 'file' => 'localsettings.php',
 				       'key' => '*testfarm',
 				       'default' => 'testfarm',
-				),
-				array( 'file' => 'globalsettings.php',
+				],
+				[ 'file' => 'globalsettings.php',
 				       'key' => '*',
-				),
-				array( 'file' => 'LocalSettings.php',
+				],
+				[ 'file' => 'LocalSettings.php',
 				       'executable' => true,
-				),
-			),
-		);
+				],
+			],
+		];
 
 		$this->assertEquals( $farmConfig, $farm->getFarmConfiguration() );
 	}
@@ -93,53 +93,53 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				null,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( 'a.testfarm-monoversion.example.org', $farm->getVariable( '$SERVER' ) );
 
 		$this->assertEquals( 'index.php', $farm->getState( 'EntryPoint' ) );
 
-		$farmConfig = array(
+		$farmConfig = [
 			'server' => '(?P<wiki>[a-z])\.testfarm-monoversion\.example\.org',
-			'variables' => array(
-				array( 'variable' => 'wiki',
-			               'file' => 'varwiki.php', ),
-			),
+			'variables' => [
+				[ 'variable' => 'wiki',
+			               'file' => 'varwiki.php', ],
+			],
 			'suffix' => 'testfarm',
 			'wikiID' => '$wikitestfarm',
 			'HTTP404' => 'phpunitHTTP404.php',
-			'coreconfig' => array(
+			'coreconfig' => [
 				'farms.php',
-			),
-			'config' => array(
-				array( 'file' => 'settings.php',
+			],
+			'config' => [
+				[ 'file' => 'settings.php',
 				       'key' => 'default',
-				),
+				],
 				'settings.php',
-				array( 'file' => 'missingfile.php',
+				[ 'file' => 'missingfile.php',
 				       'key' => 'default',
-				),
-				array( 'file' => 'localsettings.php',
+				],
+				[ 'file' => 'localsettings.php',
 				       'key' => '*testfarm',
 				       'default' => 'testfarm',
-				),
-				array( 'file' => 'globalsettings.php',
+				],
+				[ 'file' => 'globalsettings.php',
 				       'key' => '*',
-				),
-				array( 'file' => 'atestfarmsettings.php',
+				],
+				[ 'file' => 'atestfarmsettings.php',
 				       'key' => 'atestfarm',
-				),
-				array( 'file' => 'testfarmsettings.php',
+				],
+				[ 'file' => 'testfarmsettings.php',
 				       'key' => 'testfarm',
-				),
-				array( 'file' => 'otherfarmsettings.php',
+				],
+				[ 'file' => 'otherfarmsettings.php',
 				       'key' => 'otherfarm',
-				),
-				array( 'file' => 'LocalSettings.php',
+				],
+				[ 'file' => 'LocalSettings.php',
 				       'executable' => true,
-				),
-			),
-		);
+				],
+			],
+		];
 		$this->assertEquals( $farmConfig, $farm->getFarmConfiguration() );
 	}
 
@@ -162,40 +162,40 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( 'testfarm-multiversion-subdirectories.example.org/a', $farm->getVariable( '$SERVER' ) );
 
 		$this->assertEquals( 'index.php', $farm->getState( 'EntryPoint' ) );
 		$this->assertNull( $farm->getState( 'nonexistant' ) );
 
-		$farmConfig = array(
+		$farmConfig = [
 			'server' => 'testfarm-multiversion-subdirectories\.example\.org/(?P<wiki>[a-z])',
-			'variables' => array(
-				array( 'variable' => 'wiki', ),
-			),
+			'variables' => [
+				[ 'variable' => 'wiki', ],
+			],
 			'suffix' => 'testfarm',
 			'wikiID' => '$wikitestfarm',
 			'versions' => 'versions.php',
-			'coreconfig' => array(
+			'coreconfig' => [
 				'farms.php',
-			),
-			'config' => array(
-				array( 'file' => 'settings.php',
+			],
+			'config' => [
+				[ 'file' => 'settings.php',
 				       'key' => 'default',
-				),
-				array( 'file' => 'localsettings.php',
+				],
+				[ 'file' => 'localsettings.php',
 				       'key' => '*testfarm',
 				       'default' => 'testfarm',
-				),
-				array( 'file' => 'globalsettings.php',
+				],
+				[ 'file' => 'globalsettings.php',
 				       'key' => '*',
-				),
-				array( 'file' => 'LocalSettings.php',
+				],
+				[ 'file' => 'LocalSettings.php',
 				       'executable' => true,
-				),
-			),
-		);
+				],
+			],
+		];
 
 		$this->assertEquals( $farmConfig, $farm->getFarmConfiguration() );
 	}
@@ -207,11 +207,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage No configuration file found
 	 */
 	public function testFailedConstruction() {
+
+		$this->expectException( MWFConfigurationException::class );
+		$this->expectExceptionMessage( 'No configuration file found' );
 
 		$wgMediaWikiFarmConfigDir = dirname( self::$wgMediaWikiFarmConfigDir );
 
@@ -221,7 +221,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -229,11 +229,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Missing host name in constructor
 	 */
 	public function testFailedConstruction2() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Missing host name in constructor' );
 
 		$farm = new MediaWikiFarm(
 				0,
@@ -241,7 +241,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -249,11 +249,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Invalid directory for the farm configuration
 	 */
 	public function testFailedConstruction3() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Invalid directory for the farm configuration' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
@@ -261,7 +261,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				0,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -269,11 +269,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Invalid directory for the farm configuration
 	 */
 	public function testFailedConstruction4() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Invalid directory for the farm configuration' );
 
 		$wgMediaWikiFarmConfigDir = self::$wgMediaWikiFarmConfigDir . '/farms.php';
 
@@ -283,7 +283,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -291,11 +291,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Code directory must be null or a directory
 	 */
 	public function testFailedConstruction5() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Code directory must be null or a directory' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
@@ -303,7 +303,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				0,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -311,11 +311,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Code directory must be null or a directory
 	 */
 	public function testFailedConstruction6() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Code directory must be null or a directory' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
@@ -323,7 +323,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir . '/farms.php',
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -331,11 +331,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Cache directory must be false or a directory
 	 */
 	public function testFailedConstruction7() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Cache directory must be false or a directory' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
@@ -343,7 +343,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				0,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -351,11 +351,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage State must be an array
 	 */
 	public function testFailedConstruction8() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'State must be an array' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
@@ -372,11 +372,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Undefined host
 	 */
 	public function testFailedConstruction9() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Undefined host' );
 
 		$this->backupAndUnsetGlobalSubvariable( '_SERVER', 'HTTP_HOST' );
 		$this->backupAndUnsetGlobalSubvariable( '_SERVER', 'SERVER_NAME' );
@@ -386,7 +386,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -394,19 +394,19 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Entry point must be a string
 	 */
 	public function testFailedConstruction10() {
 
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Entry point must be a string' );
+
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
 				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 0 ) );
+				[ 'EntryPoint' => 0 ] );
 	}
 
 	/**
@@ -414,19 +414,19 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage InnerMediaWiki state must be a bool
 	 */
 	public function testFailedConstruction11() {
 
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'InnerMediaWiki state must be a bool' );
+
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
 				null,
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'InnerMediaWiki' => 0 ) );
+				[ 'InnerMediaWiki' => 0 ] );
 	}
 
 	/**
@@ -434,11 +434,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Environment must be an array
 	 */
 	public function testFailedConstruction12() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Environment must be an array' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
@@ -446,7 +446,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array(),
+				[],
 				0 );
 	}
 
@@ -455,11 +455,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage ExtensionRegistry parameter must be a bool
 	 */
 	public function testFailedConstruction13() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'ExtensionRegistry parameter must be a bool' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-multiversion.example.org',
@@ -467,8 +467,8 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array(),
-				array( 'ExtensionRegistry' => 'true' ) );
+				[],
+				[ 'ExtensionRegistry' => 'true' ] );
 	}
 
 	/**
@@ -492,7 +492,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
 	}
@@ -518,7 +518,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
 	}
@@ -545,7 +545,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
 	}
@@ -567,7 +567,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
 	}
@@ -589,7 +589,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
 	}
@@ -601,11 +601,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage No farm corresponding to this host
 	 */
 	public function testFailedPath() {
+
+		$this->expectException( MWFConfigurationException::class );
+		$this->expectExceptionMessage( 'No farm corresponding to this host' );
 
 		$farm = new MediaWikiFarm(
 				'testfarm-multiversion-subdirectories.example.org/a',
@@ -613,7 +613,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -623,11 +623,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage No farm corresponding to this host
 	 */
 	public function testFailedPath2() {
+
+		$this->expectException( MWFConfigurationException::class );
+		$this->expectExceptionMessage( 'No farm corresponding to this host' );
 
 		$farm = new MediaWikiFarm(
 				'testfarm-multiversion-subdirectories.example.or',
@@ -635,7 +635,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -645,11 +645,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage No farm corresponding to this host
 	 */
 	public function testFailedPath3() {
+
+		$this->expectException( MWFConfigurationException::class );
+		$this->expectExceptionMessage( 'No farm corresponding to this host' );
 
 		$farm = new MediaWikiFarm(
 				'testfarm-multiversion-subdirectories.example.org',
@@ -657,7 +657,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -678,7 +678,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				self::$wgMediaWikiFarmCacheDir,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( self::$wgMediaWikiFarmCacheDir, $farm->getCacheDir() );
 	}
@@ -707,7 +707,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		# Check farm directory
 		$this->assertEquals( self::$wgMediaWikiFarmFarmDir, $farm->getFarmDir() );
@@ -722,13 +722,13 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 		$this->assertEquals( self::$wgMediaWikiFarmFarmDir . '/src/main.php', $farm->getConfigFile() );
 
 		$this->assertEquals(
-			array(
-				'settings' => array(),
-				'arrays' => array(),
-				'extensions' => array(),
-				'execFiles' => array(),
-				'composer' => array(),
-			),
+			[
+				'settings' => [],
+				'arrays' => [],
+				'extensions' => [],
+				'execFiles' => [],
+				'composer' => [],
+			],
 			$farm->getConfiguration()
 		);
 	}
@@ -753,7 +753,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				null,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		# Check code directory
 		$this->assertNull( $farm->getCodeDir() );
@@ -782,7 +782,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 
 		$this->assertEquals( 'a.testfarm-multiversion.example.org', $farm->getVariable( '$SERVER' ) );
 	}
@@ -794,11 +794,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage Infinite or too long redirect detected
 	 */
 	public function testInfiniteRedirect() {
+
+		$this->expectException( MWFConfigurationException::class );
+		$this->expectExceptionMessage( 'Infinite or too long redirect detected' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-infinite-redirect.example.org',
@@ -806,7 +806,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -816,11 +816,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage No farm corresponding to this host
 	 */
 	public function testMissingFarm() {
+
+		$this->expectException( MWFConfigurationException::class );
+		$this->expectExceptionMessage( 'No farm corresponding to this host' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-missing.example.org',
@@ -828,7 +828,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir,
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -977,12 +977,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
-	 * @uses MediaWikiFarmUtils5_3
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage Infinite or too long redirect detected
 	 */
 	public function testYAMLConfigFile() {
+
+		$this->expectException( MWFConfigurationException::class );
+		$this->expectExceptionMessage( 'Infinite or too long redirect detected' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-infinite-redirect.example.org',
@@ -990,7 +989,7 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir . '/yaml',
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 
 	/**
@@ -1000,11 +999,11 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage Infinite or too long redirect detected
 	 */
 	public function testJSONConfigFile() {
+
+		$this->expectException( MWFConfigurationException::class );
+		$this->expectExceptionMessage( 'Infinite or too long redirect detected' );
 
 		$farm = new MediaWikiFarm(
 				'a.testfarm-infinite-redirect.example.org',
@@ -1012,6 +1011,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 				self::$wgMediaWikiFarmConfigDir . '/json',
 				self::$wgMediaWikiFarmCodeDir,
 				false,
-				array( 'EntryPoint' => 'index.php' ) );
+				[ 'EntryPoint' => 'index.php' ] );
 	}
 }

@@ -9,8 +9,8 @@ if( array_key_exists( 'wgMediaWikiFarm', $GLOBALS ) ) {
 	if( count( $extensions ) > 0 ) {
 		foreach( $extensions as $extension ) {
 
-			require_once dirname( __FILE__ ) . '/composer' . substr( md5( $extension ), 0, 8 ) . '/autoload_real.php';
-			call_user_func( array( 'ComposerAutoloaderInit' . substr( md5( $extension ), 0, 8 ), 'getLoader' ) );
+			require_once __DIR__ . '/composer' . substr( md5( $extension ), 0, 8 ) . '/autoload_real.php';
+			call_user_func( [ 'ComposerAutoloaderInit' . substr( md5( $extension ), 0, 8 ), 'getLoader' ] );
 		}
 		unset( $extensions );
 		unset( $extension );
@@ -19,6 +19,6 @@ if( array_key_exists( 'wgMediaWikiFarm', $GLOBALS ) ) {
 	unset( $extensions );
 }
 
-require_once dirname( __FILE__ ) . '/composer' . '/autoload_real.php';
+require_once __DIR__ . '/composer' . '/autoload_real.php';
 ComposerAutoloaderInitDEFAULT::getLoader();
 // @codeCoverageIgnoreEnd

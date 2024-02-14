@@ -8,8 +8,8 @@
  * @license AGPL-3.0-or-later
  */
 
-require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
+require_once __DIR__ . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/MediaWikiFarm.php';
 
 /**
  * Installation-independant methods tests.
@@ -55,16 +55,16 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
-		$result = array(
-			'settings' => array(
+		$result = [
+			'settings' => [
 				'wgUseExtensionMediaWikiFarm' => true,
 				'wgSitename' => 'Sid It',
 				'wgUsePathInfo' => true,
 				'wgDBprefix' => '',
 				'wgMainCacheType' => 2,
-				'wgMemCachedServers' => array(
+				'wgMemCachedServers' => [
 					0 => '127.0.0.1:11211',
-				),
+				],
 				'wgMemCachedTimeout' => 97116,
 				'wgDefaultSkin' => 'vector',
 				'wgUseSkinVector' => true,
@@ -75,46 +75,46 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 				'wgUseLocalExtensionSmartLinks' => true,
 				'wgUseLocalExtensionChangeTabs' => false,
 				'wgServer' => 'https://a.testfarm-monoversion.example.org',
-				'wgSkipSkins' => array(
+				'wgSkipSkins' => [
 					0 => 'MySkin',
 					1 => 'Chick',
-				),
-				'wgActionPaths' => array(
+				],
+				'wgActionPaths' => [
 					'edit' => '/edit/$1',
-				),
-			),
-			'arrays' => array(
-				'wgGroupPermissions' => array(
-					'user' => array(
+				],
+			],
+			'arrays' => [
+				'wgGroupPermissions' => [
+					'user' => [
 						'apihighlimits' => true,
 						'delete' => false,
-					),
-					'sysop' => array(
+					],
+					'sysop' => [
 						'fancypermission' => true,
 						'overfancypermission' => false,
-					),
-				),
-				'wgFileExtensions' => array(
+					],
+				],
+				'wgFileExtensions' => [
 					0 => 'pdf',
-				),
-			),
-			'extensions' => array(
-				'ExtensionMediaWikiFarm' => array( 'MediaWikiFarm', 'extension', null, 0 ),
-				'SkinVector' => array( 'Vector', 'skin', null, 1 ),
-				'SkinMonoBook' => array( 'MonoBook', 'skin', null, 2 ),
-				'ExtensionParserFunctions' => array( 'ParserFunctions', 'extension', null, 3 ),
-				'ExtensionCentralAuth' => array( 'CentralAuth', 'extension', null, 4 ),
-				'ExtensionConfirmEdit/QuestyCaptcha' => array( 'ConfirmEdit/QuestyCaptcha', 'extension', null, 5 ),
-			),
-			'composer' => array(),
-			'execFiles' => array(
+				],
+			],
+			'extensions' => [
+				'ExtensionMediaWikiFarm' => [ 'MediaWikiFarm', 'extension', null, 0 ],
+				'SkinVector' => [ 'Vector', 'skin', null, 1 ],
+				'SkinMonoBook' => [ 'MonoBook', 'skin', null, 2 ],
+				'ExtensionParserFunctions' => [ 'ParserFunctions', 'extension', null, 3 ],
+				'ExtensionCentralAuth' => [ 'CentralAuth', 'extension', null, 4 ],
+				'ExtensionConfirmEdit/QuestyCaptcha' => [ 'ConfirmEdit/QuestyCaptcha', 'extension', null, 5 ],
+			],
+			'composer' => [],
+			'execFiles' => [
 				0 => self::$wgMediaWikiFarmConfigDir . '/LocalSettings.php',
-			),
-		);
+			],
+		];
 
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', null,
 		                           self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir,
-		                           array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
+		                           [ 'EntryPoint' => 'index.php' ], [ 'ExtensionRegistry' => true ]
 			);
 
 		$this->assertTrue( $farm->checkExistence() );
@@ -173,33 +173,33 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		# First, without ExtensionRegistry
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
-			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => false )
+			[ 'EntryPoint' => 'index.php' ], [ 'ExtensionRegistry' => false ]
 		);
 
 		$farm->checkExistence();
 		$farm->compileConfiguration();
 		$extensions = $farm->getConfiguration( 'extensions' );
-		$this->assertContains( array( 'TestExtensionBiLoading', 'extension', 'require_once', 6 ), $extensions );
-		$this->assertContains( array( 'TestExtensionRequireOnce', 'extension', 'require_once', 7 ), $extensions );
-		$this->assertContains( array( 'MediaWikiFarm', 'extension', 'require_once', 5 ), $extensions );
+		$this->assertContains( [ 'TestExtensionBiLoading', 'extension', 'require_once', 6 ], $extensions );
+		$this->assertContains( [ 'TestExtensionRequireOnce', 'extension', 'require_once', 7 ], $extensions );
+		$this->assertContains( [ 'MediaWikiFarm', 'extension', 'require_once', 5 ], $extensions );
 
 		# Now with ExtensionRegistry
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
-			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
+			[ 'EntryPoint' => 'index.php' ], [ 'ExtensionRegistry' => true ]
 		);
 
 		$farm->checkExistence();
 		$farm->compileConfiguration();
 		$extensions = $farm->getConfiguration( 'extensions' );
-		$this->assertContains( array( 'TestExtensionBiLoading', 'extension', 'wfLoadExtension', 9 ), $extensions );
-		$this->assertContains( array( 'TestExtensionWfLoadExtension', 'extension', 'wfLoadExtension', 8 ), $extensions );
-		$this->assertContains( array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 7 ), $extensions );
+		$this->assertContains( [ 'TestExtensionBiLoading', 'extension', 'wfLoadExtension', 9 ], $extensions );
+		$this->assertContains( [ 'TestExtensionWfLoadExtension', 'extension', 'wfLoadExtension', 8 ], $extensions );
+		$this->assertContains( [ 'MediaWikiFarm', 'extension', 'wfLoadExtension', 7 ], $extensions );
 
 		# Now with imposed loading mechanism (1)
 		$farm = new MediaWikiFarm( 'c.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
-			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
+			[ 'EntryPoint' => 'index.php' ], [ 'ExtensionRegistry' => true ]
 		);
 
 		$farm->checkExistence();
@@ -208,12 +208,12 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$extensions = $farm->getConfiguration( 'extensions' );
 		$this->assertTrue( $settings['wgUseExtensionTestExtensionBiLoading'] );
 		$this->assertEquals( $extensions['ExtensionTestExtensionBiLoading'][2], 'require_once' );
-		$this->assertContains( array( 'TestExtensionBiLoading', 'extension', 'require_once', 0 ), $extensions );
+		$this->assertContains( [ 'TestExtensionBiLoading', 'extension', 'require_once', 0 ], $extensions );
 
 		# Now with imposed loading mechanism (2)
 		$farm = new MediaWikiFarm( 'd.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
-			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
+			[ 'EntryPoint' => 'index.php' ], [ 'ExtensionRegistry' => true ]
 		);
 
 		$farm->checkExistence();
@@ -222,13 +222,13 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$extensions = $farm->getConfiguration( 'extensions' );
 		$this->assertTrue( $settings['wgUseExtensionTestExtensionBiLoading'] );
 		$this->assertTrue( $settings['wgUseSkinTestSkinBiLoading'] );
-		$this->assertContains( array( 'TestExtensionBiLoading', 'extension', 'require_once', 1 ), $extensions );
-		$this->assertContains( array( 'TestSkinBiLoading', 'skin', 'require_once', 0 ), $extensions );
+		$this->assertContains( [ 'TestExtensionBiLoading', 'extension', 'require_once', 1 ], $extensions );
+		$this->assertContains( [ 'TestSkinBiLoading', 'skin', 'require_once', 0 ], $extensions );
 
 		# Now with imposed loading mechanism (2)
 		$farm = new MediaWikiFarm( 'e.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
-			array( 'EntryPoint' => 'index.php' ), array( 'ExtensionRegistry' => true )
+			[ 'EntryPoint' => 'index.php' ], [ 'ExtensionRegistry' => true ]
 		);
 
 		$farm->checkExistence();
@@ -237,8 +237,8 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		$extensions = $farm->getConfiguration( 'extensions' );
 		$this->assertTrue( $settings['wgUseExtensionTestExtensionBiLoading'] );
 		$this->assertTrue( $settings['wgUseSkinTestSkinBiLoading'] );
-		$this->assertContains( array( 'TestExtensionBiLoading', 'extension', 'wfLoadExtension', 2 ), $extensions );
-		$this->assertContains( array( 'TestSkinBiLoading', 'skin', 'wfLoadSkin', 0 ), $extensions );
+		$this->assertContains( [ 'TestExtensionBiLoading', 'extension', 'wfLoadExtension', 2 ], $extensions );
+		$this->assertContains( [ 'TestSkinBiLoading', 'skin', 'wfLoadSkin', 0 ], $extensions );
 	}
 
 	/**
@@ -284,7 +284,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm( 'b.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
-			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true )
+			[ 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true ]
 		);
 
 		$this->assertTrue( $farm->checkExistence() );
@@ -304,7 +304,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir . '/versions.php' );
 		$farm = new MediaWikiFarm( 'b.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
-			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true )
+			[ 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true ]
 		);
 		$this->assertTrue( $farm->checkExistence() );
 		$farm->compileConfiguration();
@@ -357,7 +357,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir,
-			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true )
+			[ 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true ]
 		);
 
 		$this->assertTrue( $farm->checkExistence() );
@@ -372,7 +372,7 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 		AbstractMediaWikiFarmScript::rmdirr( self::$wgMediaWikiFarmCacheDir . '/wikis/a.testfarm-monoversion.example.org.php' );
 		$farm = new MediaWikiFarm( 'a.testfarm-monoversion.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, null, self::$wgMediaWikiFarmCacheDir,
-			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true )
+			[ 'EntryPoint' => 'index.php', 'InnerMediaWiki' => true ]
 		);
 		$this->assertTrue( $farm->checkExistence() );
 		$farm->compileConfiguration();
@@ -406,71 +406,71 @@ class ConfigurationTest extends MediaWikiFarmTestCase {
 
 		$farm = new MediaWikiFarm( 'a.testfarm-multiversion-test-extensions.example.org', null,
 			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, self::$wgMediaWikiFarmCacheDir,
-			array( 'EntryPoint' => 'index.php', 'InnerMediaWiki' => false )
+			[ 'EntryPoint' => 'index.php', 'InnerMediaWiki' => false ]
 		);
 		$farm->checkExistence();
 		$configuration = $farm->getConfiguration( null );
 
 		$this->assertEquals( -100,
 			$configuration->sortExtensions(
-				array( 'IrrealSkinComposerForTesting', 'skin', 'composer', 0 ),
-				array( 'FictiveSkinComposerForTesting', 'skin', 'composer', 100 )
+				[ 'IrrealSkinComposerForTesting', 'skin', 'composer', 0 ],
+				[ 'FictiveSkinComposerForTesting', 'skin', 'composer', 100 ]
 			),
 			'The order of two inter-dependent Composer packages should be their original order.'
 		);
 
 		$this->assertEquals( 1,
 			$configuration->sortExtensions(
-				array( 'UnknownExtensionComposerForTesting', 'extension', 'composer', 100 ),
-				array( 'IrrealSkinComposerForTesting', 'skin', 'composer', 0 )
+				[ 'UnknownExtensionComposerForTesting', 'extension', 'composer', 100 ],
+				[ 'IrrealSkinComposerForTesting', 'skin', 'composer', 0 ]
 			),
 			'The order of two different-type Composer packages whose dependency graph is partly unknown should be skin-then-extension.'
 		);
 
 		$this->assertEquals( 100,
 			$configuration->sortExtensions(
-				array( 'UnknownSkinComposerForTesting', 'skin', 'composer', 100 ),
-				array( 'IrrealSkinComposerForTesting', 'skin', 'composer', 0 )
+				[ 'UnknownSkinComposerForTesting', 'skin', 'composer', 100 ],
+				[ 'IrrealSkinComposerForTesting', 'skin', 'composer', 0 ]
 			),
 			'The order of two same-type Composer packages whose dependency graph is partly unknown should be their original order.'
 		);
 
 		$this->assertEquals( 1,
 			$configuration->sortExtensions(
-				array( 'TestSkinComposer', 'skin', 'composer', 100 ),
-				array( 'TestExtensionComposer', 'extension', 'composer', 0 )
+				[ 'TestSkinComposer', 'skin', 'composer', 100 ],
+				[ 'TestExtensionComposer', 'extension', 'composer', 0 ]
 			),
 			'The order of two known Composer packages whose the first depends on the second should change the order.'
 		);
 
 		$this->assertEquals( -1,
 			$configuration->sortExtensions(
-				array( 'TestExtensionComposer', 'extension', 'composer', 0 ),
-				array( 'TestSkinComposer', 'skin', 'composer', 100 )
+				[ 'TestExtensionComposer', 'extension', 'composer', 0 ],
+				[ 'TestSkinComposer', 'skin', 'composer', 100 ]
 			),
 			'The order of two known Composer packages whose the second depends on the first should keep the order.'
 		);
 
 		$this->assertEquals( 1,
 			$configuration->sortExtensions(
-				array( 'Wonderfun', 'extension', 'require_once', 0 ),
-				array( 'Wonderfun', 'skin', 'require_once', 100 )
+				[ 'Wonderfun', 'extension', 'require_once', 0 ],
+				[ 'Wonderfun', 'skin', 'require_once', 100 ]
 			),
 			'The order of two same-loading extension and skin should place the skin before the extension.'
 		);
 
 		$this->assertEquals( 11,
 			$configuration->sortExtensions(
-				array( 'Wonderfun', 'extension', 'wfLoadExtension', 0 ),
-				array( 'Wonderfun', 'skin', 'require_once', 100 )
+				[ 'Wonderfun', 'extension', 'wfLoadExtension', 0 ],
+				[ 'Wonderfun', 'skin', 'require_once', 100 ]
 			),
 			'The order of two different-loading extensions depends on the loading mechanism (unknown, composer, require_once, wfLoad).'
 		);
 
 		$this->assertEquals( -100,
 			$configuration->sortExtensions(
-				array( 'Wonderfun', 'extension', 'wfLoadExtension', 0 ),
-				array( 'Wonderful', 'extension', 'wfLoadExtension', 100 )
+				[ 'Wonderfun', 'extension', 'wfLoadExtension', 0 ],
+				[ 'Wonderful', 'extension', 'wfLoadExtension', 100 ]
 			),
 			'The order of two same-loading same-type extensions is the original order.'
 		);

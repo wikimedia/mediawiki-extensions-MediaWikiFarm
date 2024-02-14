@@ -1,14 +1,14 @@
 <?php
 
-return array(
-	'wgActionPaths' => array(
-		'testfarm' => array(
+return [
+	'wgActionPaths' => [
+		'testfarm' => [
 			'edit' => '/edit/$1',
-		),
-	),
-	'wgSkipSkins' => array(
-		'+testfarm' => array(
+		],
+	],
+	'wgSkipSkins' => [
+		'+testfarm' => [
 			'Chick',
-		),
-	),
-);
+		],
+	],
+];

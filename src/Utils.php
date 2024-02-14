@@ -68,7 +68,7 @@ class MediaWikiFarmUtils {
 			$content = file_get_contents( $prefixedFile );
 
 			if( preg_match( "/^\r?\n?$/m", $content ) ) {
-				$array = array();
+				$array = [];
 			}
 			else {
 				$array = unserialize( $content );
@@ -78,24 +78,16 @@ class MediaWikiFarmUtils {
 		# Format YAML
 		elseif( $format == '.yml' || $format == '.yaml' ) {
 
-			# Load Composer libraries
-			# There is no warning if not present because to properly handle the error by returning false
-			# This is only included here to avoid delays (~3ms without OPcache) during the loading using cached files or other formats
-			if( version_compare( PHP_VERSION, '5.3.0' ) >= 0 ) {
-
-				require_once dirname( __FILE__ ) . '/Utils5_3.php';
-
-				try {
-					$array = MediaWikiFarmUtils5_3::readYAML( $prefixedFile );
-				}
-				catch( RuntimeException $e ) {
-					$log[] = $e->getMessage();
-					$log['unreadable-file'] = true;
-					$array = false;
-				}
-				if( $array === null ) {
-					$array = array();
-				}
+			try {
+				$array = self::readYAML( $prefixedFile );
+			}
+			catch( RuntimeException $e ) {
+				$log[] = $e->getMessage();
+				$log['unreadable-file'] = true;
+				$array = false;
+			}
+			if( $array === null ) {
+				$array = [];
 			}
 		}
 
@@ -105,7 +97,7 @@ class MediaWikiFarmUtils {
 			$content = file_get_contents( $prefixedFile );
 
 			if( preg_match( "/^null\r?\n?$/m", $content ) ) {
-				$array = array();
+				$array = [];
 			}
 			else {
 				$array = json_decode( $content, true );
@@ -117,7 +109,7 @@ class MediaWikiFarmUtils {
 
 			$content = file_get_contents( $prefixedFile );
 
-			$array = array();
+			$array = [];
 			$arraytmp = explode( "\n", $content );
 			foreach( $arraytmp as $line ) {
 				if( $line != '' ) {
@@ -153,6 +145,39 @@ class MediaWikiFarmUtils {
 
 		# Error for any other type
 		return false;
+	}
+
+	/**
+	 * Read a YAML file.
+	 *
+	 * @param string $filename Name of the YAML file.
+	 * @return array|string|int|bool|null Content of the YAML file or null in case of error.
+	 * @throws RuntimeException When YAML library is not available, file is missing, or file is badly-formatted.
+	 */
+	public static function readYAML( $filename ) {
+
+		if( !is_file( $filename ) ) {
+			throw new RuntimeException( 'Missing file \'' . $filename . '\'' );
+		}
+
+		# Load Composer
+		if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) && is_file( __DIR__ . '/../vendor/autoload.php' ) ) {
+			include_once __DIR__ . '/../vendor/autoload.php'; // @codeCoverageIgnore
+		}
+
+		# Check YAML library was loaded
+		# This is harly testable given PHPUnit depends on this library
+		if( !class_exists( 'Symfony\Component\Yaml\Yaml' ) || !class_exists( 'Symfony\Component\Yaml\Exception\ParseException' ) ) {
+			throw new RuntimeException( 'Unavailable YAML library, please install it if you want to read YAML files' ); // @codeCoverageIgnore
+		}
+
+		# Return the array read from YAML or an error
+		try {
+			return Symfony\Component\Yaml\Yaml::parse( file_get_contents( $filename ) );
+		}
+		catch( Symfony\Component\Yaml\Exception\ParseException $e ) {
+			throw new RuntimeException( 'Badly-formatted YAML file \'' . $filename . '\': ' . $e->getMessage() );
+		}
 	}
 
 	/**
@@ -222,17 +247,17 @@ class MediaWikiFarmUtils {
 	 * @param bool $cache The successfully file read must be cached.
 	 * @return array 2-tuple with the result (array) and file read (string); in case no files were found, the second value is an empty string.
 	 */
-	public static function readAnyFile( $filename, $directory, $cacheDir, array &$log, $formats = array( 'yml', 'php', 'json' ), $cache = true ) {
+	public static function readAnyFile( $filename, $directory, $cacheDir, array &$log, $formats = [ 'yml', 'php', 'json' ], $cache = true ) {
 
 		foreach( $formats as $format ) {
 
 			$array = self::readFile( $filename . '.' . $format, $cacheDir, $log, $directory, $cache );
 			if( is_array( $array ) ) {
-				return array( $array, $filename . '.' . $format );
+				return [ $array, $filename . '.' . $format ];
 			}
 		}
 
-		return array( array(), '' );
+		return [ [], '' ];
 	}
 
 	/**
@@ -268,7 +293,7 @@ class MediaWikiFarmUtils {
 	public static function arrayMerge( $array1 /* ... */ ) {
 		$out = $array1;
 		if ( $out === null ) {
-			$out = array();
+			$out = [];
 		}
 		$argsCount = func_num_args();
 		for ( $i = 1; $i < $argsCount; $i++ ) {

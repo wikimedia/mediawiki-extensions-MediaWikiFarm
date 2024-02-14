@@ -8,8 +8,8 @@
  * @license AGPL-3.0-or-later
  */
 
-require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
+require_once __DIR__ . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/MediaWikiFarm.php';
 
 /**
  * Installation-independant methods tests.
@@ -46,7 +46,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	/**
 	 * Set up the default MediaWikiFarm object with a sample correct configuration file.
 	 */
-	protected function setUp() {
+	protected function setUp() : void {
 
 		parent::setUp();
 
@@ -63,7 +63,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @requires Symfony\Component\Yaml\Yaml::parse
 	 * @covers MediaWikiFarm::readFile
 	 * @covers MediaWikiFarmUtils::readFile
-	 * @covers MediaWikiFarmUtils5_3::readYAML
+	 * @covers MediaWikiFarmUtils::readYAML
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
 	 * @uses MediaWikiFarmUtils::readAnyFile
@@ -78,10 +78,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		$result = $this->farm->readFile( 'testreading.yml', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
-			array(
+			[
 				'element1',
-				array( 'element2' => 'element3' ),
-			),
+				[ 'element2' => 'element3' ],
+			],
 			$result );
 	}
 
@@ -98,10 +98,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		$result = $this->farm->readFile( 'testreading.php', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
-			array(
+			[
 				'element1',
-				array( 'element2' => 'element3' ),
-			),
+				[ 'element2' => 'element3' ],
+			],
 			$result );
 	}
 
@@ -118,10 +118,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		$result = $this->farm->readFile( 'testreading.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
-			array(
+			[
 				'element1',
-				array( 'element2' => 'element3' ),
-			),
+				[ 'element2' => 'element3' ],
+			],
 			$result );
 	}
 
@@ -138,10 +138,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		$result = $this->farm->readFile( 'testreading.ser', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
-			array(
+			[
 				'element1',
-				array( 'element2' => 'element3' ),
-			),
+				[ 'element2' => 'element3' ],
+			],
 			$result );
 	}
 
@@ -158,10 +158,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		$result = $this->farm->readFile( 'testreading.dblist', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
-			array(
+			[
 				'element1',
 				'element2',
-			),
+			],
 			$result );
 	}
 
@@ -220,7 +220,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
-	 * @uses MediaWikiFarmUtils5_3::readYAML
+	 * @uses MediaWikiFarmUtils::readYAML
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	public function testBadSyntaxFileReadingYAML() {
@@ -274,13 +274,13 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
-	 * @uses MediaWikiFarmUtils5_3::readYAML
+	 * @uses MediaWikiFarmUtils::readYAML
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	public function testEmptyFileReadingPHP() {
 
 		$result = $this->farm->readFile( 'empty.php', self::$wgMediaWikiFarmConfigDir );
-		$this->assertEquals( array(), $result );
+		$this->assertEquals( [], $result );
 	}
 
 	/**
@@ -290,7 +290,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
-	 * @uses MediaWikiFarmUtils5_3::readYAML
+	 * @uses MediaWikiFarmUtils::readYAML
 	 * @uses MediaWikiFarmUtils::readAnyFile
 	 */
 	public function testEmptyFileReadingYAML() {
@@ -302,7 +302,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		}
 
 		$result = $this->farm->readFile( 'empty.yml', self::$wgMediaWikiFarmConfigDir );
-		$this->assertEquals( array(), $result );
+		$this->assertEquals( [], $result );
 	}
 
 	/**
@@ -317,7 +317,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	public function testEmptyFileReadingJSON() {
 
 		$result = $this->farm->readFile( 'empty.json', self::$wgMediaWikiFarmConfigDir );
-		$this->assertEquals( array(), $result );
+		$this->assertEquals( [], $result );
 	}
 
 	/**
@@ -332,7 +332,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	public function testEmptyFileReadingSER() {
 
 		$result = $this->farm->readFile( 'empty.ser', self::$wgMediaWikiFarmConfigDir );
-		$this->assertEquals( array(), $result );
+		$this->assertEquals( [], $result );
 	}
 
 	/**
@@ -401,10 +401,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		# Read cached version
 		$result = $farm->readFile( 'testreading2.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
-			array(
+			[
 				'element1',
-				array( 'element2' => 'element3' ),
-			),
+				[ 'element2' => 'element3' ],
+			],
 			$result );
 
 		# Put the original file in badsyntax and check it fallbacks to cached version
@@ -413,10 +413,10 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		touch( self::$wgMediaWikiFarmConfigDir . '/testreading2.json', time() + 300 );
 		$result = $farm->readFile( 'testreading2.json', self::$wgMediaWikiFarmConfigDir );
 		$this->assertEquals(
-			array(
+			[
 				'element1',
-				array( 'element2' => 'element3' ),
-			),
+				[ 'element2' => 'element3' ],
+			],
 			$result );
 		unlink( self::$wgMediaWikiFarmConfigDir . '/testreading2.json' );
 
@@ -424,7 +424,7 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 		$this->assertTrue( is_file( self::$wgMediaWikiFarmCacheDir . '/config/subdir/testreading2.json.php' ) );
 
 		# Test when it is requested to cache non-PHP file
-		MediaWikiFarmUtils::cacheFile( array(), 'nonexistant.json', self::$wgMediaWikiFarmCacheDir );
+		MediaWikiFarmUtils::cacheFile( [], 'nonexistant.json', self::$wgMediaWikiFarmCacheDir );
 		$this->assertFalse( is_file( self::$wgMediaWikiFarmCacheDir . '/nonexistant.json' ) );
 	}
 
@@ -437,21 +437,21 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	public function testReadAnyFileSuccess() {
 
-		$log = array();
+		$log = [];
 		$result = MediaWikiFarmUtils::readAnyFile( 'success', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
 
 		$this->assertTrue(
-			is_array( $result ) && array_keys( $result ) === array( 0, 1 ),
+			is_array( $result ) && array_keys( $result ) === [ 0, 1 ],
 			'The returned value should be a list with two elements.'
 		);
 		$this->assertEquals( 'success.php', $result[1], 'The read file should be the PHP file.' );
 		$this->assertEquals(
-			array(
+			[
 				0 => 'element1',
-				1 => array(
+				1 => [
 					'element2' => 'element3',
-				),
-			),
+				],
+			],
 			$result[0],
 			'The result should be the specified array.'
 		);
@@ -466,16 +466,16 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	public function testReadAnyFileNonExistant() {
 
-		$log = array();
+		$log = [];
 		$result = MediaWikiFarmUtils::readAnyFile( 'nonexistant', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
 
 		$this->assertTrue(
-			is_array( $result ) && array_keys( $result ) === array( 0, 1 ),
+			is_array( $result ) && array_keys( $result ) === [ 0, 1 ],
 			'The returned value should be a list with two elements.'
 		);
 		$this->assertSame( '', $result[1], 'There should be no read file.' );
 		$this->assertEquals(
-			array(),
+			[],
 			$result[0],
 			'The result should be an empty array.'
 		);
@@ -490,16 +490,16 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 */
 	public function testReadAnyFileBadSyntax() {
 
-		$log = array();
+		$log = [];
 		$result = MediaWikiFarmUtils::readAnyFile( 'badsyntax', self::$wgMediaWikiFarmTestDataDir . '/readAnyFile', false, $log );
 
 		$this->assertTrue(
-			is_array( $result ) && array_keys( $result ) === array( 0, 1 ),
+			is_array( $result ) && array_keys( $result ) === [ 0, 1 ],
 			'The returned value should be a list with two elements.'
 		);
 		$this->assertSame( '', $result[1], 'There should be no read file because the only file has a syntax error.' );
 		$this->assertEquals(
-			array(),
+			[],
 			$result[0],
 			'The result should be an empty array.'
 		);
@@ -519,11 +519,11 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::replaceVariables
 	 * @uses MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarmUtils::readAnyFile
-	 *
-	 * @expectedException MWFConfigurationException
-	 * @expectedExceptionMessage Missing or badly formatted file 'badsyntax.json' defining existing values for variable 'wiki'
 	 */
 	public function testBadlyFormattedFileVariable() {
+
+		$this->expectException( MWFConfigurationException::class );
+		$this->expectExceptionMessage( 'Missing or badly formatted file \'badsyntax.json\' defining existing values for variable \'wiki\'' );
 
 		$farm = self::constructMediaWikiFarm( 'a.testfarm-with-badly-formatted-file-variable.example.org' );
 		$farm->checkExistence();
@@ -538,11 +538,11 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 	 * @uses MediaWikiFarm::readFile
 	 * @uses MediaWikiFarmUtils::readFile
 	 * @uses MediaWikiFarmUtils::readAnyFile
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Argument of MediaWikiFarm->replaceVariables() must be a string or an array.
 	 */
 	public function testWrongTypeReplaceVariables() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Argument of MediaWikiFarm->replaceVariables() must be a string or an array.' );
 
 		$result = $this->farm->replaceVariables( 1 );
 	}
@@ -563,39 +563,39 @@ class InstallationIndependantTest extends MediaWikiFarmTestCase {
 
 		$this->backupAndSetGlobalVariable( 'IP', self::$wgMediaWikiFarmCodeDir . '/vstub' );
 
-		$configuration = array(
-			'settings' => array(
+		$configuration = [
+			'settings' => [
 				'wgSitename' => 'Sid It',
-				'wgMemCachedServers' => array( '127.0.0.1:11211' ),
-			),
-			'arrays' => array(
-				'wgExtraNamespaces' => array( 100 => 'Bibliography' ),
-				'wgNamespaceAliases' => array( 'Bibliography' => 100 ),
-				'wgFileExtensions' => array( 'djvu' ),
-				'wgVirtualRestConfig' => array(
-					'modules' => array(
-						'parsoid' => array(
+				'wgMemCachedServers' => [ '127.0.0.1:11211' ],
+			],
+			'arrays' => [
+				'wgExtraNamespaces' => [ 100 => 'Bibliography' ],
+				'wgNamespaceAliases' => [ 'Bibliography' => 100 ],
+				'wgFileExtensions' => [ 'djvu' ],
+				'wgVirtualRestConfig' => [
+					'modules' => [
+						'parsoid' => [
 							'domain' => 'localhost',
 							'prefix' => 'localhost',
-						),
-					),
-				),
-			),
-			'extensions' => array(
-				'ExtensionSemanticMediaWiki' => array( 'SemanticMediaWiki', 'extension', 'composer', 0 ),
-				'SkinMonoBook' => array( 'MonoBook', 'skin', 'require_once', 1 ),
-				'ExtensionEcho' => array( 'Echo', 'extension', 'require_once', 2 ),
-				'SkinVector' => array( 'Vector', 'skin', 'wfLoadSkin', 3 ),
-				'ExtensionMediaWikiFarm' => array( 'MediaWikiFarm', 'extension', 'wfLoadExtension', 4 ),
-				'ExtensionParserFunctions' => array( 'ParserFunctions', 'extension', 'wfLoadExtension', 5 ),
-			),
-			'composer' => array(
+						],
+					],
+				],
+			],
+			'extensions' => [
+				'ExtensionSemanticMediaWiki' => [ 'SemanticMediaWiki', 'extension', 'composer', 0 ],
+				'SkinMonoBook' => [ 'MonoBook', 'skin', 'require_once', 1 ],
+				'ExtensionEcho' => [ 'Echo', 'extension', 'require_once', 2 ],
+				'SkinVector' => [ 'Vector', 'skin', 'wfLoadSkin', 3 ],
+				'ExtensionMediaWikiFarm' => [ 'MediaWikiFarm', 'extension', 'wfLoadExtension', 4 ],
+				'ExtensionParserFunctions' => [ 'ParserFunctions', 'extension', 'wfLoadExtension', 5 ],
+			],
+			'composer' => [
 				'ExtensionSemanticMediaWiki',
-			),
-			'execFiles' => array(
+			],
+			'execFiles' => [
 				'freeLS.php',
-			),
-		);
+			],
+		];
 
 		$localSettings = <<<PHP
 <?php
@@ -616,16 +616,16 @@ require_once "\$IP/extensions/Echo/Echo.php";
 
 # Array settings
 if( !array_key_exists( 'wgExtraNamespaces', \$GLOBALS ) ) {
-	\$GLOBALS['wgExtraNamespaces'] = array();
+	\$GLOBALS['wgExtraNamespaces'] = [];
 }
 if( !array_key_exists( 'wgNamespaceAliases', \$GLOBALS ) ) {
-	\$GLOBALS['wgNamespaceAliases'] = array();
+	\$GLOBALS['wgNamespaceAliases'] = [];
 }
 if( !array_key_exists( 'wgFileExtensions', \$GLOBALS ) ) {
-	\$GLOBALS['wgFileExtensions'] = array();
+	\$GLOBALS['wgFileExtensions'] = [];
 }
 if( !array_key_exists( 'wgVirtualRestConfig', \$GLOBALS ) ) {
-	\$GLOBALS['wgVirtualRestConfig'] = array();
+	\$GLOBALS['wgVirtualRestConfig'] = [];
 }
 \$wgExtraNamespaces[100] = 'Bibliography';
 \$wgNamespaceAliases['Bibliography'] = 100;
@@ -659,9 +659,9 @@ PHP;
 		$configuration['settings']['wgStyleDirectory'] = '/mediawiki/skins';
 		$this->assertEquals(
 			str_replace(
-				array( '$IP/extensions', '$IP/skins', "'127.0.0.1:11211',\n);" ),
-				array( '/mediawiki/extensions', '/mediawiki/skins',
-				"'127.0.0.1:11211',\n);\n\$wgExtensionDirectory = '/mediawiki/extensions';\n\$wgStyleDirectory = '/mediawiki/skins';" ),
+				[ '$IP/extensions', '$IP/skins', "'127.0.0.1:11211',\n);" ],
+				[ '/mediawiki/extensions', '/mediawiki/skins',
+				"'127.0.0.1:11211',\n);\n\$wgExtensionDirectory = '/mediawiki/extensions';\n\$wgStyleDirectory = '/mediawiki/skins';" ],
 				$localSettings2
 			),
 			MediaWikiFarmConfiguration::createLocalSettings( $configuration, (bool) $farm->getCodeDir(), "# Pre-config\n", "# Post-config\n" )
@@ -689,7 +689,7 @@ PHP;
 	 *
 	 * Methods tested here are supposed to be constant: the internal properties should not change.
 	 */
-	public function assertPostConditions() {
+	public function assertPostConditions() : void {
 
 		if( $this->shouldBeConstant ) {
 			$this->assertEquals( $this->control, $this->farm, 'Methods tested in InstallationIndependantTest are supposed to be constant.' );

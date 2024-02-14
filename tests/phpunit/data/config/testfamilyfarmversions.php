@@ -1,7 +1,7 @@
 <?php
 
-return array(
+return [
 	'aafamilytestfarm' => 'vstub',
 	'afamilytestfarm' => 'vstub',
 	'default' => 'vstub',
-);
+];

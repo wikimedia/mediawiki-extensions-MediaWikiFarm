@@ -7,9 +7,9 @@
  * @license AGPL-3.0-or-later
  */
 
-require_once dirname( __FILE__ ) . '/MediaWikiFarmTestCase.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/MediaWikiFarm.php';
-require_once dirname( dirname( dirname( __FILE__ ) ) ) . '/src/List.php';
+require_once __DIR__ . '/MediaWikiFarmTestCase.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/MediaWikiFarm.php';
+require_once dirname( dirname( __DIR__ ) ) . '/src/List.php';
 
 /**
  * MediaWiki hooks tests.
@@ -34,12 +34,12 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 		$urlsList = $wgMediaWikiFarmList->getURLsList();
 
 		$this->assertEquals(
-			array( 'aa.testfarm2-multiversion.example.org',
+			[ 'aa.testfarm2-multiversion.example.org',
 			       'ab.testfarm2-multiversion.example.org',
 			       'ba.testfarm2-multiversion.example.org',
 			       'bb.testfarm2-multiversion.example.org',
 			       'a.testfarm2-multiversion-bis.example.org',
-			       'b.testfarm2-multiversion-bis.example.org' ),
+			       'b.testfarm2-multiversion-bis.example.org' ],
 			$urlsList,
 			'The list of wikis does not correspond.'
 		);
@@ -50,11 +50,11 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarmList::__construct
 	 * @uses MediaWikiFarmUtils
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Invalid directory for the farm configuration.
 	 */
 	public function testConstruction() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Invalid directory for the farm configuration.' );
 
 		new MediaWikiFarmList( 0, false );
 	}
@@ -64,11 +64,11 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 	 *
 	 * @covers MediaWikiFarmList::__construct
 	 * @uses MediaWikiFarmUtils
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Invalid directory for the farm configuration.
 	 */
 	public function testConstruction2() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Invalid directory for the farm configuration.' );
 
 		new MediaWikiFarmList( __FILE__, false );
 	}
@@ -79,11 +79,11 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 	 * @covers MediaWikiFarmList::__construct
 	 * @uses MediaWikiFarmUtils
 	 * @uses AbstractMediaWikiFarmScript
-	 *
-	 * @expectedException InvalidArgumentException
-	 * @expectedExceptionMessage Cache directory must be false or a directory.
 	 */
 	public function testConstruction3() {
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Cache directory must be false or a directory.' );
 
 		new MediaWikiFarmList( self::$wgMediaWikiFarmConfig2Dir, 0 );
 	}
@@ -98,6 +98,6 @@ class MediaWikiFarmListTest extends MediaWikiFarmTestCase {
 	public function testConstruction5() {
 
 		$wgMediaWikiFarmList = new MediaWikiFarmList( self::$wgMediaWikiFarmConfig2Dir, self::$wgMediaWikiFarmCacheDir );
-		$this->assertEquals( array(), $wgMediaWikiFarmList->log );
+		$this->assertEquals( [], $wgMediaWikiFarmList->log );
 	}
 }
