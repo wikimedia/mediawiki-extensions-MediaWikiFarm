@@ -40,7 +40,7 @@
 			"minus-x fix ."
 		],
 		"validate-schema": "php ./bin/validate-schema.php",
-		"lint": "parallel-lint --exclude vendor .",
+		"lint": "parallel-lint --exclude vendor --exclude tests/phpunit/data/config/badsyntax.php .",
 		"unit": "phpunit --no-coverage",
 		"phpunit": "which phpdbg && phpdbg -qrr `which phpunit` --strict-coverage || phpunit --strict-coverage",
 		"phpcs": "phpcs -p -s",
