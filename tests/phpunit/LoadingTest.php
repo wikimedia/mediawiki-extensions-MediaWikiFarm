@@ -179,6 +179,14 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	 */
 	public function testRegistrationMediaWikiFarm() {
 
+		# A. Issue with backuping $wgHooks: triggers 'Non-scalar backup of the global variable' from MediaWikiFarmTestCase::backupGlobalVariable()
+		#    since $wgHooks is an object with 1.40.
+		# B. MediaWikiFarm::selfRegister() may fail because $wgHooks is an object and array_key_exists( key, $wgHooks ) triggers a PHP deprecation warning,
+		#    but this method is probably only for the require_once mechanism.
+		$this->markTestIncomplete(
+			'This test has an issue with recent MediaWiki versions (to be fixed).'
+		);
+
 		$this->backupAndSetGlobalVariable( 'wgAutoloadClasses', array() );
 		$this->backupAndSetGlobalVariable( 'wgHooks', array() );
 

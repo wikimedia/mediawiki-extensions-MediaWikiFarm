@@ -330,7 +330,7 @@ abstract class MediaWikiFarmTestCase extends MediaWikiTestCase {
 			$this->backupMWFGlobalsExist[$key] = false;
 		}
 		elseif( !self::isRecursiveScalar( $GLOBALS[$key] ) && !$GLOBALS[$key] instanceof MediaWikiFarm ) {
-			throw new PHPUnit_Framework_RiskyTestError( "Non-scalar backup of a global variable" );
+			throw new PHPUnit_Framework_RiskyTestError( "Non-scalar backup of the global variable ($key)" );
 		}
 		else {
 			$this->backupMWFGlobalsExist[$key] = true;
