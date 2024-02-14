@@ -11,5 +11,10 @@
 	"license": "GPL-3.0-or-later",
 	"require": {
 		"php": ">=5.2"
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true
+		}
 	}
 }

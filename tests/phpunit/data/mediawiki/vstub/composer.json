@@ -7,5 +7,10 @@
 	},
 	"require-dev": {
 		"mediawiki/page-forms": "*"
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true
+		}
 	}
 }
