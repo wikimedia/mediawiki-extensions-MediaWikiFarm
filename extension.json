@@ -22,14 +22,10 @@
 			"i18n"
 		]
 	},
-	"Hooks": {
-		"UnitTestsList": "MediaWikiFarmHooks::onUnitTestsList"
-	},
 	"AutoloadClasses": {
 		"MediaWikiFarm": "src/MediaWikiFarm.php",
 		"MediaWikiFarmConfiguration": "src/MediaWikiFarmConfiguration.php",
 		"AbstractMediaWikiFarmScript": "src/bin/AbstractMediaWikiFarmScript.php",
-		"MediaWikiFarmHooks": "src/Hooks.php",
 		"MediaWikiFarmList": "src/List.php",
 		"MediaWikiFarmScript": "src/bin/MediaWikiFarmScript.php",
 		"MediaWikiFarmScriptComposer": "src/bin/MediaWikiFarmScriptComposer.php",
