@@ -227,6 +227,7 @@ class MediaWikiFarm {
 	 */
 	public function getConfiguration( $key = false, $key2 = false ) {
 		if( $this->configuration === null ) {
+			// phpcs:ignore Squiz.WhiteSpace.OperatorSpacing.NoSpaceAfter
 			$that =& $this;
 			$this->configuration = new MediaWikiFarmConfiguration( $that );
 		}
@@ -282,7 +283,8 @@ class MediaWikiFarm {
 		catch( Exception $exception ) {
 
 			if( !headers_sent() ) {
-				$httpProto = array_key_exists( 'SERVER_PROTOCOL', $_SERVER ) && $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.1' ? 'HTTP/1.1' : 'HTTP/1.0'; // @codeCoverageIgnore
+				$httpProto = array_key_exists( 'SERVER_PROTOCOL', $_SERVER )
+					&& $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.1' ? 'HTTP/1.1' : 'HTTP/1.0'; // @codeCoverageIgnore
 				header( "$httpProto 500 Internal Server Error" ); // @codeCoverageIgnore
 			}
 
@@ -294,7 +296,8 @@ class MediaWikiFarm {
 
 			# Display an informational page when the requested wiki doesn’t exist, only when a page was requested, not a resource, to avoid waste resources
 			if( !headers_sent() ) {
-				$httpProto = array_key_exists( 'SERVER_PROTOCOL', $_SERVER ) && $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.1' ? 'HTTP/1.1' : 'HTTP/1.0'; // @codeCoverageIgnore
+				$httpProto = array_key_exists( 'SERVER_PROTOCOL', $_SERVER )
+					&& $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.1' ? 'HTTP/1.1' : 'HTTP/1.0'; // @codeCoverageIgnore
 				header( "$httpProto 404 Not Found" ); // @codeCoverageIgnore
 			}
 			if( $entryPoint == 'index.php' && array_key_exists( 'HTTP404', $wgMediaWikiFarm->farmConfig ) ) {
@@ -417,6 +420,7 @@ class MediaWikiFarm {
 			$composerFile = $this->readFile( $this->variables['$SERVER'] . '.php', $this->cacheDir . '/composer', false );
 			if( is_array( $composerFile ) ) {
 				if( $this->configuration === null ) {
+					// phpcs:ignore Squiz.WhiteSpace.OperatorSpacing.NoSpaceAfter
 					$that =& $this;
 					$this->configuration = new MediaWikiFarmConfiguration( $that );
 				}
@@ -428,6 +432,7 @@ class MediaWikiFarm {
 
 		# Init configuration object
 		if( $this->configuration === null ) {
+			// phpcs:ignore Squiz.WhiteSpace.OperatorSpacing.NoSpaceAfter
 			$that =& $this;
 			$this->configuration = new MediaWikiFarmConfiguration( $that );
 		}
@@ -630,7 +635,14 @@ class MediaWikiFarm {
 			return $log;
 		}
 
-		if( ( $wgMediaWikiFarm instanceof MediaWikiFarm && count( $wgMediaWikiFarm->log ) ) || $exception instanceof Exception || $exception instanceof Throwable ) {
+		if(
+			(
+				$wgMediaWikiFarm instanceof MediaWikiFarm
+				&& count( $wgMediaWikiFarm->log )
+			)
+			|| $exception instanceof Exception
+			|| $exception instanceof Throwable
+		) {
 
 			# Init logging
 			if( !is_string( $wgMediaWikiFarmSyslog ) ) {
@@ -780,6 +792,7 @@ class MediaWikiFarm {
 				'ExtensionRegistry' => null,
 			], $environment );
 
+			// phpcs:ignore Squiz.WhiteSpace.OperatorSpacing.NoSpaceAfter
 			$that =& $this;
 			$this->configuration = new MediaWikiFarmConfiguration( $that );
 			$this->configuration->setEnvironment( 'ExtensionRegistry', $environment['ExtensionRegistry'] );
@@ -1231,7 +1244,13 @@ class MediaWikiFarm {
 		# Check modification time of original config files
 		$oldness = 0;
 		foreach( $this->farmConfig['config'] as $configFile ) {
-			if( !is_array( $configFile ) || !is_string( $configFile['file'] ) || ( array_key_exists( 'executable', $configFile ) && $configFile['executable'] ) ) {
+			if( !is_array( $configFile )
+				|| !is_string( $configFile['file'] )
+				|| (
+					array_key_exists( 'executable', $configFile )
+					&& $configFile['executable']
+				)
+			) {
 				continue;
 			}
 			$file = $this->configDir . '/' . $this->replaceVariables( $configFile['file'] );

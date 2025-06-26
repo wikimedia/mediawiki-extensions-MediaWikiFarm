@@ -135,6 +135,7 @@ class MediaWikiFarmConfiguration {
 		$settingsArray = &$this->configuration['arrays'];
 		$prioritiesArray = [];
 
+		// phpcs:ignore Squiz.WhiteSpace.OperatorSpacing.NoSpaceAfter
 		$extensions =& $this->configuration['extensions'];
 
 		$settings['wgUseExtensionMediaWikiFarm'] = true;
@@ -237,7 +238,11 @@ class MediaWikiFarmConfiguration {
 					$tagKey[$tag] = ($classicKey == $tag);
 				}*/
 				if( $defaultKey ) {
-					$suffixDefaultKey = (bool) preg_match( '/^' . str_replace( '*', '(.+)', $defaultKey ) . '$/', $this->farm->getVariable( '$SUFFIX' ), $matches );
+					$suffixDefaultKey = (bool) preg_match(
+						'/^' . str_replace( '*', '(.+)', $defaultKey ) . '$/',
+						$this->farm->getVariable( '$SUFFIX' ),
+						$matches
+					);
 					// $tagDefaultKey = in_array( $defaultKey, $tags );
 				}
 
@@ -419,9 +424,11 @@ class MediaWikiFarmConfiguration {
 
 			$type = $extension[1];
 			$name = $extension[0];
+			// phpcs:ignore Squiz.WhiteSpace.OperatorSpacing.NoSpaceAfter
 			$status =& $extension[2];
 
 			$setting = 'wgUse' . preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $key );
+			// phpcs:ignore Squiz.WhiteSpace.OperatorSpacing.NoSpaceAfter
 			$value =& $this->configuration['settings'][$setting];
 
 			# Extension is deactivated
@@ -478,10 +485,15 @@ class MediaWikiFarmConfiguration {
 						if( !array_key_exists( $dep, $this->configuration['extensions'] ) ) {
 							$this->configuration['settings']['wgUse' . preg_replace( '/[^a-zA-Z0-9_\x7f\xff]/', '', $dep )] = true;
 							preg_match( '/^(Extension|Skin)(.+)$/', $dep, $matches );
-							$this->configuration['extensions'][$dep] = [ $matches[2], strtolower( $matches[1] ), 'composer', - count( $this->configuration['extensions'] ) ];
+							$this->configuration['extensions'][$dep] = [
+								$matches[2],
+								strtolower( $matches[1] ),
+								'composer',
+								-count( $this->configuration['extensions'] )
+							];
 						} else {
 							$this->configuration['extensions'][$dep][2] = 'composer';
-							$this->configuration['extensions'][$dep][3] = - abs( $this->configuration['extensions'][$dep][3] );
+							$this->configuration['extensions'][$dep][3] = -abs( $this->configuration['extensions'][$dep][3] );
 						}
 					}
 				}

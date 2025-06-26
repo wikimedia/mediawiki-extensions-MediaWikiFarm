@@ -136,7 +136,13 @@ class MediaWikiFarmUtils {
 		if( is_array( $array ) ) {
 
 			# Cache this version - avoid the case where the timestamps are the same, the two files could have non-coherent versions
-			if( $cachedFile && $directory != $cacheDir . '/config' && ( !is_file( $cachedFile ) || ( filemtime( $cachedFile ) <= filemtime( $prefixedFile ) ) ) ) {
+			if( $cachedFile
+				&& $directory != $cacheDir . '/config'
+				&& (
+					!is_file( $cachedFile )
+					|| ( filemtime( $cachedFile ) <= filemtime( $prefixedFile ) )
+				)
+			) {
 				self::cacheFile( $array, $filename . '.php', $cacheDir . '/config' );
 			}
 

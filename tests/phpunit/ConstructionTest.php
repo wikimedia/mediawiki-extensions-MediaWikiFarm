@@ -369,7 +369,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test bad arguments in constructor.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 */
@@ -474,7 +473,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test successful construction with global variable for the host.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
@@ -500,7 +498,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test successful construction with global variable for the host.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
@@ -526,7 +523,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test successful construction with global variable for the path.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::__construct
 	 * @covers MediaWikiFarm::selectFarm
 	 * @covers MediaWikiFarm::getVariable
@@ -834,7 +830,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test the 'loading' function with existant wiki.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm
@@ -890,7 +885,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test the 'loading' function with nonexistant wiki in an existant farm.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::getConfigDir
@@ -947,7 +941,6 @@ class ConstructionTest extends MediaWikiFarmTestCase {
 	/**
 	 * Test the 'loading' function with a nonexistant farm.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarm::load
 	 * @uses MediaWikiFarm::__construct
 	 * @uses MediaWikiFarm::selectFarm

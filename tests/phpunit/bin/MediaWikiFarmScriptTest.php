@@ -169,7 +169,6 @@ HELP;
 	 * @covers MediaWikiFarmScript::exportArguments
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses AbstractMediaWikiFarmScript::__construct
-	 * @backupGlobals enabled
 	 */
 	public function testExport() {
 
@@ -231,7 +230,6 @@ HELP;
 	/**
 	 * Test load.
 	 *
-	 * @ backupGlobals enabled
 	 * @ covers MediaWikiFarmScript::load
 	 * @ uses MediaWikiFarmScript::__construct
 	 * @ uses AbstractMediaWikiFarmScript::__construct
@@ -285,7 +283,10 @@ HELP;
 
 		$this->expectOutputString( self::$shortHelp );
 
-		$wgMediaWikiFarmScript = new MediaWikiFarmScript( 2, [ self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org' ] );
+		$wgMediaWikiFarmScript = new MediaWikiFarmScript(
+			2,
+			[ self::$mwscriptPath, '--wiki=a.testfarm-multiversion.example.org' ]
+		);
 
 		$wgMediaWikiFarmScript->main();
 
@@ -298,7 +299,6 @@ HELP;
 	/**
 	 * Test missing host.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarmScript::main
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
@@ -354,7 +354,6 @@ HELP;
 	/**
 	 * Test internal problem.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarmScript::main
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
@@ -396,7 +395,6 @@ HELP;
 	/**
 	 * Test missing script.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarmScript::main
 	 * @uses MediaWikiFarmScript::__construct
 	 * @uses MediaWikiFarmScript::getParam
@@ -456,7 +454,6 @@ HELP;
 	/**
 	 * Test successful loading.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarmScript::main
 	 * @covers AbstractMediaWikiFarmScript::premain
 	 * @uses MediaWikiFarmScript::__construct
@@ -532,7 +529,6 @@ OUTPUT
 	/**
 	 * Test restInPeace.
 	 *
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarmScript::restInPeace
 	 * @uses MediaWikiFarmScript::main
 	 * @uses MediaWikiFarmScript::__construct

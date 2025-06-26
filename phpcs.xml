@@ -41,6 +41,17 @@
 		<!-- Misc -->
 		<!-- MediaWikiFarm is used as a prefix in all class names, but file names are too long -->
 		<exclude name="MediaWiki.Files.ClassMatchesFilename.NotMatch" />
+
+		<!--
+		  The 'wg' prefix should only be used with the 'global' keyword
+		  We should surround usages with phpcs:disable / phpcs:enable.
+		-->
+		<exclude name="MediaWiki.VariableAnalysis.MisleadingGlobalNames" />
+
+		<!--
+		  assertEquals accepts many non-numeric values, please use strict alternatives like assertSame
+		-->
+		<exclude name="MediaWiki.Usage.PHPUnitAssertEquals.Int" />
 	</rule>
 
 	<!-- Style preferences -->

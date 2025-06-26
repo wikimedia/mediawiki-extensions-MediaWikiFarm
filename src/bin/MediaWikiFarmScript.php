@@ -29,6 +29,9 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 	/** @var bool $ilent header. */
 	public $silent = false;
 
+	/** @var string Path to the wiki if any */
+	public $path = '';
+
 	/**
 	 * Create the object with a copy of $argc and $argv.
 	 *
@@ -105,7 +108,11 @@ class MediaWikiFarmScript extends AbstractMediaWikiFarmScript {
 
 		# Get script
 		$this->script = $this->getParam( 1, false );
-		$this->script = preg_replace( '/^([a-zA-Z0-9-]+)(\.php)?$/', 'maintenance/$1.php', $this->script );
+		if ( $this->script === null ) {
+			$this->script = '';
+		} else {
+			$this->script = preg_replace( '/^([a-zA-Z0-9-]+)(\.php)?$/', 'maintenance/$1.php', $this->script );
+		}
 
 		if( !$this->script ) {
 			$this->usage();

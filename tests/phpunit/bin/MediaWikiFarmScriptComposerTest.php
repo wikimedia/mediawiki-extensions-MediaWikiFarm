@@ -134,7 +134,6 @@ HELP;
 	 * Test successful loading.
 	 *
 	 * @group large
-	 * @backupGlobals enabled
 	 * @covers MediaWikiFarmScriptComposer::main
 	 * @covers MediaWikiFarmScriptComposer::composer2mediawiki
 	 * @uses MediaWikiFarmScriptComposer::__construct
