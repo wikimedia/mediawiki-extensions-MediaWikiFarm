@@ -1,8 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"Red Winged Duck"
+			"Red Winged Duck",
+			"Ucukor"
 		]
 	},
-	"mediawikifarm-desc": "Ператварае інсталяцыю MediaWiki ў фэрму, якая складаецца зь некалькіх незалежных вікі."
+	"mediawikifarm-desc": "Ператварае інсталяцыю MediaWiki ў фэрму, якая складаецца з мноства незалежных вікі"
 }
