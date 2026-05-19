@@ -172,64 +172,6 @@ class LoadingTest extends MediaWikiFarmTestCase {
 	}
 
 	/**
-	 * Test regular loading mechanisms.
-	 *
-	 * @covers MediaWikiFarm::loadMediaWikiConfig
-	 * @covers MediaWikiFarm::selfRegister
-	 * @uses MediaWikiFarm::load
-	 * @uses MediaWikiFarm::__construct
-	 * @uses MediaWikiFarm::selectFarm
-	 * @uses MediaWikiFarm::getConfigDir
-	 * @uses MediaWikiFarm::getFarmConfiguration
-	 * @uses MediaWikiFarm::checkExistence
-	 * @uses MediaWikiFarm::checkHostVariables
-	 * @uses MediaWikiFarm::setVersion
-	 * @uses MediaWikiFarm::updateVersion
-	 * @uses MediaWikiFarm::setOtherVariables
-	 * @uses MediaWikiFarm::setVariable
-	 * @uses MediaWikiFarm::replaceVariables
-	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarm::isLocalSettingsFresh
-	 * @uses MediaWikiFarm::readFile
-	 * @uses MediaWikiFarm::getConfiguration
-	 * @uses MediaWikiFarm::getVariable
-	 * @uses MediaWikiFarm::compileConfiguration
-	 * @uses MediaWikiFarmConfiguration::__construct
-	 * @uses MediaWikiFarmConfiguration::populateSettings
-	 * @uses MediaWikiFarmConfiguration::setEnvironment
-	 * @uses MediaWikiFarmConfiguration::activateExtensions
-	 * @uses MediaWikiFarmConfiguration::detectLoadingMechanism
-	 * @uses MediaWikiFarmConfiguration::getConfiguration
-	 * @uses MediaWikiFarmConfiguration::detectComposer
-	 * @uses MediaWikiFarmUtils
-	 */
-	public function testRegistrationMediaWikiFarm() {
-
-		# A. Issue with backuping $wgHooks: triggers 'Non-scalar backup of the global variable' from MediaWikiFarmTestCase::backupGlobalVariable()
-		#    since $wgHooks is an object with 1.40.
-		# B. MediaWikiFarm::selfRegister() may fail because $wgHooks is an object and array_key_exists( key, $wgHooks ) triggers a PHP deprecation warning,
-		#    but this method is probably only for the require_once mechanism.
-		$this->markTestIncomplete(
-			'This test has an issue with recent MediaWiki versions (to be fixed).'
-		);
-
-		$this->backupAndSetGlobalVariable( 'wgAutoloadClasses', [] );
-		$this->backupAndSetGlobalVariable( 'wgHooks', [] );
-
-		$farm = new MediaWikiFarm( 'a.testfarm-multiversion.example.org', null,
-			self::$wgMediaWikiFarmConfigDir, self::$wgMediaWikiFarmCodeDir, false,
-			[], [ 'ExtensionRegistry' => false ]
-		);
-		$farm->checkExistence();
-		$farm->compileConfiguration();
-		$farm->loadMediaWikiConfig();
-
-		$this->assertArrayHasKey( 'wgAutoloadClasses', $GLOBALS );
-		$this->assertArrayHasKey( 'MediaWikiFarm', $GLOBALS['wgAutoloadClasses'] );
-		$this->assertEquals( 'src/MediaWikiFarm.php', $GLOBALS['wgAutoloadClasses']['MediaWikiFarm'] );
-	}
-
-	/**
 	 * Test exceptions in loading mechanisms.
 	 *
 	 * @covers MediaWikiFarm::compileConfiguration

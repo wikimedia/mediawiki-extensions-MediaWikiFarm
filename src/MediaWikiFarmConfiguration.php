@@ -730,12 +730,6 @@ class MediaWikiFarmConfiguration {
 			$localSettings .= $extensions['extension']['wfLoadExtension'];
 		}
 
-		# Self-register
-		if( $configuration['extensions']['ExtensionMediaWikiFarm'][2] == 'require_once' ) {
-			$localSettings .= "\n# Self-register\n";
-			$localSettings .= "MediaWikiFarm::selfRegister();\n";
-		}
-
 		# Included files
 		$localSettings .= "\n# Included files\n";
 		foreach( $configuration['execFiles'] as $execFile ) {

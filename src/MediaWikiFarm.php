@@ -541,42 +541,8 @@ class MediaWikiFarm {
 				$extensionRegistry->queue( $GLOBALS['wgStyleDirectory'] . '/' . $extension[0] . '/skin.json' );
 			}
 			elseif( $extension[2] == 'require_once' && $key == 'ExtensionMediaWikiFarm' ) {
-				self::selfRegister();
+				throw new LogicException( 'MediaWikiFarm does no more support MediaWiki before 1.25.' );
 			}
-		}
-	}
-
-	/**
-	 * Register MediaWikiFarm with require_once mechanism.
-	 */
-	public static function selfRegister() {
-		$json = file_get_contents( __DIR__ . '/../extension.json' );
-		if( $json === false ) {
-			return;
-		}
-
-		$json = json_decode( $json, true );
-		if( $json === null ) {
-			return;
-		}
-
-		$GLOBALS['wgExtensionCredits'][$json['type']][] = [
-			'path' => __DIR__ . '/../MediaWikiFarm.php',
-			'name' => $json['name'],
-			'version' => $json['version'],
-			'author' => $json['author'],
-			'url' => $json['url'],
-			'descriptionmsg' => $json['descriptionmsg'],
-			'license-name' => $json['license-name'],
-		];
-
-		$GLOBALS['wgAutoloadClasses'] = array_merge( $GLOBALS['wgAutoloadClasses'], $json['AutoloadClasses'] );
-		$GLOBALS['wgMessagesDirs']['MediaWikiFarm'] = __DIR__ . '/../' . $json['MessagesDirs']['MediaWikiFarm'][0];
-		foreach( $json['Hooks'] as $hook => $func ) {
-			if( !array_key_exists( $hook, $GLOBALS['wgHooks'] ) ) {
-				$GLOBALS['wgHooks'][$hook] = [];
-			}
-			$GLOBALS['wgHooks'][$hook] = array_merge( $GLOBALS['wgHooks'][$hook], (array) $json['Hooks'][$hook] );
 		}
 	}
 
